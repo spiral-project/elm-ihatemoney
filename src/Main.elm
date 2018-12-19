@@ -254,5 +254,5 @@ buttonAddBill =
         , Border.color <| rgb255 200 200 200
         ]
         { onPress = Nothing
-        , label = text "Add bill"
+        , label = text "Add a new bill"
         }
