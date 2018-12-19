@@ -10592,7 +10592,7 @@ var author$project$Main$buttonAddBill = A2(
 			A3(mdgriffith$elm_ui$Element$rgb255, 200, 200, 200))
 		]),
 	{
-		label: mdgriffith$elm_ui$Element$text('Add bill'),
+		label: mdgriffith$elm_ui$Element$text('Add a new bill'),
 		onPress: elm$core$Maybe$Nothing
 	});
 var author$project$Main$billsList = function (bills) {
