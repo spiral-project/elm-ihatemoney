@@ -7,20 +7,20 @@ import Round exposing (round)
 import Types exposing (..)
 
 
-billBoardView : Model -> Html Msg
-billBoardView model =
+billBoardView : (LocaleIdentifier -> String) -> List Bill -> Html Msg
+billBoardView t bills =
     div
         [ class "offset-md-3 col-xs-12 col-md-9" ]
-        [ billBoardHeader model
-        , billBoardTable model.bills
+        [ billBoardHeader t
+        , billBoardTable t bills
         ]
 
 
-billBoardHeader : Model -> Html Msg
-billBoardHeader model =
+billBoardHeader : (LocaleIdentifier -> String) -> Html Msg
+billBoardHeader t =
     div []
         [ div [ class "identifier" ]
-            [ a [ href "#" ] [ text "Invite people to join this project!" ] ]
+            [ a [ href "#" ] [ text <| t Invite ] ]
         , a
             [ id "new-bill"
             , href "#"
@@ -32,8 +32,8 @@ billBoardHeader model =
         ]
 
 
-billBoardTable : List Bill -> Html Msg
-billBoardTable bills =
+billBoardTable : (LocaleIdentifier -> String) -> List Bill -> Html Msg
+billBoardTable t bills =
     table [ id "bill_table", class "col table table-striped table-hover" ]
         [ thead []
             [ tr []
@@ -45,13 +45,13 @@ billBoardTable bills =
                 , th [] [ text "Actions" ]
                 ]
             ]
-        , List.map billInfoView bills
+        , List.map (billInfoView t) bills
             |> tbody []
         ]
 
 
-billInfoView : Bill -> Html Msg
-billInfoView bill =
+billInfoView : (LocaleIdentifier -> String) -> Bill -> Html Msg
+billInfoView t bill =
     tr []
         [ td [] [ text bill.date ]
         , td [] [ text bill.payer ]

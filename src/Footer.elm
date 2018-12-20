@@ -2,16 +2,16 @@ module Footer exposing (footerView)
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
-import Types exposing (Msg)
+import Locales exposing (getString)
+import Types exposing (..)
 
 
-footerView : Html Msg
-footerView =
+footerView : (LocaleIdentifier -> String) -> Html Msg
+footerView t =
     footer []
         [ p []
-            [ a [ href "https://github.com/spiral-project/ihatemoney" ]
-                [ text "This is a free software" ]
-            , text
-                ", you can contribute and improve it!"
+            [ a [ href "https://github.com/spiral-project/elm-ihatemoney" ]
+                [ text <| t FreeSoftware ]
+            , text <| t YouCanContribute
             ]
         ]

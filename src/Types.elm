@@ -1,8 +1,9 @@
-module Types exposing (Bill, Member, Model, Msg(..), Project)
+module Types exposing (Bill, Locale(..), LocaleIdentifier(..), Member, Model, Msg(..), Project)
 
 
 type alias Model =
-    { project : String
+    { locale : Locale
+    , project : String
     , members : List Member
     , bills : List Bill
     , memberField : String
@@ -12,6 +13,7 @@ type alias Model =
 type Msg
     = NewNameTyped String
     | AddMember
+    | ChangeLocale Locale
 
 
 type alias Project =
@@ -31,3 +33,26 @@ type alias Bill =
     , payer : String
     , owers : List String
     }
+
+
+type Locale
+    = EN
+    | FR
+
+
+type LocaleIdentifier
+    = AppTitle String
+    | Bills
+    | Settle
+    | Statistics
+    | Options
+    | ProjectSettings
+    | StartNewProject
+    | Logout
+    | TypeUserName
+    | Add
+    | Deactivate
+    | Edit
+    | Invite
+    | FreeSoftware
+    | YouCanContribute

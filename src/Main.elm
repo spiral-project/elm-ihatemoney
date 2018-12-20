@@ -6,6 +6,7 @@ import Footer exposing (footerView)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
+import Locales exposing (getString)
 import NavBar exposing (navBarView)
 import Round exposing (round)
 import SideBar exposing (sideBarView)
@@ -14,7 +15,8 @@ import Types exposing (..)
 
 init : () -> ( Model, Cmd Msg )
 init flags =
-    ( { members =
+    ( { locale = EN
+      , members =
             [ { name = "Alexis", balance = 10 }
             , { name = "Fred", balance = -10 }
             , { name = "Rémy", balance = 20 }
@@ -64,6 +66,9 @@ update msg model =
             , Cmd.none
             )
 
+        ChangeLocale locale ->
+            ( { model | locale = locale }, Cmd.none )
+
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
@@ -72,15 +77,19 @@ subscriptions model =
 
 view : Model -> Document Msg
 view model =
-    { title = "Account manager - " ++ model.project
+    let
+        t =
+            getString model.locale
+    in
+    { title = t (AppTitle model.project)
     , body =
-        [ navBarView model.project
+        [ navBarView t model.project model.locale
         , div
             [ class "container-fluid" ]
-            [ sideBarView model
-            , billBoardView model
+            [ sideBarView t model.memberField model.members
+            , billBoardView t model.bills
             ]
         , div [ class "messages" ] []
-        , footerView
+        , footerView t
         ]
     }
