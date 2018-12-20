@@ -1,13 +1,9 @@
 module Main exposing (main)
 
 import Browser
-import Element exposing (..)
-import Element.Background as Background
-import Element.Border as Border
-import Element.Events exposing (..)
-import Element.Font as Font
-import Element.Input as Input
-import Html exposing (Html)
+import Html exposing (..)
+import Html.Attributes exposing (..)
+import Html.Events exposing (..)
 
 
 type alias Model =
@@ -106,153 +102,178 @@ subscriptions model =
 
 view : Model -> Html Msg
 view model =
-    layout [ height fill, Font.size 18 ] <|
-        column [ height fill, width fill ]
-            [ menu model.project
-            , row [ width fill, height fill ]
-                [ column
-                    [ fillPortion 1
-                        |> minimum 300
-                        |> width
-                    , Background.color <| rgb255 171 225 40
-                    , height fill
-                    , paddingXY 10 10
-                    , spacing 10
+    navBar model.project
+
+
+navBar : Project -> Html Msg
+navBar project =
+    div
+        [ class "container" ]
+        [ nav
+            [ class "navbar navbar-toggleable-sm fixed-top navbar-inverse bg-inverse" ]
+            [ button
+                [ class "navbar-toggler"
+                , type_ "button"
+                , attribute "data-toggle" "collapse"
+                , attribute "data-target" "#navbarToggler"
+                , attribute "aria-controls" "navbarToggler"
+                , attribute "aria-expanded" "false"
+                , attribute "aria-label" "Toggle navigation"
+                ]
+                [ span [ class "navbar-toggler-icon" ] [] ]
+            , div
+                [ class "collapse navbar-collapse", id "navbarToggler" ]
+                [ h1 [] [ a [ class "navbar-brand", href "#" ] [ text "#! money?" ] ]
+                , ul [ class "navbar-nav" ]
+                    [ li [ class "nav-item" ]
+                        [ a
+                            [ class "nav-link"
+                            , href "#"
+                            ]
+                            [ strong [ class "navbar-nav" ] [ text project ] ]
+                        ]
                     ]
-                  <|
-                    memberList model.memberField model.members
-                , column
-                    [ width <| fillPortion 5
-                    , height fill
-                    , padding 10
+                , ul
+                    [ class "navbar-nav ml-auto mr-auto" ]
+                    [ li
+                        [ class "nav-item active" ]
+                        [ a [ class "nav-link", href "/demo/" ] [ text "Bills" ] ]
+                    , li
+                        [ class "nav-item" ]
+                        [ a [ class "nav-link", href "/demo/settle_bills" ] [ text "Settle" ] ]
+                    , li
+                        [ class "nav-item" ]
+                        [ a [ class "nav-link", href "/demo/statistics" ] [ text "Statistics" ] ]
                     ]
-                  <|
-                    billsList model.bills
+                , ul
+                    [ class "navbar-nav secondary-nav" ]
+                    [ li
+                        [ class "nav-item dropdown" ]
+                        [ a
+                            [ href "#"
+                            , class "nav-link dropdown-toggle"
+                            , id "navbarDropdownMenuLink"
+                            , attribute "data-toggle" "dropdown"
+                            , attribute "aria-haspopup" "true"
+                            , attribute "aria-expanded" "false"
+                            ]
+                            [ text "⚙ options" ]
+                        , ul
+                            [ class "dropdown-menu dropdown-menu-right"
+                            , attribute "aria-labelledby" "navbarDropdownMenuLink"
+                            ]
+                            [ li []
+                                [ a [ class "dropdown-item", href "/demo/edit" ]
+                                    [ text "Project settings" ]
+                                ]
+                            , li [ class "dropdown-divider" ] []
+                            , li []
+                                [ a [ class "dropdown-item", href "/create" ]
+                                    [ text "Start a new project" ]
+                                ]
+                            , li [ class "dropdown-divider" ] []
+                            , li []
+                                [ a [ class "dropdown-item", href "/exit" ]
+                                    [ text "Logout" ]
+                                ]
+                            ]
+                        ]
+                    , li [ class "nav-item" ]
+                        [ a [ class "nav-link", href "/lang/fr" ] [ text "fr" ] ]
+                    , li [ class "nav-item active" ]
+                        [ a [ class "nav-link", href "/lang/en" ] [ text "en" ]
+                        ]
+                    ]
                 ]
             ]
-
-
-menu : Project -> Element Msg
-menu project =
-    row
-        [ width fill
-        , height <| px 56
-        , Background.color <| rgb255 30 30 30
-        , Font.color <| rgb255 255 255 255
-        , paddingXY 15 5
-        ]
-        [ column [ width <| fillPortion 1 ]
-            [ text "#! money? "
-            , el [ Font.size 16, padding 5 ] <| text project
-            ]
-        , column [ width <| fillPortion 1 ]
-            [ row [ Font.center, centerX, Font.size 18 ]
-                [ text "Bills | "
-                , text "Settle | "
-                , text "Statistics"
-                ]
-            ]
-        , column [ width <| fillPortion 1 ]
-            [ el [ alignRight ] <| text "⚙ Options"
-            ]
         ]
 
 
-memberList : String -> List Member -> List (Element Msg)
-memberList newMemberName members =
-    [ row [ width fill ]
-        [ Input.text
-            [ Border.roundEach
-                { topLeft = 5
-                , topRight = 0
-                , bottomLeft = 5
-                , bottomRight = 0
-                }
-            , Border.color <| rgb255 200 200 200
-            , width fill
-            ]
-            { onChange = NewNameTyped
-            , text = newMemberName
-            , label = Input.labelHidden "Enter user name here"
-            , placeholder = Just <| Input.placeholder [] <| text "Type user name here"
-            }
-        , buttonAddMember
-        ]
-    ]
-        ++ List.map displayMember members
 
-
-displayMember : Member -> Element Msg
-displayMember member =
-    row
-        [ paddingXY 10 10
-        , Border.widthEach
-            { top = 1
-            , left = 0
-            , right = 0
-            , bottom = 0
-            }
-        , Border.color <| rgb255 255 255 255
-        , width fill
-        ]
-        [ text member.name
-        , let
-            color =
-                if member.balance < 0 then
-                    rgb255 255 0 0
-
-                else
-                    rgb255 0 125 125
-
-            sign =
-                if member.balance > 0 then
-                    "+"
-
-                else
-                    ""
-          in
-          String.fromFloat member.balance
-            |> (++) sign
-            |> text
-            |> el [ alignRight, Font.color color, Font.bold ]
-        ]
-
-
-buttonAddMember : Element Msg
-buttonAddMember =
-    Input.button
-        [ padding 10
-        , Border.width 1
-        , Border.roundEach
-            { topLeft = 0
-            , topRight = 5
-            , bottomLeft = 0
-            , bottomRight = 5
-            }
-        , Background.color <| rgb 150 150 150
-        , Border.color <| rgb255 200 200 200
-        , height fill
-        ]
-        { onPress = Just AddMember
-        , label = text "Add"
-        }
-
-
-billsList : List Bill -> List (Element Msg)
-billsList bills =
-    [ buttonAddBill ]
-
-
-buttonAddBill : Element Msg
-buttonAddBill =
-    Input.button
-        [ padding 10
-        , Border.width 1
-        , Border.rounded 5
-        , Background.color <| rgb255 2 117 216
-        , Font.color <| rgb 1 1 1
-        , Border.color <| rgb255 200 200 200
-        ]
-        { onPress = Nothing
-        , label = text "Add a new bill"
-        }
+-- memberList : String -> List Member -> List (Element Msg)
+-- memberList newMemberName members =
+--     [ row [ width fill ]
+--         [ Input.text
+--             [ Border.roundEach
+--                 { topLeft = 5
+--                 , topRight = 0
+--                 , bottomLeft = 5
+--                 , bottomRight = 0
+--                 }
+--             , Border.color <| rgb255 200 200 200
+--             , width fill
+--             ]
+--             { onChange = NewNameTyped
+--             , text = newMemberName
+--             , label = Input.labelHidden "Enter user name here"
+--             , placeholder = Just <| Input.placeholder [] <| text "Type user name here"
+--             }
+--         , buttonAddMember
+--         ]
+--     ]
+--         ++ List.map displayMember members
+-- displayMember : Member -> Element Msg
+-- displayMember member =
+--     row
+--         [ paddingXY 10 10
+--         , Border.widthEach
+--             { top = 1
+--             , left = 0
+--             , right = 0
+--             , bottom = 0
+--             }
+--         , Border.color <| rgb255 255 255 255
+--         , width fill
+--         ]
+--         [ text member.name
+--         , let
+--             color =
+--                 if member.balance < 0 then
+--                     rgb255 255 0 0
+--                 else
+--                     rgb255 0 125 125
+--             sign =
+--                 if member.balance > 0 then
+--                     "+"
+--                 else
+--                     ""
+--           in
+--           String.fromFloat member.balance
+--             |> (++) sign
+--             |> text
+--             |> el [ alignRight, Font.color color, Font.bold ]
+--         ]
+-- buttonAddMember : Element Msg
+-- buttonAddMember =
+--     Input.button
+--         [ padding 10
+--         , Border.width 1
+--         , Border.roundEach
+--             { topLeft = 0
+--             , topRight = 5
+--             , bottomLeft = 0
+--             , bottomRight = 5
+--             }
+--         , Background.color <| rgb 150 150 150
+--         , Border.color <| rgb255 200 200 200
+--         , height fill
+--         ]
+--         { onPress = Just AddMember
+--         , label = text "Add"
+--         }
+-- billsList : List Bill -> List (Element Msg)
+-- billsList bills =
+--     [ buttonAddBill ]
+-- buttonAddBill : Element Msg
+-- buttonAddBill =
+--     Input.button
+--         [ padding 10
+--         , Border.width 1
+--         , Border.rounded 5
+--         , Background.color <| rgb255 2 117 216
+--         , Font.color <| rgb 1 1 1
+--         , Border.color <| rgb255 200 200 200
+--         ]
+--         { onPress = Nothing
+--         , label = text "Add a new bill"
+--         }
