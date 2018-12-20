@@ -1,9 +1,10 @@
 module Main exposing (main)
 
-import Browser
+import Browser exposing (Document)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
+import Round exposing (round)
 
 
 type alias Model =
@@ -72,7 +73,7 @@ init flags =
 
 main : Program () Model Msg
 main =
-    Browser.element
+    Browser.document
         { init = init
         , view = view
         , update = update
@@ -100,13 +101,24 @@ subscriptions model =
     Sub.none
 
 
-view : Model -> Html Msg
+view : Model -> Document Msg
 view model =
-    navBar model.project
+    { title = "Account manager - " ++ model.project
+    , body =
+        [ navBarView model.project
+        , div
+            [ class "container-fluid" ]
+            [ sideBarView model
+            , billBoardView model
+            ]
+        , div [ class "messages" ] []
+        , footerView
+        ]
+    }
 
 
-navBar : Project -> Html Msg
-navBar project =
+navBarView : Project -> Html Msg
+navBarView project =
     div
         [ class "container" ]
         [ nav
@@ -137,13 +149,13 @@ navBar project =
                     [ class "navbar-nav ml-auto mr-auto" ]
                     [ li
                         [ class "nav-item active" ]
-                        [ a [ class "nav-link", href "/demo/" ] [ text "Bills" ] ]
+                        [ a [ class "nav-link", href "#" ] [ text "Bills" ] ]
                     , li
                         [ class "nav-item" ]
-                        [ a [ class "nav-link", href "/demo/settle_bills" ] [ text "Settle" ] ]
+                        [ a [ class "nav-link", href "#" ] [ text "Settle" ] ]
                     , li
                         [ class "nav-item" ]
-                        [ a [ class "nav-link", href "/demo/statistics" ] [ text "Statistics" ] ]
+                        [ a [ class "nav-link", href "#" ] [ text "Statistics" ] ]
                     ]
                 , ul
                     [ class "navbar-nav secondary-nav" ]
@@ -163,25 +175,25 @@ navBar project =
                             , attribute "aria-labelledby" "navbarDropdownMenuLink"
                             ]
                             [ li []
-                                [ a [ class "dropdown-item", href "/demo/edit" ]
+                                [ a [ class "dropdown-item", href "#" ]
                                     [ text "Project settings" ]
                                 ]
                             , li [ class "dropdown-divider" ] []
                             , li []
-                                [ a [ class "dropdown-item", href "/create" ]
+                                [ a [ class "dropdown-item", href "#" ]
                                     [ text "Start a new project" ]
                                 ]
                             , li [ class "dropdown-divider" ] []
                             , li []
-                                [ a [ class "dropdown-item", href "/exit" ]
+                                [ a [ class "dropdown-item", href "#" ]
                                     [ text "Logout" ]
                                 ]
                             ]
                         ]
                     , li [ class "nav-item" ]
-                        [ a [ class "nav-link", href "/lang/fr" ] [ text "fr" ] ]
+                        [ a [ class "nav-link", href "#" ] [ text "fr" ] ]
                     , li [ class "nav-item active" ]
-                        [ a [ class "nav-link", href "/lang/en" ] [ text "en" ]
+                        [ a [ class "nav-link", href "#" ] [ text "en" ]
                         ]
                     ]
                 ]
@@ -189,91 +201,156 @@ navBar project =
         ]
 
 
+sideBarView : Model -> Html Msg
+sideBarView model =
+    div [ class "row", style "height" "100%" ]
+        [ aside [ id "sidebar", class "sidebar col-xs-12 col-md-3 ", style "height" "100%" ]
+            [ Html.form [ id "add-member-form", onSubmit AddMember, class "form-inline" ]
+                [ div [ class "input-group" ]
+                    [ label [ class "sr-only", for "name" ] [ text "Type user name here" ]
+                    , input
+                        [ class "form-control"
+                        , id "name"
+                        , placeholder "Type user name here"
+                        , required True
+                        , type_ "text"
+                        , value model.memberField
+                        , onInput NewNameTyped
+                        ]
+                        []
+                    , button [ class " input-group-addon btn" ] [ text "Add" ]
+                    ]
+                ]
+            , div [ id "table_overflow" ]
+                [ List.map memberInfo model.members
+                    |> table [ class "balance table" ]
+                ]
+            ]
+        ]
 
--- memberList : String -> List Member -> List (Element Msg)
--- memberList newMemberName members =
---     [ row [ width fill ]
---         [ Input.text
---             [ Border.roundEach
---                 { topLeft = 5
---                 , topRight = 0
---                 , bottomLeft = 5
---                 , bottomRight = 0
---                 }
---             , Border.color <| rgb255 200 200 200
---             , width fill
---             ]
---             { onChange = NewNameTyped
---             , text = newMemberName
---             , label = Input.labelHidden "Enter user name here"
---             , placeholder = Just <| Input.placeholder [] <| text "Type user name here"
---             }
---         , buttonAddMember
---         ]
---     ]
---         ++ List.map displayMember members
--- displayMember : Member -> Element Msg
--- displayMember member =
---     row
---         [ paddingXY 10 10
---         , Border.widthEach
---             { top = 1
---             , left = 0
---             , right = 0
---             , bottom = 0
---             }
---         , Border.color <| rgb255 255 255 255
---         , width fill
---         ]
---         [ text member.name
---         , let
---             color =
---                 if member.balance < 0 then
---                     rgb255 255 0 0
---                 else
---                     rgb255 0 125 125
---             sign =
---                 if member.balance > 0 then
---                     "+"
---                 else
---                     ""
---           in
---           String.fromFloat member.balance
---             |> (++) sign
---             |> text
---             |> el [ alignRight, Font.color color, Font.bold ]
---         ]
--- buttonAddMember : Element Msg
--- buttonAddMember =
---     Input.button
---         [ padding 10
---         , Border.width 1
---         , Border.roundEach
---             { topLeft = 0
---             , topRight = 5
---             , bottomLeft = 0
---             , bottomRight = 5
---             }
---         , Background.color <| rgb 150 150 150
---         , Border.color <| rgb255 200 200 200
---         , height fill
---         ]
---         { onPress = Just AddMember
---         , label = text "Add"
---         }
--- billsList : List Bill -> List (Element Msg)
--- billsList bills =
---     [ buttonAddBill ]
--- buttonAddBill : Element Msg
--- buttonAddBill =
---     Input.button
---         [ padding 10
---         , Border.width 1
---         , Border.rounded 5
---         , Background.color <| rgb255 2 117 216
---         , Font.color <| rgb 1 1 1
---         , Border.color <| rgb255 200 200 200
---         ]
---         { onPress = Nothing
---         , label = text "Add a new bill"
---         }
+
+memberInfo : Member -> Html Msg
+memberInfo member =
+    let
+        className =
+            if member.balance < 0 then
+                "negative"
+
+            else
+                "positive"
+
+        sign =
+            if member.balance > 0 then
+                "+"
+
+            else
+                ""
+    in
+    tr [ id "bal-member-1" ]
+        [ td
+            [ class "balance-name" ]
+            [ text member.name
+            , span [ class "light extra-info" ] [ text "(x1)" ]
+            ]
+        , td []
+            [ div [ class "action delete" ] [ button [ type_ "button" ] [ text "deactivate" ] ]
+            ]
+        , td []
+            [ div [ class "action edit" ] [ button [ type_ "button" ] [ text "edit" ] ]
+            ]
+        , td [ class <| "balance-value " ++ className ]
+            [ round 2 member.balance
+                |> (++) sign
+                |> text
+            ]
+        ]
+
+
+billBoardView : Model -> Html Msg
+billBoardView model =
+    div
+        [ class "offset-md-3 col-xs-12 col-md-9" ]
+        [ billBoardHeader model
+        , billBoardTable model.bills
+        ]
+
+
+billBoardHeader : Model -> Html Msg
+billBoardHeader model =
+    div []
+        [ div [ class "identifier" ]
+            [ a [ href "#" ] [ text "Invite people to join this project!" ] ]
+        , a
+            [ id "new-bill"
+            , href "#"
+            , class "btn btn-primary"
+            , attribute "data-toggle" "modal"
+            , attribute "data-target" "#bill-form"
+            ]
+            [ text "Add a new bill" ]
+        ]
+
+
+billBoardTable : List Bill -> Html Msg
+billBoardTable bills =
+    table [ id "bill_table", class "col table table-striped table-hover" ]
+        [ thead []
+            [ tr []
+                [ th [] [ text "When?" ]
+                , th [] [ text "Who paid?" ]
+                , th [] [ text "For what?" ]
+                , th [] [ text "For whom?" ]
+                , th [] [ text "How much?" ]
+                , th [] [ text "Actions" ]
+                ]
+            ]
+        , List.map billInfoView bills
+            |> tbody []
+        ]
+
+
+billInfoView : Bill -> Html Msg
+billInfoView bill =
+    tr []
+        [ td [] [ text bill.date ]
+        , td [] [ text bill.payer ]
+        , td [] [ text bill.label ]
+        , td []
+            [ List.sort bill.owers
+                |> String.join ","
+                |> text
+            ]
+        , td []
+            [ let
+                amount =
+                    round 2 bill.amount
+
+                numberOfPeople =
+                    List.length bill.owers |> toFloat
+
+                amountEach =
+                    round 2 <| bill.amount / numberOfPeople
+              in
+              text <|
+                amount
+                    ++ "("
+                    ++ amountEach
+                    ++ " each)"
+            ]
+        , td [ class "bill-actions" ]
+            [ a [ class "edit", href "#", title "edit" ] [ text "edit" ]
+            , a [ class "delete", href "#", title "delete" ] [ text "delete" ]
+            ]
+        ]
+
+
+footerView : Html Msg
+footerView =
+    footer []
+        [ p []
+            [ a [ href "https://github.com/spiral-project/ihatemoney" ]
+                [ text "This is a free software" ]
+            , text
+                ", you can contribute and improve it!"
+            ]
+        ]
