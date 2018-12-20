@@ -317,7 +317,7 @@ billInfoView bill =
         , td [] [ text bill.label ]
         , td []
             [ List.sort bill.owers
-                |> String.join ","
+                |> String.join ", "
                 |> text
             ]
         , td []
