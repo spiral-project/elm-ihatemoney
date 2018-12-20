@@ -5316,7 +5316,7 @@ var author$project$Main$billInfoView = function (bill) {
 						elm$html$Html$text(
 						A2(
 							elm$core$String$join,
-							',',
+							', ',
 							elm$core$List$sort(bill.owers)))
 					])),
 				A2(
