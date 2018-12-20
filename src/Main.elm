@@ -1,13 +1,10 @@
 module Main exposing (main)
 
-import Browser
-import Element exposing (..)
-import Element.Background as Background
-import Element.Border as Border
-import Element.Events exposing (..)
-import Element.Font as Font
-import Element.Input as Input
-import Html exposing (Html)
+import Browser exposing (Document)
+import Html exposing (..)
+import Html.Attributes exposing (..)
+import Html.Events exposing (..)
+import Round exposing (round)
 
 
 type alias Model =
@@ -76,7 +73,7 @@ init flags =
 
 main : Program () Model Msg
 main =
-    Browser.element
+    Browser.document
         { init = init
         , view = view
         , update = update
@@ -104,155 +101,256 @@ subscriptions model =
     Sub.none
 
 
-view : Model -> Html Msg
+view : Model -> Document Msg
 view model =
-    layout [ height fill, Font.size 18 ] <|
-        column [ height fill, width fill ]
-            [ menu model.project
-            , row [ width fill, height fill ]
-                [ column
-                    [ fillPortion 1
-                        |> minimum 300
-                        |> width
-                    , Background.color <| rgb255 171 225 40
-                    , height fill
-                    , paddingXY 10 10
-                    , spacing 10
+    { title = "Account manager - " ++ model.project
+    , body =
+        [ navBarView model.project
+        , div
+            [ class "container-fluid" ]
+            [ sideBarView model
+            , billBoardView model
+            ]
+        , div [ class "messages" ] []
+        , footerView
+        ]
+    }
+
+
+navBarView : Project -> Html Msg
+navBarView project =
+    div
+        [ class "container" ]
+        [ nav
+            [ class "navbar navbar-toggleable-sm fixed-top navbar-inverse bg-inverse" ]
+            [ button
+                [ class "navbar-toggler"
+                , type_ "button"
+                , attribute "data-toggle" "collapse"
+                , attribute "data-target" "#navbarToggler"
+                , attribute "aria-controls" "navbarToggler"
+                , attribute "aria-expanded" "false"
+                , attribute "aria-label" "Toggle navigation"
+                ]
+                [ span [ class "navbar-toggler-icon" ] [] ]
+            , div
+                [ class "collapse navbar-collapse", id "navbarToggler" ]
+                [ h1 [] [ a [ class "navbar-brand", href "#" ] [ text "#! money?" ] ]
+                , ul [ class "navbar-nav" ]
+                    [ li [ class "nav-item" ]
+                        [ a
+                            [ class "nav-link"
+                            , href "#"
+                            ]
+                            [ strong [ class "navbar-nav" ] [ text project ] ]
+                        ]
                     ]
-                  <|
-                    memberList model.memberField model.members
-                , column
-                    [ width <| fillPortion 5
-                    , height fill
-                    , padding 10
+                , ul
+                    [ class "navbar-nav ml-auto mr-auto" ]
+                    [ li
+                        [ class "nav-item active" ]
+                        [ a [ class "nav-link", href "#" ] [ text "Bills" ] ]
+                    , li
+                        [ class "nav-item" ]
+                        [ a [ class "nav-link", href "#" ] [ text "Settle" ] ]
+                    , li
+                        [ class "nav-item" ]
+                        [ a [ class "nav-link", href "#" ] [ text "Statistics" ] ]
                     ]
-                  <|
-                    billsList model.bills
+                , ul
+                    [ class "navbar-nav secondary-nav" ]
+                    [ li
+                        [ class "nav-item dropdown" ]
+                        [ a
+                            [ href "#"
+                            , class "nav-link dropdown-toggle"
+                            , id "navbarDropdownMenuLink"
+                            , attribute "data-toggle" "dropdown"
+                            , attribute "aria-haspopup" "true"
+                            , attribute "aria-expanded" "false"
+                            ]
+                            [ text "⚙ options" ]
+                        , ul
+                            [ class "dropdown-menu dropdown-menu-right"
+                            , attribute "aria-labelledby" "navbarDropdownMenuLink"
+                            ]
+                            [ li []
+                                [ a [ class "dropdown-item", href "#" ]
+                                    [ text "Project settings" ]
+                                ]
+                            , li [ class "dropdown-divider" ] []
+                            , li []
+                                [ a [ class "dropdown-item", href "#" ]
+                                    [ text "Start a new project" ]
+                                ]
+                            , li [ class "dropdown-divider" ] []
+                            , li []
+                                [ a [ class "dropdown-item", href "#" ]
+                                    [ text "Logout" ]
+                                ]
+                            ]
+                        ]
+                    , li [ class "nav-item" ]
+                        [ a [ class "nav-link", href "#" ] [ text "fr" ] ]
+                    , li [ class "nav-item active" ]
+                        [ a [ class "nav-link", href "#" ] [ text "en" ]
+                        ]
+                    ]
                 ]
             ]
-
-
-menu : Project -> Element Msg
-menu project =
-    row
-        [ width fill
-        , height <| px 56
-        , Background.color <| rgb255 30 30 30
-        , Font.color <| rgb255 255 255 255
-        , paddingXY 15 5
         ]
-        [ column [ width <| fillPortion 1 ]
-            [ text "#! money? "
-            , el [ Font.size 16, padding 5 ] <| text project
-            ]
-        , column [ width <| fillPortion 1 ]
-            [ row [ Font.center, centerX, Font.size 18 ]
-                [ text "Bills | "
-                , text "Settle | "
-                , text "Statistics"
+
+
+sideBarView : Model -> Html Msg
+sideBarView model =
+    div [ class "row", style "height" "100%" ]
+        [ aside [ id "sidebar", class "sidebar col-xs-12 col-md-3 ", style "height" "100%" ]
+            [ Html.form [ id "add-member-form", onSubmit AddMember, class "form-inline" ]
+                [ div [ class "input-group" ]
+                    [ label [ class "sr-only", for "name" ] [ text "Type user name here" ]
+                    , input
+                        [ class "form-control"
+                        , id "name"
+                        , placeholder "Type user name here"
+                        , required True
+                        , type_ "text"
+                        , value model.memberField
+                        , onInput NewNameTyped
+                        ]
+                        []
+                    , button [ class " input-group-addon btn" ] [ text "Add" ]
+                    ]
+                ]
+            , div [ id "table_overflow" ]
+                [ List.map memberInfo model.members
+                    |> table [ class "balance table" ]
                 ]
             ]
-        , column [ width <| fillPortion 1 ]
-            [ el [ alignRight ] <| text "⚙ Options"
+        ]
+
+
+memberInfo : Member -> Html Msg
+memberInfo member =
+    let
+        className =
+            if member.balance < 0 then
+                "negative"
+
+            else
+                "positive"
+
+        sign =
+            if member.balance > 0 then
+                "+"
+
+            else
+                ""
+    in
+    tr [ id "bal-member-1" ]
+        [ td
+            [ class "balance-name" ]
+            [ text member.name
+            , span [ class "light extra-info" ] [ text "(x1)" ]
+            ]
+        , td []
+            [ div [ class "action delete" ] [ button [ type_ "button" ] [ text "deactivate" ] ]
+            ]
+        , td []
+            [ div [ class "action edit" ] [ button [ type_ "button" ] [ text "edit" ] ]
+            ]
+        , td [ class <| "balance-value " ++ className ]
+            [ round 2 member.balance
+                |> (++) sign
+                |> text
             ]
         ]
 
 
-memberList : String -> List Member -> List (Element Msg)
-memberList newMemberName members =
-    [ row [ width fill ]
-        [ Input.text
-            [ Border.roundEach
-                { topLeft = 5
-                , topRight = 0
-                , bottomLeft = 5
-                , bottomRight = 0
-                }
-            , Border.color <| rgb255 200 200 200
-            , width fill
+billBoardView : Model -> Html Msg
+billBoardView model =
+    div
+        [ class "offset-md-3 col-xs-12 col-md-9" ]
+        [ billBoardHeader model
+        , billBoardTable model.bills
+        ]
+
+
+billBoardHeader : Model -> Html Msg
+billBoardHeader model =
+    div []
+        [ div [ class "identifier" ]
+            [ a [ href "#" ] [ text "Invite people to join this project!" ] ]
+        , a
+            [ id "new-bill"
+            , href "#"
+            , class "btn btn-primary"
+            , attribute "data-toggle" "modal"
+            , attribute "data-target" "#bill-form"
             ]
-            { onChange = NewNameTyped
-            , text = newMemberName
-            , label = Input.labelHidden "Enter user name here"
-            , placeholder = Just <| Input.placeholder [] <| text "Type user name here"
-            }
-        , buttonAddMember
-        ]
-    ]
-        ++ List.map displayMember members
-
-
-displayMember : Member -> Element Msg
-displayMember member =
-    row
-        [ paddingXY 10 10
-        , Border.widthEach
-            { top = 1
-            , left = 0
-            , right = 0
-            , bottom = 0
-            }
-        , Border.color <| rgb255 255 255 255
-        , width fill
-        ]
-        [ text member.name
-        , let
-            color =
-                if member.balance < 0 then
-                    rgb255 255 0 0
-
-                else
-                    rgb255 0 125 125
-
-            sign =
-                if member.balance > 0 then
-                    "+"
-
-                else
-                    ""
-          in
-          String.fromFloat member.balance
-            |> (++) sign
-            |> text
-            |> el [ alignRight, Font.color color, Font.bold ]
+            [ text "Add a new bill" ]
         ]
 
 
-buttonAddMember : Element Msg
-buttonAddMember =
-    Input.button
-        [ padding 10
-        , Border.width 1
-        , Border.roundEach
-            { topLeft = 0
-            , topRight = 5
-            , bottomLeft = 0
-            , bottomRight = 5
-            }
-        , Background.color <| rgb 150 150 150
-        , Border.color <| rgb255 200 200 200
-        , height fill
+billBoardTable : List Bill -> Html Msg
+billBoardTable bills =
+    table [ id "bill_table", class "col table table-striped table-hover" ]
+        [ thead []
+            [ tr []
+                [ th [] [ text "When?" ]
+                , th [] [ text "Who paid?" ]
+                , th [] [ text "For what?" ]
+                , th [] [ text "For whom?" ]
+                , th [] [ text "How much?" ]
+                , th [] [ text "Actions" ]
+                ]
+            ]
+        , List.map billInfoView bills
+            |> tbody []
         ]
-        { onPress = Just AddMember
-        , label = text "Add"
-        }
 
 
-billsList : List Bill -> List (Element Msg)
-billsList bills =
-    [ buttonAddBill ]
+billInfoView : Bill -> Html Msg
+billInfoView bill =
+    tr []
+        [ td [] [ text bill.date ]
+        , td [] [ text bill.payer ]
+        , td [] [ text bill.label ]
+        , td []
+            [ List.sort bill.owers
+                |> String.join ","
+                |> text
+            ]
+        , td []
+            [ let
+                amount =
+                    round 2 bill.amount
 
+                numberOfPeople =
+                    List.length bill.owers |> toFloat
 
-buttonAddBill : Element Msg
-buttonAddBill =
-    Input.button
-        [ padding 10
-        , Border.width 1
-        , Border.rounded 5
-        , Background.color <| rgb255 2 117 216
-        , Font.color <| rgb 1 1 1
-        , Border.color <| rgb255 200 200 200
+                amountEach =
+                    round 2 <| bill.amount / numberOfPeople
+              in
+              text <|
+                amount
+                    ++ "("
+                    ++ amountEach
+                    ++ " each)"
+            ]
+        , td [ class "bill-actions" ]
+            [ a [ class "edit", href "#", title "edit" ] [ text "edit" ]
+            , a [ class "delete", href "#", title "delete" ] [ text "delete" ]
+            ]
         ]
-        { onPress = Nothing
-        , label = text "Add a new bill"
-        }
+
+
+footerView : Html Msg
+footerView =
+    footer []
+        [ p []
+            [ a [ href "https://github.com/spiral-project/ihatemoney" ]
+                [ text "This is a free software" ]
+            , text
+                ", you can contribute and improve it!"
+            ]
+        ]
