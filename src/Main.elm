@@ -331,11 +331,11 @@ billInfoView bill =
                 amountEach =
                     round 2 <| bill.amount / numberOfPeople
               in
-              text <|
-                amount
-                    ++ "("
-                    ++ amountEach
-                    ++ " each)"
+              amount
+                ++ " ("
+                ++ amountEach
+                ++ " each)"
+                |> text
             ]
         , td [ class "bill-actions" ]
             [ a [ class "edit", href "#", title "edit" ] [ text "edit" ]
