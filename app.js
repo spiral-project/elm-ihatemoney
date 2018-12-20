@@ -4865,7 +4865,7 @@ var elm$core$Platform$Sub$none = elm$core$Platform$Sub$batch(_List_Nil);
 var author$project$Main$subscriptions = function (model) {
 	return elm$core$Platform$Sub$none;
 };
-var author$project$Main$Member = F2(
+var author$project$Types$Member = F2(
 	function (name, balance) {
 		return {balance: balance, name: name};
 	});
@@ -4888,7 +4888,7 @@ var author$project$Main$update = F2(
 							model.members,
 							_List_fromArray(
 								[
-									A2(author$project$Main$Member, model.memberField, 0)
+									A2(author$project$Types$Member, model.memberField, 0)
 								]))
 					}),
 				elm$core$Platform$Cmd$none);
@@ -4940,7 +4940,7 @@ var elm$html$Html$Attributes$href = function (url) {
 		_VirtualDom_noJavaScriptUri(url));
 };
 var elm$html$Html$Attributes$id = elm$html$Html$Attributes$stringProperty('id');
-var author$project$Main$billBoardHeader = function (model) {
+var author$project$BillBoard$billBoardHeader = function (model) {
 	return A2(
 		elm$html$Html$div,
 		_List_Nil,
@@ -5281,7 +5281,7 @@ var myrho$elm_round$Round$round = myrho$elm_round$Round$roundFun(
 				}
 			}
 		}));
-var author$project$Main$billInfoView = function (bill) {
+var author$project$BillBoard$billInfoView = function (bill) {
 	return A2(
 		elm$html$Html$tr,
 		_List_Nil,
@@ -5439,7 +5439,7 @@ var elm$html$Html$table = _VirtualDom_node('table');
 var elm$html$Html$tbody = _VirtualDom_node('tbody');
 var elm$html$Html$th = _VirtualDom_node('th');
 var elm$html$Html$thead = _VirtualDom_node('thead');
-var author$project$Main$billBoardTable = function (bills) {
+var author$project$BillBoard$billBoardTable = function (bills) {
 	return A2(
 		elm$html$Html$table,
 		_List_fromArray(
@@ -5506,10 +5506,10 @@ var author$project$Main$billBoardTable = function (bills) {
 				A2(
 				elm$html$Html$tbody,
 				_List_Nil,
-				A2(elm$core$List$map, author$project$Main$billInfoView, bills))
+				A2(elm$core$List$map, author$project$BillBoard$billInfoView, bills))
 			]));
 };
-var author$project$Main$billBoardView = function (model) {
+var author$project$BillBoard$billBoardView = function (model) {
 	return A2(
 		elm$html$Html$div,
 		_List_fromArray(
@@ -5518,13 +5518,13 @@ var author$project$Main$billBoardView = function (model) {
 			]),
 		_List_fromArray(
 			[
-				author$project$Main$billBoardHeader(model),
-				author$project$Main$billBoardTable(model.bills)
+				author$project$BillBoard$billBoardHeader(model),
+				author$project$BillBoard$billBoardTable(model.bills)
 			]));
 };
 var elm$html$Html$footer = _VirtualDom_node('footer');
 var elm$html$Html$p = _VirtualDom_node('p');
-var author$project$Main$footerView = A2(
+var author$project$Footer$footerView = A2(
 	elm$html$Html$footer,
 	_List_Nil,
 	_List_fromArray(
@@ -5555,7 +5555,7 @@ var elm$html$Html$span = _VirtualDom_node('span');
 var elm$html$Html$strong = _VirtualDom_node('strong');
 var elm$html$Html$ul = _VirtualDom_node('ul');
 var elm$html$Html$Attributes$type_ = elm$html$Html$Attributes$stringProperty('type');
-var author$project$Main$navBarView = function (project) {
+var author$project$NavBar$navBarView = function (project) {
 	return A2(
 		elm$html$Html$div,
 		_List_fromArray(
@@ -5879,11 +5879,7 @@ var author$project$Main$navBarView = function (project) {
 					]))
 			]));
 };
-var author$project$Main$AddMember = {$: 'AddMember'};
-var author$project$Main$NewNameTyped = function (a) {
-	return {$: 'NewNameTyped', a: a};
-};
-var author$project$Main$memberInfo = function (member) {
+var author$project$SideBar$memberInfo = function (member) {
 	var sign = (member.balance > 0) ? '+' : '';
 	var className = (member.balance < 0) ? 'negative' : 'positive';
 	return A2(
@@ -5979,6 +5975,10 @@ var author$project$Main$memberInfo = function (member) {
 					]))
 			]));
 };
+var author$project$Types$AddMember = {$: 'AddMember'};
+var author$project$Types$NewNameTyped = function (a) {
+	return {$: 'NewNameTyped', a: a};
+};
 var elm$html$Html$aside = _VirtualDom_node('aside');
 var elm$html$Html$form = _VirtualDom_node('form');
 var elm$html$Html$input = _VirtualDom_node('input');
@@ -6053,7 +6053,7 @@ var elm$html$Html$Events$onSubmit = function (msg) {
 			elm$html$Html$Events$alwaysPreventDefault,
 			elm$json$Json$Decode$succeed(msg)));
 };
-var author$project$Main$sideBarView = function (model) {
+var author$project$SideBar$sideBarView = function (model) {
 	return A2(
 		elm$html$Html$div,
 		_List_fromArray(
@@ -6078,7 +6078,7 @@ var author$project$Main$sideBarView = function (model) {
 						_List_fromArray(
 							[
 								elm$html$Html$Attributes$id('add-member-form'),
-								elm$html$Html$Events$onSubmit(author$project$Main$AddMember),
+								elm$html$Html$Events$onSubmit(author$project$Types$AddMember),
 								elm$html$Html$Attributes$class('form-inline')
 							]),
 						_List_fromArray(
@@ -6112,7 +6112,7 @@ var author$project$Main$sideBarView = function (model) {
 												elm$html$Html$Attributes$required(true),
 												elm$html$Html$Attributes$type_('text'),
 												elm$html$Html$Attributes$value(model.memberField),
-												elm$html$Html$Events$onInput(author$project$Main$NewNameTyped)
+												elm$html$Html$Events$onInput(author$project$Types$NewNameTyped)
 											]),
 										_List_Nil),
 										A2(
@@ -6141,7 +6141,7 @@ var author$project$Main$sideBarView = function (model) {
 									[
 										elm$html$Html$Attributes$class('balance table')
 									]),
-								A2(elm$core$List$map, author$project$Main$memberInfo, model.members))
+								A2(elm$core$List$map, author$project$SideBar$memberInfo, model.members))
 							]))
 					]))
 			]));
@@ -6150,7 +6150,7 @@ var author$project$Main$view = function (model) {
 	return {
 		body: _List_fromArray(
 			[
-				author$project$Main$navBarView(model.project),
+				author$project$NavBar$navBarView(model.project),
 				A2(
 				elm$html$Html$div,
 				_List_fromArray(
@@ -6159,8 +6159,8 @@ var author$project$Main$view = function (model) {
 					]),
 				_List_fromArray(
 					[
-						author$project$Main$sideBarView(model),
-						author$project$Main$billBoardView(model)
+						author$project$SideBar$sideBarView(model),
+						author$project$BillBoard$billBoardView(model)
 					])),
 				A2(
 				elm$html$Html$div,
@@ -6169,7 +6169,7 @@ var author$project$Main$view = function (model) {
 						elm$html$Html$Attributes$class('messages')
 					]),
 				_List_Nil),
-				author$project$Main$footerView
+				author$project$Footer$footerView
 			]),
 		title: 'Account manager - ' + model.project
 	};
