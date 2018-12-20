@@ -5328,7 +5328,7 @@ var author$project$Main$billInfoView = function (bill) {
 						var numberOfPeople = elm$core$List$length(bill.owers);
 						var amountEach = A2(myrho$elm_round$Round$round, 2, bill.amount / numberOfPeople);
 						var amount = A2(myrho$elm_round$Round$round, 2, bill.amount);
-						return elm$html$Html$text(amount + ('(' + (amountEach + ' each)')));
+						return elm$html$Html$text(amount + (' (' + (amountEach + ' each)')));
 					}()
 					])),
 				A2(
