@@ -4347,6 +4347,7 @@ function _Browser_load(url)
 		}
 	}));
 }
+var author$project$Types$EN = {$: 'EN'};
 var elm$core$Basics$negate = function (n) {
 	return -n;
 };
@@ -4849,6 +4850,7 @@ var author$project$Main$init = function (flags) {
 					payer: 'Alexis'
 				}
 				]),
+			locale: author$project$Types$EN,
 			memberField: '',
 			members: _List_fromArray(
 				[
@@ -4871,29 +4873,39 @@ var author$project$Types$Member = F2(
 	});
 var author$project$Main$update = F2(
 	function (msg, model) {
-		if (msg.$ === 'NewNameTyped') {
-			var new_member_name = msg.a;
-			return _Utils_Tuple2(
-				_Utils_update(
-					model,
-					{memberField: new_member_name}),
-				elm$core$Platform$Cmd$none);
-		} else {
-			return _Utils_Tuple2(
-				_Utils_update(
-					model,
-					{
-						memberField: '',
-						members: _Utils_ap(
-							model.members,
-							_List_fromArray(
-								[
-									A2(author$project$Types$Member, model.memberField, 0)
-								]))
-					}),
-				elm$core$Platform$Cmd$none);
+		switch (msg.$) {
+			case 'NewNameTyped':
+				var new_member_name = msg.a;
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{memberField: new_member_name}),
+					elm$core$Platform$Cmd$none);
+			case 'AddMember':
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{
+							memberField: '',
+							members: _Utils_ap(
+								model.members,
+								_List_fromArray(
+									[
+										A2(author$project$Types$Member, model.memberField, 0)
+									]))
+						}),
+					elm$core$Platform$Cmd$none);
+			default:
+				var locale = msg.a;
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{locale: locale}),
+					elm$core$Platform$Cmd$none);
 		}
 	});
+var author$project$Types$AddNewBill = {$: 'AddNewBill'};
+var author$project$Types$Invite = {$: 'Invite'};
 var elm$core$Basics$identity = function (x) {
 	return x;
 };
@@ -4940,7 +4952,7 @@ var elm$html$Html$Attributes$href = function (url) {
 		_VirtualDom_noJavaScriptUri(url));
 };
 var elm$html$Html$Attributes$id = elm$html$Html$Attributes$stringProperty('id');
-var author$project$BillBoard$billBoardHeader = function (model) {
+var author$project$BillBoard$billBoardHeader = function (t) {
 	return A2(
 		elm$html$Html$div,
 		_List_Nil,
@@ -4962,7 +4974,8 @@ var author$project$BillBoard$billBoardHeader = function (model) {
 							]),
 						_List_fromArray(
 							[
-								elm$html$Html$text('Invite people to join this project!')
+								elm$html$Html$text(
+								t(author$project$Types$Invite))
 							]))
 					])),
 				A2(
@@ -4977,10 +4990,16 @@ var author$project$BillBoard$billBoardHeader = function (model) {
 					]),
 				_List_fromArray(
 					[
-						elm$html$Html$text('Add a new bill')
+						elm$html$Html$text(
+						t(author$project$Types$AddNewBill))
 					]))
 			]));
 };
+var author$project$Types$Delete = {$: 'Delete'};
+var author$project$Types$Each = function (a) {
+	return {$: 'Each', a: a};
+};
+var author$project$Types$Edit = {$: 'Edit'};
 var elm$core$List$sortBy = _List_sortBy;
 var elm$core$List$sort = function (xs) {
 	return A2(elm$core$List$sortBy, elm$core$Basics$identity, xs);
@@ -5281,91 +5300,106 @@ var myrho$elm_round$Round$round = myrho$elm_round$Round$roundFun(
 				}
 			}
 		}));
-var author$project$BillBoard$billInfoView = function (bill) {
-	return A2(
-		elm$html$Html$tr,
-		_List_Nil,
-		_List_fromArray(
-			[
-				A2(
-				elm$html$Html$td,
-				_List_Nil,
-				_List_fromArray(
-					[
-						elm$html$Html$text(bill.date)
-					])),
-				A2(
-				elm$html$Html$td,
-				_List_Nil,
-				_List_fromArray(
-					[
-						elm$html$Html$text(bill.payer)
-					])),
-				A2(
-				elm$html$Html$td,
-				_List_Nil,
-				_List_fromArray(
-					[
-						elm$html$Html$text(bill.label)
-					])),
-				A2(
-				elm$html$Html$td,
-				_List_Nil,
-				_List_fromArray(
-					[
-						elm$html$Html$text(
-						A2(
-							elm$core$String$join,
-							', ',
-							elm$core$List$sort(bill.owers)))
-					])),
-				A2(
-				elm$html$Html$td,
-				_List_Nil,
-				_List_fromArray(
-					[
-						function () {
-						var numberOfPeople = elm$core$List$length(bill.owers);
-						var amountEach = A2(myrho$elm_round$Round$round, 2, bill.amount / numberOfPeople);
-						var amount = A2(myrho$elm_round$Round$round, 2, bill.amount);
-						return elm$html$Html$text(amount + (' (' + (amountEach + ' each)')));
-					}()
-					])),
-				A2(
-				elm$html$Html$td,
-				_List_fromArray(
-					[
-						elm$html$Html$Attributes$class('bill-actions')
-					]),
-				_List_fromArray(
-					[
-						A2(
-						elm$html$Html$a,
-						_List_fromArray(
-							[
-								elm$html$Html$Attributes$class('edit'),
-								elm$html$Html$Attributes$href('#'),
-								elm$html$Html$Attributes$title('edit')
-							]),
-						_List_fromArray(
-							[
-								elm$html$Html$text('edit')
-							])),
-						A2(
-						elm$html$Html$a,
-						_List_fromArray(
-							[
-								elm$html$Html$Attributes$class('delete'),
-								elm$html$Html$Attributes$href('#'),
-								elm$html$Html$Attributes$title('delete')
-							]),
-						_List_fromArray(
-							[
-								elm$html$Html$text('delete')
-							]))
-					]))
-			]));
-};
+var author$project$BillBoard$billInfoView = F2(
+	function (t, bill) {
+		return A2(
+			elm$html$Html$tr,
+			_List_Nil,
+			_List_fromArray(
+				[
+					A2(
+					elm$html$Html$td,
+					_List_Nil,
+					_List_fromArray(
+						[
+							elm$html$Html$text(bill.date)
+						])),
+					A2(
+					elm$html$Html$td,
+					_List_Nil,
+					_List_fromArray(
+						[
+							elm$html$Html$text(bill.payer)
+						])),
+					A2(
+					elm$html$Html$td,
+					_List_Nil,
+					_List_fromArray(
+						[
+							elm$html$Html$text(bill.label)
+						])),
+					A2(
+					elm$html$Html$td,
+					_List_Nil,
+					_List_fromArray(
+						[
+							elm$html$Html$text(
+							A2(
+								elm$core$String$join,
+								', ',
+								elm$core$List$sort(bill.owers)))
+						])),
+					A2(
+					elm$html$Html$td,
+					_List_Nil,
+					_List_fromArray(
+						[
+							function () {
+							var numberOfPeople = elm$core$List$length(bill.owers);
+							var amountEach = A2(myrho$elm_round$Round$round, 2, bill.amount / numberOfPeople);
+							var amount = A2(myrho$elm_round$Round$round, 2, bill.amount);
+							return elm$html$Html$text(
+								_Utils_ap(
+									amount,
+									t(
+										author$project$Types$Each(amountEach))));
+						}()
+						])),
+					A2(
+					elm$html$Html$td,
+					_List_fromArray(
+						[
+							elm$html$Html$Attributes$class('bill-actions')
+						]),
+					_List_fromArray(
+						[
+							A2(
+							elm$html$Html$a,
+							_List_fromArray(
+								[
+									elm$html$Html$Attributes$class('edit'),
+									elm$html$Html$Attributes$href('#'),
+									elm$html$Html$Attributes$title(
+									t(author$project$Types$Edit))
+								]),
+							_List_fromArray(
+								[
+									elm$html$Html$text(
+									t(author$project$Types$Edit))
+								])),
+							A2(
+							elm$html$Html$a,
+							_List_fromArray(
+								[
+									elm$html$Html$Attributes$class('delete'),
+									elm$html$Html$Attributes$href('#'),
+									elm$html$Html$Attributes$title(
+									t(author$project$Types$Delete))
+								]),
+							_List_fromArray(
+								[
+									elm$html$Html$text(
+									t(author$project$Types$Delete))
+								]))
+						]))
+				]));
+	});
+var author$project$Types$Actions = {$: 'Actions'};
+var author$project$Types$ForWhat = {$: 'ForWhat'};
+var author$project$Types$ForWhom = {$: 'ForWhom'};
+var author$project$Types$HowMuch = {$: 'HowMuch'};
+var author$project$Types$When = {$: 'When'};
+var author$project$Types$WhoPaid = {$: 'WhoPaid'};
 var elm$core$List$foldrHelper = F4(
 	function (fn, acc, ctr, ls) {
 		if (!ls.b) {
@@ -5439,114 +5473,258 @@ var elm$html$Html$table = _VirtualDom_node('table');
 var elm$html$Html$tbody = _VirtualDom_node('tbody');
 var elm$html$Html$th = _VirtualDom_node('th');
 var elm$html$Html$thead = _VirtualDom_node('thead');
-var author$project$BillBoard$billBoardTable = function (bills) {
+var author$project$BillBoard$billBoardTable = F2(
+	function (t, bills) {
+		return A2(
+			elm$html$Html$table,
+			_List_fromArray(
+				[
+					elm$html$Html$Attributes$id('bill_table'),
+					elm$html$Html$Attributes$class('col table table-striped table-hover')
+				]),
+			_List_fromArray(
+				[
+					A2(
+					elm$html$Html$thead,
+					_List_Nil,
+					_List_fromArray(
+						[
+							A2(
+							elm$html$Html$tr,
+							_List_Nil,
+							_List_fromArray(
+								[
+									A2(
+									elm$html$Html$th,
+									_List_Nil,
+									_List_fromArray(
+										[
+											elm$html$Html$text(
+											t(author$project$Types$When))
+										])),
+									A2(
+									elm$html$Html$th,
+									_List_Nil,
+									_List_fromArray(
+										[
+											elm$html$Html$text(
+											t(author$project$Types$WhoPaid))
+										])),
+									A2(
+									elm$html$Html$th,
+									_List_Nil,
+									_List_fromArray(
+										[
+											elm$html$Html$text(
+											t(author$project$Types$ForWhat))
+										])),
+									A2(
+									elm$html$Html$th,
+									_List_Nil,
+									_List_fromArray(
+										[
+											elm$html$Html$text(
+											t(author$project$Types$ForWhom))
+										])),
+									A2(
+									elm$html$Html$th,
+									_List_Nil,
+									_List_fromArray(
+										[
+											elm$html$Html$text(
+											t(author$project$Types$HowMuch))
+										])),
+									A2(
+									elm$html$Html$th,
+									_List_Nil,
+									_List_fromArray(
+										[
+											elm$html$Html$text(
+											t(author$project$Types$Actions))
+										]))
+								]))
+						])),
+					A2(
+					elm$html$Html$tbody,
+					_List_Nil,
+					A2(
+						elm$core$List$map,
+						author$project$BillBoard$billInfoView(t),
+						bills))
+				]));
+	});
+var author$project$BillBoard$billBoardView = F2(
+	function (t, bills) {
+		return A2(
+			elm$html$Html$div,
+			_List_fromArray(
+				[
+					elm$html$Html$Attributes$class('offset-md-3 col-xs-12 col-md-9')
+				]),
+			_List_fromArray(
+				[
+					author$project$BillBoard$billBoardHeader(t),
+					A2(author$project$BillBoard$billBoardTable, t, bills)
+				]));
+	});
+var author$project$Types$FreeSoftware = {$: 'FreeSoftware'};
+var author$project$Types$YouCanContribute = {$: 'YouCanContribute'};
+var elm$html$Html$footer = _VirtualDom_node('footer');
+var elm$html$Html$p = _VirtualDom_node('p');
+var author$project$Footer$footerView = function (t) {
 	return A2(
-		elm$html$Html$table,
-		_List_fromArray(
-			[
-				elm$html$Html$Attributes$id('bill_table'),
-				elm$html$Html$Attributes$class('col table table-striped table-hover')
-			]),
+		elm$html$Html$footer,
+		_List_Nil,
 		_List_fromArray(
 			[
 				A2(
-				elm$html$Html$thead,
+				elm$html$Html$p,
 				_List_Nil,
 				_List_fromArray(
 					[
 						A2(
-						elm$html$Html$tr,
-						_List_Nil,
+						elm$html$Html$a,
 						_List_fromArray(
 							[
-								A2(
-								elm$html$Html$th,
-								_List_Nil,
-								_List_fromArray(
-									[
-										elm$html$Html$text('When?')
-									])),
-								A2(
-								elm$html$Html$th,
-								_List_Nil,
-								_List_fromArray(
-									[
-										elm$html$Html$text('Who paid?')
-									])),
-								A2(
-								elm$html$Html$th,
-								_List_Nil,
-								_List_fromArray(
-									[
-										elm$html$Html$text('For what?')
-									])),
-								A2(
-								elm$html$Html$th,
-								_List_Nil,
-								_List_fromArray(
-									[
-										elm$html$Html$text('For whom?')
-									])),
-								A2(
-								elm$html$Html$th,
-								_List_Nil,
-								_List_fromArray(
-									[
-										elm$html$Html$text('How much?')
-									])),
-								A2(
-								elm$html$Html$th,
-								_List_Nil,
-								_List_fromArray(
-									[
-										elm$html$Html$text('Actions')
-									]))
-							]))
-					])),
-				A2(
-				elm$html$Html$tbody,
-				_List_Nil,
-				A2(elm$core$List$map, author$project$BillBoard$billInfoView, bills))
+								elm$html$Html$Attributes$href('https://github.com/spiral-project/elm-ihatemoney')
+							]),
+						_List_fromArray(
+							[
+								elm$html$Html$text(
+								t(author$project$Types$FreeSoftware))
+							])),
+						elm$html$Html$text(
+						t(author$project$Types$YouCanContribute))
+					]))
 			]));
 };
-var author$project$BillBoard$billBoardView = function (model) {
-	return A2(
-		elm$html$Html$div,
-		_List_fromArray(
-			[
-				elm$html$Html$Attributes$class('offset-md-3 col-xs-12 col-md-9')
-			]),
-		_List_fromArray(
-			[
-				author$project$BillBoard$billBoardHeader(model),
-				author$project$BillBoard$billBoardTable(model.bills)
-			]));
+var author$project$Locales$EN$getString = function (id) {
+	switch (id.$) {
+		case 'AppTitle':
+			var projectName = id.a;
+			return 'Account Manager - ' + projectName;
+		case 'Bills':
+			return 'Bills';
+		case 'Settle':
+			return 'Settle';
+		case 'Statistics':
+			return 'Statistics';
+		case 'Options':
+			return 'options';
+		case 'ProjectSettings':
+			return 'Project settings';
+		case 'StartNewProject':
+			return 'Start a new project';
+		case 'Logout':
+			return 'Logout';
+		case 'TypeUserName':
+			return 'Type user name here';
+		case 'Add':
+			return 'Add';
+		case 'Deactivate':
+			return 'deactivate';
+		case 'Edit':
+			return 'edit';
+		case 'Delete':
+			return 'delete';
+		case 'Invite':
+			return 'Invite people to join this project!';
+		case 'AddNewBill':
+			return 'Add a new bill';
+		case 'When':
+			return 'When?';
+		case 'WhoPaid':
+			return 'Who paid?';
+		case 'ForWhat':
+			return 'For what?';
+		case 'ForWhom':
+			return 'For whom?';
+		case 'HowMuch':
+			return 'How much?';
+		case 'Actions':
+			return 'Actions';
+		case 'Each':
+			var amountEach = id.a;
+			return ' (' + (amountEach + ' each)');
+		case 'FreeSoftware':
+			return 'This is a Free software';
+		default:
+			return ', you can contribute and improve it!';
+	}
 };
-var elm$html$Html$footer = _VirtualDom_node('footer');
-var elm$html$Html$p = _VirtualDom_node('p');
-var author$project$Footer$footerView = A2(
-	elm$html$Html$footer,
-	_List_Nil,
-	_List_fromArray(
-		[
-			A2(
-			elm$html$Html$p,
-			_List_Nil,
-			_List_fromArray(
-				[
-					A2(
-					elm$html$Html$a,
-					_List_fromArray(
-						[
-							elm$html$Html$Attributes$href('https://github.com/spiral-project/ihatemoney')
-						]),
-					_List_fromArray(
-						[
-							elm$html$Html$text('This is a free software')
-						])),
-					elm$html$Html$text(', you can contribute and improve it!')
-				]))
-		]));
+var author$project$Locales$FR$getString = function (id) {
+	switch (id.$) {
+		case 'AppTitle':
+			var projectName = id.a;
+			return 'Gestion de compte - ' + projectName;
+		case 'Bills':
+			return 'Factures';
+		case 'Settle':
+			return 'Remboursements';
+		case 'Statistics':
+			return 'Statistiques';
+		case 'Options':
+			return 'options';
+		case 'ProjectSettings':
+			return 'Options du projet';
+		case 'StartNewProject':
+			return 'Nouveau projet';
+		case 'Logout':
+			return 'Se déconnecter';
+		case 'TypeUserName':
+			return 'Nouveau Participant';
+		case 'Add':
+			return 'Ajouter';
+		case 'Deactivate':
+			return 'désactiver';
+		case 'Edit':
+			return 'éditer';
+		case 'Delete':
+			return 'supprimer';
+		case 'Invite':
+			return 'Invitez d’autres personnes à rejoindre ce projet !';
+		case 'AddNewBill':
+			return 'Nouvelle facture';
+		case 'When':
+			return 'Quand ?';
+		case 'WhoPaid':
+			return 'Qui a payé ?';
+		case 'ForWhat':
+			return 'Pour quoi ?';
+		case 'ForWhom':
+			return 'Pour qui ?';
+		case 'HowMuch':
+			return 'Combien ?';
+		case 'Actions':
+			return 'Actions';
+		case 'Each':
+			var amountEach = id.a;
+			return ' (' + (amountEach + ' chacun)');
+		case 'FreeSoftware':
+			return 'Ceci est un logiciel libre';
+		default:
+			return ', vous pouvez y contribuer et l\'améliorer !';
+	}
+};
+var author$project$Locales$getString = F2(
+	function (locale, id) {
+		if (locale.$ === 'EN') {
+			return author$project$Locales$EN$getString(id);
+		} else {
+			return author$project$Locales$FR$getString(id);
+		}
+	});
+var author$project$Types$Bills = {$: 'Bills'};
+var author$project$Types$ChangeLocale = function (a) {
+	return {$: 'ChangeLocale', a: a};
+};
+var author$project$Types$FR = {$: 'FR'};
+var author$project$Types$Logout = {$: 'Logout'};
+var author$project$Types$Options = {$: 'Options'};
+var author$project$Types$ProjectSettings = {$: 'ProjectSettings'};
+var author$project$Types$Settle = {$: 'Settle'};
+var author$project$Types$StartNewProject = {$: 'StartNewProject'};
+var author$project$Types$Statistics = {$: 'Statistics'};
 var elm$html$Html$button = _VirtualDom_node('button');
 var elm$html$Html$h1 = _VirtualDom_node('h1');
 var elm$html$Html$li = _VirtualDom_node('li');
@@ -5555,430 +5733,467 @@ var elm$html$Html$span = _VirtualDom_node('span');
 var elm$html$Html$strong = _VirtualDom_node('strong');
 var elm$html$Html$ul = _VirtualDom_node('ul');
 var elm$html$Html$Attributes$type_ = elm$html$Html$Attributes$stringProperty('type');
-var author$project$NavBar$navBarView = function (project) {
-	return A2(
-		elm$html$Html$div,
-		_List_fromArray(
-			[
-				elm$html$Html$Attributes$class('container')
-			]),
-		_List_fromArray(
-			[
-				A2(
-				elm$html$Html$nav,
-				_List_fromArray(
-					[
-						elm$html$Html$Attributes$class('navbar navbar-toggleable-sm fixed-top navbar-inverse bg-inverse')
-					]),
-				_List_fromArray(
-					[
-						A2(
-						elm$html$Html$button,
-						_List_fromArray(
-							[
-								elm$html$Html$Attributes$class('navbar-toggler'),
-								elm$html$Html$Attributes$type_('button'),
-								A2(elm$html$Html$Attributes$attribute, 'data-toggle', 'collapse'),
-								A2(elm$html$Html$Attributes$attribute, 'data-target', '#navbarToggler'),
-								A2(elm$html$Html$Attributes$attribute, 'aria-controls', 'navbarToggler'),
-								A2(elm$html$Html$Attributes$attribute, 'aria-expanded', 'false'),
-								A2(elm$html$Html$Attributes$attribute, 'aria-label', 'Toggle navigation')
-							]),
-						_List_fromArray(
-							[
-								A2(
-								elm$html$Html$span,
-								_List_fromArray(
-									[
-										elm$html$Html$Attributes$class('navbar-toggler-icon')
-									]),
-								_List_Nil)
-							])),
-						A2(
-						elm$html$Html$div,
-						_List_fromArray(
-							[
-								elm$html$Html$Attributes$class('collapse navbar-collapse'),
-								elm$html$Html$Attributes$id('navbarToggler')
-							]),
-						_List_fromArray(
-							[
-								A2(
-								elm$html$Html$h1,
-								_List_Nil,
-								_List_fromArray(
-									[
-										A2(
-										elm$html$Html$a,
-										_List_fromArray(
-											[
-												elm$html$Html$Attributes$class('navbar-brand'),
-												elm$html$Html$Attributes$href('#')
-											]),
-										_List_fromArray(
-											[
-												elm$html$Html$text('#! money?')
-											]))
-									])),
-								A2(
-								elm$html$Html$ul,
-								_List_fromArray(
-									[
-										elm$html$Html$Attributes$class('navbar-nav')
-									]),
-								_List_fromArray(
-									[
-										A2(
-										elm$html$Html$li,
-										_List_fromArray(
-											[
-												elm$html$Html$Attributes$class('nav-item')
-											]),
-										_List_fromArray(
-											[
-												A2(
-												elm$html$Html$a,
-												_List_fromArray(
-													[
-														elm$html$Html$Attributes$class('nav-link'),
-														elm$html$Html$Attributes$href('#')
-													]),
-												_List_fromArray(
-													[
-														A2(
-														elm$html$Html$strong,
-														_List_fromArray(
-															[
-																elm$html$Html$Attributes$class('navbar-nav')
-															]),
-														_List_fromArray(
-															[
-																elm$html$Html$text(project)
-															]))
-													]))
-											]))
-									])),
-								A2(
-								elm$html$Html$ul,
-								_List_fromArray(
-									[
-										elm$html$Html$Attributes$class('navbar-nav ml-auto mr-auto')
-									]),
-								_List_fromArray(
-									[
-										A2(
-										elm$html$Html$li,
-										_List_fromArray(
-											[
-												elm$html$Html$Attributes$class('nav-item active')
-											]),
-										_List_fromArray(
-											[
-												A2(
-												elm$html$Html$a,
-												_List_fromArray(
-													[
-														elm$html$Html$Attributes$class('nav-link'),
-														elm$html$Html$Attributes$href('#')
-													]),
-												_List_fromArray(
-													[
-														elm$html$Html$text('Bills')
-													]))
-											])),
-										A2(
-										elm$html$Html$li,
-										_List_fromArray(
-											[
-												elm$html$Html$Attributes$class('nav-item')
-											]),
-										_List_fromArray(
-											[
-												A2(
-												elm$html$Html$a,
-												_List_fromArray(
-													[
-														elm$html$Html$Attributes$class('nav-link'),
-														elm$html$Html$Attributes$href('#')
-													]),
-												_List_fromArray(
-													[
-														elm$html$Html$text('Settle')
-													]))
-											])),
-										A2(
-										elm$html$Html$li,
-										_List_fromArray(
-											[
-												elm$html$Html$Attributes$class('nav-item')
-											]),
-										_List_fromArray(
-											[
-												A2(
-												elm$html$Html$a,
-												_List_fromArray(
-													[
-														elm$html$Html$Attributes$class('nav-link'),
-														elm$html$Html$Attributes$href('#')
-													]),
-												_List_fromArray(
-													[
-														elm$html$Html$text('Statistics')
-													]))
-											]))
-									])),
-								A2(
-								elm$html$Html$ul,
-								_List_fromArray(
-									[
-										elm$html$Html$Attributes$class('navbar-nav secondary-nav')
-									]),
-								_List_fromArray(
-									[
-										A2(
-										elm$html$Html$li,
-										_List_fromArray(
-											[
-												elm$html$Html$Attributes$class('nav-item dropdown')
-											]),
-										_List_fromArray(
-											[
-												A2(
-												elm$html$Html$a,
-												_List_fromArray(
-													[
-														elm$html$Html$Attributes$href('#'),
-														elm$html$Html$Attributes$class('nav-link dropdown-toggle'),
-														elm$html$Html$Attributes$id('navbarDropdownMenuLink'),
-														A2(elm$html$Html$Attributes$attribute, 'data-toggle', 'dropdown'),
-														A2(elm$html$Html$Attributes$attribute, 'aria-haspopup', 'true'),
-														A2(elm$html$Html$Attributes$attribute, 'aria-expanded', 'false')
-													]),
-												_List_fromArray(
-													[
-														elm$html$Html$text('⚙ options')
-													])),
-												A2(
-												elm$html$Html$ul,
-												_List_fromArray(
-													[
-														elm$html$Html$Attributes$class('dropdown-menu dropdown-menu-right'),
-														A2(elm$html$Html$Attributes$attribute, 'aria-labelledby', 'navbarDropdownMenuLink')
-													]),
-												_List_fromArray(
-													[
-														A2(
-														elm$html$Html$li,
-														_List_Nil,
-														_List_fromArray(
-															[
-																A2(
-																elm$html$Html$a,
-																_List_fromArray(
-																	[
-																		elm$html$Html$Attributes$class('dropdown-item'),
-																		elm$html$Html$Attributes$href('#')
-																	]),
-																_List_fromArray(
-																	[
-																		elm$html$Html$text('Project settings')
-																	]))
-															])),
-														A2(
-														elm$html$Html$li,
-														_List_fromArray(
-															[
-																elm$html$Html$Attributes$class('dropdown-divider')
-															]),
-														_List_Nil),
-														A2(
-														elm$html$Html$li,
-														_List_Nil,
-														_List_fromArray(
-															[
-																A2(
-																elm$html$Html$a,
-																_List_fromArray(
-																	[
-																		elm$html$Html$Attributes$class('dropdown-item'),
-																		elm$html$Html$Attributes$href('#')
-																	]),
-																_List_fromArray(
-																	[
-																		elm$html$Html$text('Start a new project')
-																	]))
-															])),
-														A2(
-														elm$html$Html$li,
-														_List_fromArray(
-															[
-																elm$html$Html$Attributes$class('dropdown-divider')
-															]),
-														_List_Nil),
-														A2(
-														elm$html$Html$li,
-														_List_Nil,
-														_List_fromArray(
-															[
-																A2(
-																elm$html$Html$a,
-																_List_fromArray(
-																	[
-																		elm$html$Html$Attributes$class('dropdown-item'),
-																		elm$html$Html$Attributes$href('#')
-																	]),
-																_List_fromArray(
-																	[
-																		elm$html$Html$text('Logout')
-																	]))
-															]))
-													]))
-											])),
-										A2(
-										elm$html$Html$li,
-										_List_fromArray(
-											[
-												elm$html$Html$Attributes$class('nav-item')
-											]),
-										_List_fromArray(
-											[
-												A2(
-												elm$html$Html$a,
-												_List_fromArray(
-													[
-														elm$html$Html$Attributes$class('nav-link'),
-														elm$html$Html$Attributes$href('#')
-													]),
-												_List_fromArray(
-													[
-														elm$html$Html$text('fr')
-													]))
-											])),
-										A2(
-										elm$html$Html$li,
-										_List_fromArray(
-											[
-												elm$html$Html$Attributes$class('nav-item active')
-											]),
-										_List_fromArray(
-											[
-												A2(
-												elm$html$Html$a,
-												_List_fromArray(
-													[
-														elm$html$Html$Attributes$class('nav-link'),
-														elm$html$Html$Attributes$href('#')
-													]),
-												_List_fromArray(
-													[
-														elm$html$Html$text('en')
-													]))
-											]))
-									]))
-							]))
-					]))
-			]));
+var elm$virtual_dom$VirtualDom$Normal = function (a) {
+	return {$: 'Normal', a: a};
 };
-var author$project$SideBar$memberInfo = function (member) {
-	var sign = (member.balance > 0) ? '+' : '';
-	var className = (member.balance < 0) ? 'negative' : 'positive';
+var elm$virtual_dom$VirtualDom$on = _VirtualDom_on;
+var elm$html$Html$Events$on = F2(
+	function (event, decoder) {
+		return A2(
+			elm$virtual_dom$VirtualDom$on,
+			event,
+			elm$virtual_dom$VirtualDom$Normal(decoder));
+	});
+var elm$html$Html$Events$onClick = function (msg) {
 	return A2(
-		elm$html$Html$tr,
-		_List_fromArray(
-			[
-				elm$html$Html$Attributes$id('bal-member-1')
-			]),
-		_List_fromArray(
-			[
-				A2(
-				elm$html$Html$td,
-				_List_fromArray(
-					[
-						elm$html$Html$Attributes$class('balance-name')
-					]),
-				_List_fromArray(
-					[
-						elm$html$Html$text(member.name),
-						A2(
-						elm$html$Html$span,
-						_List_fromArray(
-							[
-								elm$html$Html$Attributes$class('light extra-info')
-							]),
-						_List_fromArray(
-							[
-								elm$html$Html$text('(x1)')
-							]))
-					])),
-				A2(
-				elm$html$Html$td,
-				_List_Nil,
-				_List_fromArray(
-					[
-						A2(
-						elm$html$Html$div,
-						_List_fromArray(
-							[
-								elm$html$Html$Attributes$class('action delete')
-							]),
-						_List_fromArray(
-							[
-								A2(
-								elm$html$Html$button,
-								_List_fromArray(
-									[
-										elm$html$Html$Attributes$type_('button')
-									]),
-								_List_fromArray(
-									[
-										elm$html$Html$text('deactivate')
-									]))
-							]))
-					])),
-				A2(
-				elm$html$Html$td,
-				_List_Nil,
-				_List_fromArray(
-					[
-						A2(
-						elm$html$Html$div,
-						_List_fromArray(
-							[
-								elm$html$Html$Attributes$class('action edit')
-							]),
-						_List_fromArray(
-							[
-								A2(
-								elm$html$Html$button,
-								_List_fromArray(
-									[
-										elm$html$Html$Attributes$type_('button')
-									]),
-								_List_fromArray(
-									[
-										elm$html$Html$text('edit')
-									]))
-							]))
-					])),
-				A2(
-				elm$html$Html$td,
-				_List_fromArray(
-					[
-						elm$html$Html$Attributes$class('balance-value ' + className)
-					]),
-				_List_fromArray(
-					[
-						elm$html$Html$text(
-						_Utils_ap(
-							sign,
-							A2(myrho$elm_round$Round$round, 2, member.balance)))
-					]))
-			]));
+		elm$html$Html$Events$on,
+		'click',
+		elm$json$Json$Decode$succeed(msg));
 };
+var author$project$NavBar$navBarView = F3(
+	function (t, project, selectedLocale) {
+		return A2(
+			elm$html$Html$div,
+			_List_fromArray(
+				[
+					elm$html$Html$Attributes$class('container')
+				]),
+			_List_fromArray(
+				[
+					A2(
+					elm$html$Html$nav,
+					_List_fromArray(
+						[
+							elm$html$Html$Attributes$class('navbar navbar-toggleable-sm fixed-top navbar-inverse bg-inverse')
+						]),
+					_List_fromArray(
+						[
+							A2(
+							elm$html$Html$button,
+							_List_fromArray(
+								[
+									elm$html$Html$Attributes$class('navbar-toggler'),
+									elm$html$Html$Attributes$type_('button'),
+									A2(elm$html$Html$Attributes$attribute, 'data-toggle', 'collapse'),
+									A2(elm$html$Html$Attributes$attribute, 'data-target', '#navbarToggler'),
+									A2(elm$html$Html$Attributes$attribute, 'aria-controls', 'navbarToggler'),
+									A2(elm$html$Html$Attributes$attribute, 'aria-expanded', 'false'),
+									A2(elm$html$Html$Attributes$attribute, 'aria-label', 'Toggle navigation')
+								]),
+							_List_fromArray(
+								[
+									A2(
+									elm$html$Html$span,
+									_List_fromArray(
+										[
+											elm$html$Html$Attributes$class('navbar-toggler-icon')
+										]),
+									_List_Nil)
+								])),
+							A2(
+							elm$html$Html$div,
+							_List_fromArray(
+								[
+									elm$html$Html$Attributes$class('collapse navbar-collapse'),
+									elm$html$Html$Attributes$id('navbarToggler')
+								]),
+							_List_fromArray(
+								[
+									A2(
+									elm$html$Html$h1,
+									_List_Nil,
+									_List_fromArray(
+										[
+											A2(
+											elm$html$Html$a,
+											_List_fromArray(
+												[
+													elm$html$Html$Attributes$class('navbar-brand'),
+													elm$html$Html$Attributes$href('#')
+												]),
+											_List_fromArray(
+												[
+													elm$html$Html$text('#! money?')
+												]))
+										])),
+									A2(
+									elm$html$Html$ul,
+									_List_fromArray(
+										[
+											elm$html$Html$Attributes$class('navbar-nav')
+										]),
+									_List_fromArray(
+										[
+											A2(
+											elm$html$Html$li,
+											_List_fromArray(
+												[
+													elm$html$Html$Attributes$class('nav-item')
+												]),
+											_List_fromArray(
+												[
+													A2(
+													elm$html$Html$a,
+													_List_fromArray(
+														[
+															elm$html$Html$Attributes$class('nav-link'),
+															elm$html$Html$Attributes$href('#')
+														]),
+													_List_fromArray(
+														[
+															A2(
+															elm$html$Html$strong,
+															_List_fromArray(
+																[
+																	elm$html$Html$Attributes$class('navbar-nav')
+																]),
+															_List_fromArray(
+																[
+																	elm$html$Html$text(project)
+																]))
+														]))
+												]))
+										])),
+									A2(
+									elm$html$Html$ul,
+									_List_fromArray(
+										[
+											elm$html$Html$Attributes$class('navbar-nav ml-auto mr-auto')
+										]),
+									_List_fromArray(
+										[
+											A2(
+											elm$html$Html$li,
+											_List_fromArray(
+												[
+													elm$html$Html$Attributes$class('nav-item active')
+												]),
+											_List_fromArray(
+												[
+													A2(
+													elm$html$Html$a,
+													_List_fromArray(
+														[
+															elm$html$Html$Attributes$class('nav-link'),
+															elm$html$Html$Attributes$href('#')
+														]),
+													_List_fromArray(
+														[
+															elm$html$Html$text(
+															t(author$project$Types$Bills))
+														]))
+												])),
+											A2(
+											elm$html$Html$li,
+											_List_fromArray(
+												[
+													elm$html$Html$Attributes$class('nav-item')
+												]),
+											_List_fromArray(
+												[
+													A2(
+													elm$html$Html$a,
+													_List_fromArray(
+														[
+															elm$html$Html$Attributes$class('nav-link'),
+															elm$html$Html$Attributes$href('#')
+														]),
+													_List_fromArray(
+														[
+															elm$html$Html$text(
+															t(author$project$Types$Settle))
+														]))
+												])),
+											A2(
+											elm$html$Html$li,
+											_List_fromArray(
+												[
+													elm$html$Html$Attributes$class('nav-item')
+												]),
+											_List_fromArray(
+												[
+													A2(
+													elm$html$Html$a,
+													_List_fromArray(
+														[
+															elm$html$Html$Attributes$class('nav-link'),
+															elm$html$Html$Attributes$href('#')
+														]),
+													_List_fromArray(
+														[
+															elm$html$Html$text(
+															t(author$project$Types$Statistics))
+														]))
+												]))
+										])),
+									A2(
+									elm$html$Html$ul,
+									_List_fromArray(
+										[
+											elm$html$Html$Attributes$class('navbar-nav secondary-nav')
+										]),
+									_List_fromArray(
+										[
+											A2(
+											elm$html$Html$li,
+											_List_fromArray(
+												[
+													elm$html$Html$Attributes$class('nav-item dropdown')
+												]),
+											_List_fromArray(
+												[
+													A2(
+													elm$html$Html$a,
+													_List_fromArray(
+														[
+															elm$html$Html$Attributes$href('#'),
+															elm$html$Html$Attributes$class('nav-link dropdown-toggle'),
+															elm$html$Html$Attributes$id('navbarDropdownMenuLink'),
+															A2(elm$html$Html$Attributes$attribute, 'data-toggle', 'dropdown'),
+															A2(elm$html$Html$Attributes$attribute, 'aria-haspopup', 'true'),
+															A2(elm$html$Html$Attributes$attribute, 'aria-expanded', 'false')
+														]),
+													_List_fromArray(
+														[
+															elm$html$Html$text(
+															'⚙ ' + t(author$project$Types$Options))
+														])),
+													A2(
+													elm$html$Html$ul,
+													_List_fromArray(
+														[
+															elm$html$Html$Attributes$class('dropdown-menu dropdown-menu-right'),
+															A2(elm$html$Html$Attributes$attribute, 'aria-labelledby', 'navbarDropdownMenuLink')
+														]),
+													_List_fromArray(
+														[
+															A2(
+															elm$html$Html$li,
+															_List_Nil,
+															_List_fromArray(
+																[
+																	A2(
+																	elm$html$Html$a,
+																	_List_fromArray(
+																		[
+																			elm$html$Html$Attributes$class('dropdown-item'),
+																			elm$html$Html$Attributes$href('#')
+																		]),
+																	_List_fromArray(
+																		[
+																			elm$html$Html$text(
+																			t(author$project$Types$ProjectSettings))
+																		]))
+																])),
+															A2(
+															elm$html$Html$li,
+															_List_fromArray(
+																[
+																	elm$html$Html$Attributes$class('dropdown-divider')
+																]),
+															_List_Nil),
+															A2(
+															elm$html$Html$li,
+															_List_Nil,
+															_List_fromArray(
+																[
+																	A2(
+																	elm$html$Html$a,
+																	_List_fromArray(
+																		[
+																			elm$html$Html$Attributes$class('dropdown-item'),
+																			elm$html$Html$Attributes$href('#')
+																		]),
+																	_List_fromArray(
+																		[
+																			elm$html$Html$text(
+																			t(author$project$Types$StartNewProject))
+																		]))
+																])),
+															A2(
+															elm$html$Html$li,
+															_List_fromArray(
+																[
+																	elm$html$Html$Attributes$class('dropdown-divider')
+																]),
+															_List_Nil),
+															A2(
+															elm$html$Html$li,
+															_List_Nil,
+															_List_fromArray(
+																[
+																	A2(
+																	elm$html$Html$a,
+																	_List_fromArray(
+																		[
+																			elm$html$Html$Attributes$class('dropdown-item'),
+																			elm$html$Html$Attributes$href('#')
+																		]),
+																	_List_fromArray(
+																		[
+																			elm$html$Html$text(
+																			t(author$project$Types$Logout))
+																		]))
+																]))
+														]))
+												])),
+											A2(
+											elm$html$Html$li,
+											_List_fromArray(
+												[
+													elm$html$Html$Attributes$class(
+													'nav-item' + (_Utils_eq(selectedLocale, author$project$Types$FR) ? ' active' : ''))
+												]),
+											_List_fromArray(
+												[
+													A2(
+													elm$html$Html$a,
+													_List_fromArray(
+														[
+															elm$html$Html$Attributes$class('nav-link'),
+															elm$html$Html$Attributes$href('#'),
+															elm$html$Html$Events$onClick(
+															author$project$Types$ChangeLocale(author$project$Types$FR))
+														]),
+													_List_fromArray(
+														[
+															elm$html$Html$text('fr')
+														]))
+												])),
+											A2(
+											elm$html$Html$li,
+											_List_fromArray(
+												[
+													elm$html$Html$Attributes$class(
+													'nav-item' + (_Utils_eq(selectedLocale, author$project$Types$EN) ? ' active' : ''))
+												]),
+											_List_fromArray(
+												[
+													A2(
+													elm$html$Html$a,
+													_List_fromArray(
+														[
+															elm$html$Html$Attributes$class('nav-link'),
+															elm$html$Html$Attributes$href('#'),
+															elm$html$Html$Events$onClick(
+															author$project$Types$ChangeLocale(author$project$Types$EN))
+														]),
+													_List_fromArray(
+														[
+															elm$html$Html$text('en')
+														]))
+												]))
+										]))
+								]))
+						]))
+				]));
+	});
+var author$project$Types$Deactivate = {$: 'Deactivate'};
+var author$project$SideBar$memberInfo = F2(
+	function (t, member) {
+		var sign = (member.balance > 0) ? '+' : '';
+		var className = (member.balance < 0) ? 'negative' : 'positive';
+		return A2(
+			elm$html$Html$tr,
+			_List_fromArray(
+				[
+					elm$html$Html$Attributes$id('bal-member-1')
+				]),
+			_List_fromArray(
+				[
+					A2(
+					elm$html$Html$td,
+					_List_fromArray(
+						[
+							elm$html$Html$Attributes$class('balance-name')
+						]),
+					_List_fromArray(
+						[
+							elm$html$Html$text(member.name),
+							A2(
+							elm$html$Html$span,
+							_List_fromArray(
+								[
+									elm$html$Html$Attributes$class('light extra-info')
+								]),
+							_List_fromArray(
+								[
+									elm$html$Html$text('(x1)')
+								]))
+						])),
+					A2(
+					elm$html$Html$td,
+					_List_Nil,
+					_List_fromArray(
+						[
+							A2(
+							elm$html$Html$div,
+							_List_fromArray(
+								[
+									elm$html$Html$Attributes$class('action delete')
+								]),
+							_List_fromArray(
+								[
+									A2(
+									elm$html$Html$button,
+									_List_fromArray(
+										[
+											elm$html$Html$Attributes$type_('button')
+										]),
+									_List_fromArray(
+										[
+											elm$html$Html$text(
+											t(author$project$Types$Deactivate))
+										]))
+								]))
+						])),
+					A2(
+					elm$html$Html$td,
+					_List_Nil,
+					_List_fromArray(
+						[
+							A2(
+							elm$html$Html$div,
+							_List_fromArray(
+								[
+									elm$html$Html$Attributes$class('action edit')
+								]),
+							_List_fromArray(
+								[
+									A2(
+									elm$html$Html$button,
+									_List_fromArray(
+										[
+											elm$html$Html$Attributes$type_('button')
+										]),
+									_List_fromArray(
+										[
+											elm$html$Html$text(
+											t(author$project$Types$Edit))
+										]))
+								]))
+						])),
+					A2(
+					elm$html$Html$td,
+					_List_fromArray(
+						[
+							elm$html$Html$Attributes$class('balance-value ' + className)
+						]),
+					_List_fromArray(
+						[
+							elm$html$Html$text(
+							_Utils_ap(
+								sign,
+								A2(myrho$elm_round$Round$round, 2, member.balance)))
+						]))
+				]));
+	});
+var author$project$Types$Add = {$: 'Add'};
 var author$project$Types$AddMember = {$: 'AddMember'};
 var author$project$Types$NewNameTyped = function (a) {
 	return {$: 'NewNameTyped', a: a};
 };
+var author$project$Types$TypeUserName = {$: 'TypeUserName'};
 var elm$html$Html$aside = _VirtualDom_node('aside');
 var elm$html$Html$form = _VirtualDom_node('form');
 var elm$html$Html$input = _VirtualDom_node('input');
@@ -6003,7 +6218,6 @@ var elm$html$Html$Events$alwaysStop = function (x) {
 var elm$virtual_dom$VirtualDom$MayStopPropagation = function (a) {
 	return {$: 'MayStopPropagation', a: a};
 };
-var elm$virtual_dom$VirtualDom$on = _VirtualDom_on;
 var elm$html$Html$Events$stopPropagationOn = F2(
 	function (event, decoder) {
 		return A2(
@@ -6053,104 +6267,115 @@ var elm$html$Html$Events$onSubmit = function (msg) {
 			elm$html$Html$Events$alwaysPreventDefault,
 			elm$json$Json$Decode$succeed(msg)));
 };
-var author$project$SideBar$sideBarView = function (model) {
-	return A2(
-		elm$html$Html$div,
-		_List_fromArray(
-			[
-				elm$html$Html$Attributes$class('row'),
-				A2(elm$html$Html$Attributes$style, 'height', '100%')
-			]),
-		_List_fromArray(
-			[
-				A2(
-				elm$html$Html$aside,
-				_List_fromArray(
-					[
-						elm$html$Html$Attributes$id('sidebar'),
-						elm$html$Html$Attributes$class('sidebar col-xs-12 col-md-3 '),
-						A2(elm$html$Html$Attributes$style, 'height', '100%')
-					]),
-				_List_fromArray(
-					[
-						A2(
-						elm$html$Html$form,
-						_List_fromArray(
-							[
-								elm$html$Html$Attributes$id('add-member-form'),
-								elm$html$Html$Events$onSubmit(author$project$Types$AddMember),
-								elm$html$Html$Attributes$class('form-inline')
-							]),
-						_List_fromArray(
-							[
-								A2(
-								elm$html$Html$div,
-								_List_fromArray(
-									[
-										elm$html$Html$Attributes$class('input-group')
-									]),
-								_List_fromArray(
-									[
-										A2(
-										elm$html$Html$label,
-										_List_fromArray(
-											[
-												elm$html$Html$Attributes$class('sr-only'),
-												elm$html$Html$Attributes$for('name')
-											]),
-										_List_fromArray(
-											[
-												elm$html$Html$text('Type user name here')
-											])),
-										A2(
-										elm$html$Html$input,
-										_List_fromArray(
-											[
-												elm$html$Html$Attributes$class('form-control'),
-												elm$html$Html$Attributes$id('name'),
-												elm$html$Html$Attributes$placeholder('Type user name here'),
-												elm$html$Html$Attributes$required(true),
-												elm$html$Html$Attributes$type_('text'),
-												elm$html$Html$Attributes$value(model.memberField),
-												elm$html$Html$Events$onInput(author$project$Types$NewNameTyped)
-											]),
-										_List_Nil),
-										A2(
-										elm$html$Html$button,
-										_List_fromArray(
-											[
-												elm$html$Html$Attributes$class(' input-group-addon btn')
-											]),
-										_List_fromArray(
-											[
-												elm$html$Html$text('Add')
-											]))
-									]))
-							])),
-						A2(
-						elm$html$Html$div,
-						_List_fromArray(
-							[
-								elm$html$Html$Attributes$id('table_overflow')
-							]),
-						_List_fromArray(
-							[
-								A2(
-								elm$html$Html$table,
-								_List_fromArray(
-									[
-										elm$html$Html$Attributes$class('balance table')
-									]),
-								A2(elm$core$List$map, author$project$SideBar$memberInfo, model.members))
-							]))
-					]))
-			]));
+var author$project$SideBar$sideBarView = F3(
+	function (t, memberField, members) {
+		return A2(
+			elm$html$Html$div,
+			_List_fromArray(
+				[
+					elm$html$Html$Attributes$class('row'),
+					A2(elm$html$Html$Attributes$style, 'height', '100%')
+				]),
+			_List_fromArray(
+				[
+					A2(
+					elm$html$Html$aside,
+					_List_fromArray(
+						[
+							elm$html$Html$Attributes$id('sidebar'),
+							elm$html$Html$Attributes$class('sidebar col-xs-12 col-md-3 '),
+							A2(elm$html$Html$Attributes$style, 'height', '100%')
+						]),
+					_List_fromArray(
+						[
+							A2(
+							elm$html$Html$form,
+							_List_fromArray(
+								[
+									elm$html$Html$Attributes$id('add-member-form'),
+									elm$html$Html$Events$onSubmit(author$project$Types$AddMember),
+									elm$html$Html$Attributes$class('form-inline')
+								]),
+							_List_fromArray(
+								[
+									A2(
+									elm$html$Html$div,
+									_List_fromArray(
+										[
+											elm$html$Html$Attributes$class('input-group')
+										]),
+									_List_fromArray(
+										[
+											A2(
+											elm$html$Html$label,
+											_List_fromArray(
+												[
+													elm$html$Html$Attributes$class('sr-only'),
+													elm$html$Html$Attributes$for('name')
+												]),
+											_List_fromArray(
+												[
+													elm$html$Html$text(
+													t(author$project$Types$TypeUserName))
+												])),
+											A2(
+											elm$html$Html$input,
+											_List_fromArray(
+												[
+													elm$html$Html$Attributes$class('form-control'),
+													elm$html$Html$Attributes$id('name'),
+													elm$html$Html$Attributes$placeholder(
+													t(author$project$Types$TypeUserName)),
+													elm$html$Html$Attributes$required(true),
+													elm$html$Html$Attributes$type_('text'),
+													elm$html$Html$Attributes$value(memberField),
+													elm$html$Html$Events$onInput(author$project$Types$NewNameTyped)
+												]),
+											_List_Nil),
+											A2(
+											elm$html$Html$button,
+											_List_fromArray(
+												[
+													elm$html$Html$Attributes$class(' input-group-addon btn')
+												]),
+											_List_fromArray(
+												[
+													elm$html$Html$text(
+													t(author$project$Types$Add))
+												]))
+										]))
+								])),
+							A2(
+							elm$html$Html$div,
+							_List_fromArray(
+								[
+									elm$html$Html$Attributes$id('table_overflow')
+								]),
+							_List_fromArray(
+								[
+									A2(
+									elm$html$Html$table,
+									_List_fromArray(
+										[
+											elm$html$Html$Attributes$class('balance table')
+										]),
+									A2(
+										elm$core$List$map,
+										author$project$SideBar$memberInfo(t),
+										members))
+								]))
+						]))
+				]));
+	});
+var author$project$Types$AppTitle = function (a) {
+	return {$: 'AppTitle', a: a};
 };
 var author$project$Main$view = function (model) {
+	var t = author$project$Locales$getString(model.locale);
 	return {
 		body: _List_fromArray(
 			[
-				author$project$NavBar$navBarView(model.project),
+				A3(author$project$NavBar$navBarView, t, model.project, model.locale),
 				A2(
 				elm$html$Html$div,
 				_List_fromArray(
@@ -6159,8 +6384,8 @@ var author$project$Main$view = function (model) {
 					]),
 				_List_fromArray(
 					[
-						author$project$SideBar$sideBarView(model),
-						author$project$BillBoard$billBoardView(model)
+						A3(author$project$SideBar$sideBarView, t, model.memberField, model.members),
+						A2(author$project$BillBoard$billBoardView, t, model.bills)
 					])),
 				A2(
 				elm$html$Html$div,
@@ -6169,9 +6394,10 @@ var author$project$Main$view = function (model) {
 						elm$html$Html$Attributes$class('messages')
 					]),
 				_List_Nil),
-				author$project$Footer$footerView
+				author$project$Footer$footerView(t)
 			]),
-		title: 'Account manager - ' + model.project
+		title: t(
+			author$project$Types$AppTitle(model.project))
 	};
 };
 var elm$browser$Browser$External = function (a) {
