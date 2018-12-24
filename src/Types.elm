@@ -53,6 +53,15 @@ type LocaleIdentifier
     | Add
     | Deactivate
     | Edit
+    | Delete
     | Invite
     | FreeSoftware
     | YouCanContribute
+    | AddNewBill
+    | When
+    | WhoPaid
+    | ForWhat
+    | ForWhom
+    | HowMuch
+    | Actions
+    | Each String

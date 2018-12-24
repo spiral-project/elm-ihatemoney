@@ -28,7 +28,7 @@ billBoardHeader t =
             , attribute "data-toggle" "modal"
             , attribute "data-target" "#bill-form"
             ]
-            [ text "Add a new bill" ]
+            [ text <| t AddNewBill ]
         ]
 
 
@@ -37,12 +37,12 @@ billBoardTable t bills =
     table [ id "bill_table", class "col table table-striped table-hover" ]
         [ thead []
             [ tr []
-                [ th [] [ text "When?" ]
-                , th [] [ text "Who paid?" ]
-                , th [] [ text "For what?" ]
-                , th [] [ text "For whom?" ]
-                , th [] [ text "How much?" ]
-                , th [] [ text "Actions" ]
+                [ th [] [ text <| t When ]
+                , th [] [ text <| t WhoPaid ]
+                , th [] [ text <| t ForWhat ]
+                , th [] [ text <| t ForWhom ]
+                , th [] [ text <| t HowMuch ]
+                , th [] [ text <| t Actions ]
                 ]
             ]
         , List.map (billInfoView t) bills
@@ -72,14 +72,10 @@ billInfoView t bill =
                 amountEach =
                     round 2 <| bill.amount / numberOfPeople
               in
-              amount
-                ++ " ("
-                ++ amountEach
-                ++ " each)"
-                |> text
+              amount ++ t (Each amountEach) |> text
             ]
         , td [ class "bill-actions" ]
-            [ a [ class "edit", href "#", title "edit" ] [ text "edit" ]
-            , a [ class "delete", href "#", title "delete" ] [ text "delete" ]
+            [ a [ class "edit", href "#", title <| t Edit ] [ text <| t Edit ]
+            , a [ class "delete", href "#", title <| t Delete ] [ text <| t Delete ]
             ]
         ]

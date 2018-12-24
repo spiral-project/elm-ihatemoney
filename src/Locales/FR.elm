@@ -45,11 +45,37 @@ getString id =
         Edit ->
             "éditer"
 
+        Delete ->
+            "supprimer"
+
         -- Bills Board
         Invite ->
             "Invitez d’autres personnes à rejoindre ce projet !"
 
-        --Quand ?	Qui a payé ?	Pour quoi ?	Pour qui ?	Combien ?"
+        AddNewBill ->
+            "Nouvelle facture"
+
+        When ->
+            "Quand ?"
+
+        WhoPaid ->
+            "Qui a payé ?"
+
+        ForWhat ->
+            "Pour quoi ?"
+
+        ForWhom ->
+            "Pour qui ?"
+
+        HowMuch ->
+            "Combien ?"
+
+        Actions ->
+            "Actions"
+
+        Each amountEach ->
+            " (" ++ amountEach ++ " chacun)"
+
         -- Footer
         FreeSoftware ->
             "Ceci est un logiciel libre"
