@@ -7,7 +7,7 @@ import Round exposing (round)
 import Types exposing (..)
 
 
-billBoardView : (LocaleIdentifier -> String) -> List Bill -> Html Msg
+billBoardView : Localizer -> List Bill -> Html Msg
 billBoardView t bills =
     div
         [ class "offset-md-3 col-xs-12 col-md-9" ]
@@ -16,7 +16,7 @@ billBoardView t bills =
         ]
 
 
-billBoardHeader : (LocaleIdentifier -> String) -> Html Msg
+billBoardHeader : Localizer -> Html Msg
 billBoardHeader t =
     div []
         [ div [ class "identifier" ]
@@ -32,7 +32,7 @@ billBoardHeader t =
         ]
 
 
-billBoardTable : (LocaleIdentifier -> String) -> List Bill -> Html Msg
+billBoardTable : Localizer -> List Bill -> Html Msg
 billBoardTable t bills =
     table [ id "bill_table", class "col table table-striped table-hover" ]
         [ thead []
@@ -50,7 +50,7 @@ billBoardTable t bills =
         ]
 
 
-billInfoView : (LocaleIdentifier -> String) -> Bill -> Html Msg
+billInfoView : Localizer -> Bill -> Html Msg
 billInfoView t bill =
     tr []
         [ td [] [ text bill.date ]

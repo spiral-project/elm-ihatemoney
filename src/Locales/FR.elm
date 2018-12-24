@@ -1,14 +1,17 @@
 module Locales.FR exposing (getString)
 
-import Types exposing (LocaleIdentifier(..))
+import Types exposing (LocaleIdentifier(..), Localizer)
 
 
-getString : LocaleIdentifier -> String
+getString : Localizer
 getString id =
     case id of
         -- App title
-        AppTitle projectName ->
+        AppTitle (Just projectName) ->
             "Gestion de compte - " ++ projectName
+
+        AppTitle Nothing ->
+            "Gestion de compte"
 
         -- NavBar
         Bills ->
@@ -82,3 +85,52 @@ getString id =
 
         YouCanContribute ->
             ", vous pouvez y contribuer et l'améliorer !"
+
+        -- Login
+        ManageYourExpenses ->
+            "Gérez vos dépenses"
+
+        EasilyShared ->
+            "partagées, facilement"
+
+        TryDemo ->
+            "Essayez la démo"
+
+        SharingHouse ->
+            "Vous êtes en colocation ?"
+
+        GoingOnHoliday ->
+            "Partez en vacances avec des amis ?"
+
+        SimplySharingMoney ->
+            "Ça vous arrive de partager de l’argent avec d’autres ?"
+
+        WeCanHelp ->
+            "On peut vous aider !"
+
+        LogToExistingProject ->
+            "Se connecter à un projet existant…"
+
+        ProjectID ->
+            "Identifiant du projet"
+
+        PrivateCode ->
+            "Code d’accès"
+
+        LogIn ->
+            "Se connecter"
+
+        CantRememberPassword ->
+            "Vous ne vous souvenez plus du code d’accès ?"
+
+        CreateNewProject ->
+            "…ou créez en un nouveau"
+
+        ProjectName ->
+            "Nom de projet"
+
+        Email ->
+            "E-mail"
+
+        LetsGetStarted ->
+            "C’est parti !"

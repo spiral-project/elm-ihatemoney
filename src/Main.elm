@@ -7,7 +7,8 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Locales exposing (getString)
-import NavBar exposing (navBarView)
+import Login exposing (loginView)
+import NavBar exposing (navBarView, simpleNavBarView)
 import Round exposing (round)
 import SideBar exposing (sideBarView)
 import Types exposing (..)
@@ -15,7 +16,8 @@ import Types exposing (..)
 
 init : () -> ( Model, Cmd Msg )
 init flags =
-    ( { locale = EN
+    ( { auth = Unauthenticated
+      , locale = EN
       , members =
             [ { name = "Alexis", balance = 10 }
             , { name = "Fred", balance = -10 }
@@ -81,15 +83,26 @@ view model =
         t =
             getString model.locale
     in
-    { title = t (AppTitle model.project)
-    , body =
-        [ navBarView t model.project model.locale
-        , div
-            [ class "container-fluid" ]
-            [ sideBarView t model.memberField model.members
-            , billBoardView t model.bills
-            ]
-        , div [ class "messages" ] []
-        , footerView t
-        ]
-    }
+    case model.auth of
+        Basic user password ->
+            { title = t <| AppTitle (Just model.project)
+            , body =
+                [ navBarView t model.project model.locale
+                , div
+                    [ class "container-fluid" ]
+                    [ sideBarView t model.memberField model.members
+                    , billBoardView t model.bills
+                    ]
+                , div [ class "messages" ] []
+                , footerView t
+                ]
+            }
+
+        Unauthenticated ->
+            { title = t <| AppTitle Nothing
+            , body =
+                [ simpleNavBarView t model.locale
+                , loginView t model.locale
+                , footerView t
+                ]
+            }

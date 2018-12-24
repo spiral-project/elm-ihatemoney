@@ -1,13 +1,29 @@
-module Types exposing (Bill, Locale(..), LocaleIdentifier(..), Member, Model, Msg(..), Project)
+module Types exposing
+    ( Authentication(..)
+    , Bill
+    , Locale(..)
+    , LocaleIdentifier(..)
+    , Localizer
+    , Member
+    , Model
+    , Msg(..)
+    , Project
+    )
 
 
 type alias Model =
-    { locale : Locale
+    { auth : Authentication
+    , locale : Locale
     , project : String
     , members : List Member
     , bills : List Bill
     , memberField : String
     }
+
+
+type Authentication
+    = Basic String String
+    | Unauthenticated
 
 
 type Msg
@@ -40,8 +56,12 @@ type Locale
     | FR
 
 
+type alias Localizer =
+    LocaleIdentifier -> String
+
+
 type LocaleIdentifier
-    = AppTitle String
+    = AppTitle (Maybe String)
     | Bills
     | Settle
     | Statistics
@@ -65,3 +85,19 @@ type LocaleIdentifier
     | HowMuch
     | Actions
     | Each String
+    | ManageYourExpenses
+    | EasilyShared
+    | TryDemo
+    | SharingHouse
+    | GoingOnHoliday
+    | SimplySharingMoney
+    | WeCanHelp
+    | LogToExistingProject
+    | ProjectID
+    | PrivateCode
+    | LogIn
+    | CantRememberPassword
+    | CreateNewProject
+    | ProjectName
+    | Email
+    | LetsGetStarted

@@ -7,7 +7,7 @@ import Round exposing (round)
 import Types exposing (..)
 
 
-sideBarView : (LocaleIdentifier -> String) -> String -> List Member -> Html Msg
+sideBarView : Localizer -> String -> List Member -> Html Msg
 sideBarView t memberField members =
     div [ class "row", style "height" "100%" ]
         [ aside [ id "sidebar", class "sidebar col-xs-12 col-md-3 ", style "height" "100%" ]
@@ -35,7 +35,7 @@ sideBarView t memberField members =
         ]
 
 
-memberInfo : (LocaleIdentifier -> String) -> Member -> Html Msg
+memberInfo : Localizer -> Member -> Html Msg
 memberInfo t member =
     let
         className =

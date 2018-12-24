@@ -6,7 +6,7 @@ import Locales exposing (getString)
 import Types exposing (..)
 
 
-footerView : (LocaleIdentifier -> String) -> Html Msg
+footerView : Localizer -> Html Msg
 footerView t =
     footer []
         [ p []
