@@ -7,36 +7,36 @@ import Round exposing (round)
 import Types exposing (..)
 
 
-sideBarView : Model -> Html Msg
-sideBarView model =
+sideBarView : (LocaleIdentifier -> String) -> String -> List Member -> Html Msg
+sideBarView t memberField members =
     div [ class "row", style "height" "100%" ]
         [ aside [ id "sidebar", class "sidebar col-xs-12 col-md-3 ", style "height" "100%" ]
             [ Html.form [ id "add-member-form", onSubmit AddMember, class "form-inline" ]
                 [ div [ class "input-group" ]
-                    [ label [ class "sr-only", for "name" ] [ text "Type user name here" ]
+                    [ label [ class "sr-only", for "name" ] [ text <| t TypeUserName ]
                     , input
                         [ class "form-control"
                         , id "name"
-                        , placeholder "Type user name here"
+                        , placeholder <| t TypeUserName
                         , required True
                         , type_ "text"
-                        , value model.memberField
+                        , value memberField
                         , onInput NewNameTyped
                         ]
                         []
-                    , button [ class " input-group-addon btn" ] [ text "Add" ]
+                    , button [ class " input-group-addon btn" ] [ text <| t Add ]
                     ]
                 ]
             , div [ id "table_overflow" ]
-                [ List.map memberInfo model.members
+                [ List.map (memberInfo t) members
                     |> table [ class "balance table" ]
                 ]
             ]
         ]
 
 
-memberInfo : Member -> Html Msg
-memberInfo member =
+memberInfo : (LocaleIdentifier -> String) -> Member -> Html Msg
+memberInfo t member =
     let
         className =
             if member.balance < 0 then
@@ -59,10 +59,10 @@ memberInfo member =
             , span [ class "light extra-info" ] [ text "(x1)" ]
             ]
         , td []
-            [ div [ class "action delete" ] [ button [ type_ "button" ] [ text "deactivate" ] ]
+            [ div [ class "action delete" ] [ button [ type_ "button" ] [ text <| t Deactivate ] ]
             ]
         , td []
-            [ div [ class "action edit" ] [ button [ type_ "button" ] [ text "edit" ] ]
+            [ div [ class "action edit" ] [ button [ type_ "button" ] [ text <| t Edit ] ]
             ]
         , td [ class <| "balance-value " ++ className ]
             [ round 2 member.balance

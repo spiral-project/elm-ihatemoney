@@ -6,8 +6,8 @@ import Html.Events exposing (..)
 import Types exposing (..)
 
 
-navBarView : Project -> Html Msg
-navBarView project =
+navBarView : (LocaleIdentifier -> String) -> Project -> Locale -> Html Msg
+navBarView t project selectedLocale =
     div
         [ class "container" ]
         [ nav
@@ -38,13 +38,13 @@ navBarView project =
                     [ class "navbar-nav ml-auto mr-auto" ]
                     [ li
                         [ class "nav-item active" ]
-                        [ a [ class "nav-link", href "#" ] [ text "Bills" ] ]
+                        [ a [ class "nav-link", href "#" ] [ text <| t Bills ] ]
                     , li
                         [ class "nav-item" ]
-                        [ a [ class "nav-link", href "#" ] [ text "Settle" ] ]
+                        [ a [ class "nav-link", href "#" ] [ text <| t Settle ] ]
                     , li
                         [ class "nav-item" ]
-                        [ a [ class "nav-link", href "#" ] [ text "Statistics" ] ]
+                        [ a [ class "nav-link", href "#" ] [ text <| t Statistics ] ]
                     ]
                 , ul
                     [ class "navbar-nav secondary-nav" ]
@@ -58,31 +58,49 @@ navBarView project =
                             , attribute "aria-haspopup" "true"
                             , attribute "aria-expanded" "false"
                             ]
-                            [ text "⚙ options" ]
+                            [ text <| "⚙ " ++ t Options ]
                         , ul
                             [ class "dropdown-menu dropdown-menu-right"
                             , attribute "aria-labelledby" "navbarDropdownMenuLink"
                             ]
                             [ li []
                                 [ a [ class "dropdown-item", href "#" ]
-                                    [ text "Project settings" ]
+                                    [ text <| t ProjectSettings ]
                                 ]
                             , li [ class "dropdown-divider" ] []
                             , li []
                                 [ a [ class "dropdown-item", href "#" ]
-                                    [ text "Start a new project" ]
+                                    [ text <| t StartNewProject ]
                                 ]
                             , li [ class "dropdown-divider" ] []
                             , li []
                                 [ a [ class "dropdown-item", href "#" ]
-                                    [ text "Logout" ]
+                                    [ text <| t Logout ]
                                 ]
                             ]
                         ]
-                    , li [ class "nav-item" ]
-                        [ a [ class "nav-link", href "#" ] [ text "fr" ] ]
-                    , li [ class "nav-item active" ]
-                        [ a [ class "nav-link", href "#" ] [ text "en" ]
+                    , li
+                        [ "nav-item"
+                            ++ (if selectedLocale == FR then
+                                    " active"
+
+                                else
+                                    ""
+                               )
+                            |> class
+                        ]
+                        [ a [ class "nav-link", href "#", onClick <| ChangeLocale FR ] [ text "fr" ] ]
+                    , li
+                        [ "nav-item"
+                            ++ (if selectedLocale == EN then
+                                    " active"
+
+                                else
+                                    ""
+                               )
+                            |> class
+                        ]
+                        [ a [ class "nav-link", href "#", onClick <| ChangeLocale EN ] [ text "en" ]
                         ]
                     ]
                 ]
