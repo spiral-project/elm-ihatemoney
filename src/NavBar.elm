@@ -77,7 +77,7 @@ navBarView t project selectedLocale =
                                 ]
                             , li [ class "dropdown-divider" ] []
                             , li []
-                                [ a [ class "dropdown-item", href "#" ]
+                                [ a [ class "dropdown-item", href "#", onClick LogoutUser ]
                                     [ text <| t Logout ]
                                 ]
                             ]

@@ -1,6 +1,7 @@
 module Types exposing
     ( Authentication(..)
     , Bill
+    , Fields
     , Locale(..)
     , LocaleIdentifier(..)
     , Localizer
@@ -17,7 +18,17 @@ type alias Model =
     , project : String
     , members : List Member
     , bills : List Bill
-    , memberField : String
+    , fields : Fields
+    }
+
+
+type alias Fields =
+    { newMember : String
+    , loginProjectID : String
+    , loginPassword : String
+    , newProjectName : String
+    , newProjectPassword : String
+    , newProjectEmail : String
     }
 
 
@@ -27,8 +38,16 @@ type Authentication
 
 
 type Msg
-    = NewNameTyped String
+    = NewMemberName String
     | AddMember
+    | LoginProjectID String
+    | LoginPassword String
+    | Login
+    | LogoutUser
+    | NewProjectName String
+    | NewProjectPassword String
+    | NewProjectEmail String
+    | CreateProject
     | ChangeLocale Locale
 
 

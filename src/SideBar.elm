@@ -21,7 +21,7 @@ sideBarView t memberField members =
                         , required True
                         , type_ "text"
                         , value memberField
-                        , onInput NewNameTyped
+                        , onInput NewMemberName
                         ]
                         []
                     , button [ class " input-group-addon btn" ] [ text <| t Add ]

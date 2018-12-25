@@ -121,7 +121,7 @@ getString id =
             "Log in"
 
         CantRememberPassword ->
-            "can't remember your password?"
+            "Can't remember your password?"
 
         CreateNewProject ->
             "…or create a new one"

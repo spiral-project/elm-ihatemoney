@@ -38,7 +38,14 @@ init flags =
               }
             ]
       , project = "Week-end Août 2018"
-      , memberField = ""
+      , fields =
+            { newMember = ""
+            , loginProjectID = ""
+            , loginPassword = ""
+            , newProjectName = ""
+            , newProjectPassword = ""
+            , newProjectEmail = ""
+            }
       }
     , Cmd.none
     )
@@ -54,19 +61,124 @@ main =
         }
 
 
+setNewMemberName : String -> Fields -> Fields
+setNewMemberName newMember fields =
+    { fields | newMember = newMember }
+
+
+setNewProjectName : String -> Fields -> Fields
+setNewProjectName value fields =
+    { fields | newProjectName = value }
+
+
+setNewProjectPassword : String -> Fields -> Fields
+setNewProjectPassword value fields =
+    { fields | newProjectPassword = value }
+
+
+setNewProjectEmail : String -> Fields -> Fields
+setNewProjectEmail value fields =
+    { fields | newProjectEmail = value }
+
+
+setLoginProjectID : String -> Fields -> Fields
+setLoginProjectID value fields =
+    { fields | loginProjectID = value }
+
+
+setLoginPassword : String -> Fields -> Fields
+setLoginPassword value fields =
+    { fields | loginPassword = value }
+
+
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        NewNameTyped new_member_name ->
-            ( { model | memberField = new_member_name }, Cmd.none )
+        NewMemberName value ->
+            let
+                fields =
+                    setNewMemberName value model.fields
+            in
+            ( { model | fields = fields }, Cmd.none )
 
         AddMember ->
+            let
+                fields =
+                    setNewMemberName "" model.fields
+            in
             ( { model
-                | members = model.members ++ [ Member model.memberField 0 ]
-                , memberField = ""
+                | members = model.members ++ [ Member model.fields.newMember 0 ]
+                , fields = fields
               }
             , Cmd.none
             )
+
+        NewProjectName value ->
+            let
+                fields =
+                    setNewProjectName value model.fields
+            in
+            ( { model | fields = fields }, Cmd.none )
+
+        NewProjectPassword value ->
+            let
+                fields =
+                    setNewProjectPassword value model.fields
+            in
+            ( { model | fields = fields }, Cmd.none )
+
+        NewProjectEmail value ->
+            let
+                fields =
+                    setNewProjectEmail value model.fields
+            in
+            ( { model | fields = fields }, Cmd.none )
+
+        CreateProject ->
+            let
+                projectID =
+                    model.fields.newProjectName
+
+                password =
+                    model.fields.newProjectPassword
+
+                email =
+                    model.fields.newProjectEmail
+
+                fields =
+                    model.fields |> setNewProjectName "" |> setNewProjectPassword "" |> setNewProjectEmail ""
+            in
+            ( { model | fields = fields, auth = Basic projectID password }, Cmd.none )
+
+        LoginProjectID value ->
+            let
+                fields =
+                    setLoginProjectID value model.fields
+            in
+            ( { model | fields = fields }, Cmd.none )
+
+        LoginPassword value ->
+            let
+                fields =
+                    setLoginPassword value model.fields
+            in
+            ( { model | fields = fields }, Cmd.none )
+
+        Login ->
+            let
+                projectID =
+                    model.fields.loginProjectID
+
+                password =
+                    model.fields.loginPassword
+
+                fields =
+                    model.fields |> setLoginProjectID "" |> setLoginPassword ""
+            in
+            ( { model | fields = fields, auth = Basic projectID password }, Cmd.none )
+
+        LogoutUser ->
+            ( { model | auth = Unauthenticated }, Cmd.none )
 
         ChangeLocale locale ->
             ( { model | locale = locale }, Cmd.none )
@@ -90,7 +202,7 @@ view model =
                 [ navBarView t model.project model.locale
                 , div
                     [ class "container-fluid" ]
-                    [ sideBarView t model.memberField model.members
+                    [ sideBarView t model.fields.newMember model.members
                     , billBoardView t model.bills
                     ]
                 , div [ class "messages" ] []
@@ -102,7 +214,7 @@ view model =
             { title = t <| AppTitle Nothing
             , body =
                 [ simpleNavBarView t model.locale
-                , loginView t model.locale
+                , loginView t model.locale model.fields
                 , footerView t
                 ]
             }

@@ -6,8 +6,8 @@ import Html.Events exposing (..)
 import Types exposing (..)
 
 
-loginView : Localizer -> Locale -> Html Msg
-loginView t selectedLocale =
+loginView : Localizer -> Locale -> Fields -> Html Msg
+loginView t selectedLocale fields =
     div [ class "container-fluid" ]
         [ header [ id "header", class "row" ]
             [ div [ class "col-xs-12 col-sm-5 offset-md-2" ]
@@ -33,7 +33,7 @@ loginView t selectedLocale =
         , div
             [ class "row home" ]
             [ div [ class "col-xs-12 col-sm-5 col-md-4 offset-md-2" ]
-                [ Html.form [ id "authentication-form", class "form-horizontal" ]
+                [ Html.form [ id "authentication-form", class "form-horizontal", onSubmit Login ]
                     [ fieldset [ class "form-group" ]
                         [ legend [] [ text <| t LogToExistingProject ]
                         , div [ class "form-group" ]
@@ -45,7 +45,8 @@ loginView t selectedLocale =
                                     , name "id"
                                     , required True
                                     , type_ "text"
-                                    , value ""
+                                    , onInput LoginProjectID
+                                    , value fields.loginProjectID
                                     ]
                                     []
                                 ]
@@ -60,7 +61,8 @@ loginView t selectedLocale =
                                     , name "password"
                                     , required True
                                     , type_ "password"
-                                    , value ""
+                                    , onInput LoginPassword
+                                    , value fields.loginPassword
                                     ]
                                     []
                                 ]
@@ -75,7 +77,7 @@ loginView t selectedLocale =
                 ]
             , div
                 [ class "col-xs-12 col-sm-5 col-md-3 offset-sm-1" ]
-                [ Html.form [ id "creation-form", class "form-horizontal" ]
+                [ Html.form [ id "creation-form", class "form-horizontal", onSubmit CreateProject ]
                     [ fieldset [ class "form-group" ]
                         [ legend [] [ text <| t CreateNewProject ]
                         , div [ class "form-group" ]
@@ -87,7 +89,8 @@ loginView t selectedLocale =
                                     , name "name"
                                     , required True
                                     , type_ "text"
-                                    , value ""
+                                    , onInput NewProjectName
+                                    , value fields.newProjectName
                                     ]
                                     []
                                 ]
@@ -101,7 +104,8 @@ loginView t selectedLocale =
                                     , name "password"
                                     , required True
                                     , type_ "password"
-                                    , value ""
+                                    , onInput NewProjectPassword
+                                    , value fields.newProjectPassword
                                     ]
                                     []
                                 ]
@@ -115,7 +119,8 @@ loginView t selectedLocale =
                                     , name "contact_email"
                                     , required True
                                     , type_ "text"
-                                    , value ""
+                                    , onInput NewProjectEmail
+                                    , value fields.newProjectEmail
                                     ]
                                     []
                                 ]
