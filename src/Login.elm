@@ -126,9 +126,14 @@ loginView t selectedLocale fields =
                                 ]
                             ]
                         ]
-                    , div [ class "controls" ]
-                        [ button [ class "btn", type_ "submit" ] [ text <| t LetsGetStarted ]
-                        ]
+                    , case fields.newProjectError of
+                        Just err ->
+                            div [ class "errors" ] [ text err ]
+
+                        Nothing ->
+                            div [ class "controls" ]
+                                [ button [ class "btn", type_ "submit" ] [ text <| t LetsGetStarted ]
+                                ]
                     ]
                 ]
             ]

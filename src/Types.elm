@@ -11,6 +11,8 @@ module Types exposing
     , Project
     )
 
+import Http
+
 
 type alias Model =
     { auth : Authentication
@@ -29,6 +31,7 @@ type alias Fields =
     , newProjectName : String
     , newProjectPassword : String
     , newProjectEmail : String
+    , newProjectError : Maybe String
     }
 
 
@@ -49,6 +52,7 @@ type Msg
     | NewProjectEmail String
     | CreateProject
     | ChangeLocale Locale
+    | ProjectCreated (Result Http.Error String)
 
 
 type alias Project =

@@ -1,16 +1,19 @@
 module Main exposing (main)
 
+import Api exposing (createProject)
 import BillBoard exposing (billBoardView)
 import Browser exposing (Document)
 import Footer exposing (footerView)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
+import Http
 import Locales exposing (getString)
 import Login exposing (loginView)
 import NavBar exposing (navBarView, simpleNavBarView)
 import Round exposing (round)
 import SideBar exposing (sideBarView)
+import Slug
 import Types exposing (..)
 
 
@@ -45,6 +48,7 @@ init flags =
             , newProjectName = ""
             , newProjectPassword = ""
             , newProjectEmail = ""
+            , newProjectError = Nothing
             }
       }
     , Cmd.none
@@ -68,7 +72,7 @@ setNewMemberName newMember fields =
 
 setNewProjectName : String -> Fields -> Fields
 setNewProjectName value fields =
-    { fields | newProjectName = value }
+    { fields | newProjectName = value, newProjectError = Nothing }
 
 
 setNewProjectPassword : String -> Fields -> Fields
@@ -79,6 +83,11 @@ setNewProjectPassword value fields =
 setNewProjectEmail : String -> Fields -> Fields
 setNewProjectEmail value fields =
     { fields | newProjectEmail = value }
+
+
+setNewProjectError : String -> Fields -> Fields
+setNewProjectError value fields =
+    { fields | newProjectError = Just value }
 
 
 setLoginProjectID : String -> Fields -> Fields
@@ -139,16 +148,59 @@ update msg model =
                 projectID =
                     model.fields.newProjectName
 
+                slug =
+                    Slug.generate projectID
+
                 password =
                     model.fields.newProjectPassword
 
                 email =
                     model.fields.newProjectEmail
-
-                fields =
-                    model.fields |> setNewProjectName "" |> setNewProjectPassword "" |> setNewProjectEmail ""
             in
-            ( { model | fields = fields, auth = Basic projectID password }, Cmd.none )
+            case slug of
+                Just _ ->
+                    let
+                        fields =
+                            model.fields |> setNewProjectName "" |> setNewProjectPassword "" |> setNewProjectEmail ""
+                    in
+                    ( { model | fields = fields, auth = Basic projectID password }
+                    , createProject projectID password email
+                    )
+
+                Nothing ->
+                    let
+                        _ =
+                            Debug.log "Invalid ProjectName" projectID
+
+                        fields =
+                            model.fields
+                                |> setNewProjectError ("Invalid project name: " ++ projectID)
+                    in
+                    ( { model | fields = fields }, Cmd.none )
+
+        ProjectCreated (Ok projectID) ->
+            let
+                password =
+                    case model.auth of
+                        Basic user pass ->
+                            pass
+
+                        Unauthenticated ->
+                            ""
+            in
+            ( { model
+                | auth =
+                    Basic projectID password
+              }
+            , Cmd.none
+            )
+
+        ProjectCreated (Err err) ->
+            let
+                _ =
+                    Debug.log "Error while creating the project" err
+            in
+            ( model, Cmd.none )
 
         LoginProjectID value ->
             let
