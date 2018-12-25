@@ -1,6 +1,6 @@
 module Main exposing (main)
 
-import Api exposing (createProject, fetchProjectInfo)
+import Api exposing (addMemberToProject, createProject, fetchProjectInfo)
 import BillBoard exposing (billBoardView)
 import Browser exposing (Document)
 import Footer exposing (footerView)
@@ -81,8 +81,8 @@ setLoginPassword value fields =
     { fields | loginPassword = value }
 
 
-addMemberToProject : Member -> Project -> Project
-addMemberToProject member project =
+setMemberToProject : Member -> Project -> Project
+setMemberToProject member project =
     { project | members = project.members ++ [ member ] }
 
 
@@ -99,15 +99,23 @@ update msg model =
         AddMember ->
             case model.project of
                 Just project ->
+                    ( model, addMemberToProject model.auth model.fields.newMember )
+
+                Nothing ->
+                    ( model, Cmd.none )
+
+        MemberAdded (Ok id) ->
+            case model.project of
+                Just project ->
                     let
                         fields =
                             setNewMemberName "" model.fields
 
                         member =
-                            Member 0 model.fields.newMember 1 True 0.0
+                            Member id model.fields.newMember 1 True 0.0
 
                         newProject =
-                            addMemberToProject member project
+                            setMemberToProject member project
                     in
                     ( { model
                         | project = Just newProject
@@ -118,6 +126,13 @@ update msg model =
 
                 Nothing ->
                     ( model, Cmd.none )
+
+        MemberAdded (Err err) ->
+            let
+                _ =
+                    Debug.log "Error while adding the member" err
+            in
+            ( model, Cmd.none )
 
         NewProjectName value ->
             let

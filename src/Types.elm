@@ -60,6 +60,7 @@ type Msg
     | ChangeLocale Locale
     | ProjectCreated (Result Http.Error String)
     | ProjectFetched (Result Http.Error Project)
+    | MemberAdded (Result Http.Error Int)
 
 
 type alias Member =

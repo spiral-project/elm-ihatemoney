@@ -1,4 +1,4 @@
-module Api exposing (createProject, fetchProjectInfo)
+module Api exposing (addMemberToProject, createProject, fetchProjectInfo)
 
 import Base64
 import Http
@@ -93,4 +93,26 @@ fetchProjectInfo auth projectID =
         , timeout = Nothing
         , tracker = Nothing
         , body = Http.emptyBody
+        }
+
+
+addMemberToProject : Authentication -> String -> Cmd Msg
+addMemberToProject auth name =
+    let
+        projectID =
+            case auth of
+                Basic user _ ->
+                    user
+
+                Unauthenticated ->
+                    ""
+    in
+    Http.request
+        { method = "POST"
+        , url = iHateMoneyUrl ++ "/projects/" ++ projectID ++ "/members"
+        , headers = [ headersForAuth auth ]
+        , expect = Http.expectJson MemberAdded Decode.int
+        , timeout = Nothing
+        , tracker = Nothing
+        , body = Http.jsonBody <| Encode.object [ ( "name", Encode.string name ) ]
         }
