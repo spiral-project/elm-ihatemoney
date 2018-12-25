@@ -1,6 +1,6 @@
 module Main exposing (main)
 
-import Api exposing (createProject)
+import Api exposing (createProject, fetchProjectInfo)
 import BillBoard exposing (billBoardView)
 import Browser exposing (Document)
 import Footer exposing (footerView)
@@ -21,26 +21,7 @@ init : () -> ( Model, Cmd Msg )
 init flags =
     ( { auth = Unauthenticated
       , locale = EN
-      , members =
-            [ { name = "Alexis", balance = 10 }
-            , { name = "Fred", balance = -10 }
-            , { name = "Rémy", balance = 20 }
-            ]
-      , bills =
-            [ { date = "2018-12-21"
-              , amount = 12.2
-              , label = "Bar"
-              , payer = "Rémy"
-              , owers = [ "Rémy", "Alexis" ]
-              }
-            , { date = "2018-12-22"
-              , amount = 52.2
-              , label = "Resto"
-              , payer = "Alexis"
-              , owers = [ "Rémy", "Alexis", "Fred" ]
-              }
-            ]
-      , project = "Week-end Août 2018"
+      , project = Nothing
       , fields =
             { newMember = ""
             , loginProjectID = ""
@@ -100,6 +81,11 @@ setLoginPassword value fields =
     { fields | loginPassword = value }
 
 
+addMemberToProject : Member -> Project -> Project
+addMemberToProject member project =
+    { project | members = project.members ++ [ member ] }
+
+
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
@@ -111,16 +97,27 @@ update msg model =
             ( { model | fields = fields }, Cmd.none )
 
         AddMember ->
-            let
-                fields =
-                    setNewMemberName "" model.fields
-            in
-            ( { model
-                | members = model.members ++ [ Member model.fields.newMember 0 ]
-                , fields = fields
-              }
-            , Cmd.none
-            )
+            case model.project of
+                Just project ->
+                    let
+                        fields =
+                            setNewMemberName "" model.fields
+
+                        member =
+                            Member 0 model.fields.newMember 1 True 0.0
+
+                        newProject =
+                            addMemberToProject member project
+                    in
+                    ( { model
+                        | project = Just newProject
+                        , fields = fields
+                      }
+                    , Cmd.none
+                    )
+
+                Nothing ->
+                    ( model, Cmd.none )
 
         NewProjectName value ->
             let
@@ -187,12 +184,12 @@ update msg model =
 
                         Unauthenticated ->
                             ""
-            in
-            ( { model
-                | auth =
+
+                auth =
                     Basic projectID password
-              }
-            , Cmd.none
+            in
+            ( { model | auth = auth }
+            , fetchProjectInfo auth projectID
             )
 
         ProjectCreated (Err err) ->
@@ -226,10 +223,29 @@ update msg model =
 
                 fields =
                     model.fields |> setLoginProjectID "" |> setLoginPassword ""
+
+                auth =
+                    Basic projectID password
             in
-            ( { model | fields = fields, auth = Basic projectID password }, Cmd.none )
+            ( { model | fields = fields, auth = auth }
+            , fetchProjectInfo auth projectID
+            )
 
         LogoutUser ->
+            ( { model | auth = Unauthenticated }, Cmd.none )
+
+        ProjectFetched (Ok project) ->
+            ( { model
+                | project = Just project
+              }
+            , Cmd.none
+            )
+
+        ProjectFetched (Err err) ->
+            let
+                _ =
+                    Debug.log "Error while loading the project" err
+            in
             ( { model | auth = Unauthenticated }, Cmd.none )
 
         ChangeLocale locale ->
@@ -247,22 +263,22 @@ view model =
         t =
             getString model.locale
     in
-    case model.auth of
-        Basic user password ->
-            { title = t <| AppTitle (Just model.project)
+    case ( model.auth, model.project ) of
+        ( Basic user password, Just project ) ->
+            { title = t <| AppTitle (Just project.name)
             , body =
-                [ navBarView t model.project model.locale
+                [ navBarView t project model.locale
                 , div
                     [ class "container-fluid" ]
-                    [ sideBarView t model.fields.newMember model.members
-                    , billBoardView t model.bills
+                    [ sideBarView t model.fields.newMember project.members
+                    , billBoardView t project.bills
                     ]
                 , div [ class "messages" ] []
                 , footerView t
                 ]
             }
 
-        Unauthenticated ->
+        ( _, _ ) ->
             { title = t <| AppTitle Nothing
             , body =
                 [ simpleNavBarView t model.locale

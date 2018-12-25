@@ -17,10 +17,16 @@ import Http
 type alias Model =
     { auth : Authentication
     , locale : Locale
-    , project : String
+    , project : Maybe Project
+    , fields : Fields
+    }
+
+
+type alias Project =
+    { name : String
+    , contact_email : String
     , members : List Member
     , bills : List Bill
-    , fields : Fields
     }
 
 
@@ -53,14 +59,14 @@ type Msg
     | CreateProject
     | ChangeLocale Locale
     | ProjectCreated (Result Http.Error String)
-
-
-type alias Project =
-    String
+    | ProjectFetched (Result Http.Error Project)
 
 
 type alias Member =
-    { name : String
+    { id : Int
+    , name : String
+    , weight : Int
+    , activated : Bool
     , balance : Float
     }
 

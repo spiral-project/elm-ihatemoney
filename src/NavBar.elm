@@ -34,7 +34,7 @@ navBarView t project selectedLocale =
                             [ class "nav-link"
                             , href "#"
                             ]
-                            [ strong [ class "navbar-nav" ] [ text project ] ]
+                            [ strong [ class "navbar-nav" ] [ text project.name ] ]
                         ]
                     ]
                 , ul

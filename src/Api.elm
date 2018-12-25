@@ -1,4 +1,4 @@
-module Api exposing (createProject)
+module Api exposing (createProject, fetchProjectInfo)
 
 import Base64
 import Http
@@ -22,16 +22,14 @@ alwaysEncode string =
     headersForAuth (Basic "username" "password")
 
 -}
-headersForAuth : Authentication -> ( String, String )
+headersForAuth : Authentication -> Http.Header
 headersForAuth auth =
     case auth of
         Unauthenticated ->
-            ( "Authorization", "" )
+            Http.header "Authorization" ""
 
         Basic username password ->
-            ( "Authorization"
-            , "Basic " ++ alwaysEncode (username ++ ":" ++ password)
-            )
+            Http.header "Authorization" ("Basic " ++ alwaysEncode (username ++ ":" ++ password))
 
 
 encodeProject : String -> String -> String -> Encode.Value
@@ -63,4 +61,36 @@ createProject projectName projectCode projectEmail =
         , timeout = Nothing
         , tracker = Nothing
         , body = Http.jsonBody <| encodeProject projectName projectCode projectEmail
+        }
+
+
+decodeProjectInfo : Decode.Decoder Project
+decodeProjectInfo =
+    Decode.map4 Project
+        (Decode.field "name" Decode.string)
+        (Decode.field "contact_email" Decode.string)
+        (Decode.field "members" <| Decode.list decodeMember)
+        (Decode.succeed [])
+
+
+decodeMember : Decode.Decoder Member
+decodeMember =
+    Decode.map5 Member
+        (Decode.field "id" Decode.int)
+        (Decode.field "name" Decode.string)
+        (Decode.field "weight" Decode.int)
+        (Decode.field "activated" Decode.bool)
+        (Decode.succeed 0.0)
+
+
+fetchProjectInfo : Authentication -> String -> Cmd Msg
+fetchProjectInfo auth projectID =
+    Http.request
+        { method = "GET"
+        , url = iHateMoneyUrl ++ "/projects/" ++ projectID
+        , headers = [ headersForAuth auth ]
+        , expect = Http.expectJson ProjectFetched decodeProjectInfo
+        , timeout = Nothing
+        , tracker = Nothing
+        , body = Http.emptyBody
         }
