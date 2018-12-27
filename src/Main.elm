@@ -91,7 +91,7 @@ setLoginPassword value fields =
 
 setMemberToProject : Member -> Project -> Project
 setMemberToProject member project =
-    { project | members = project.members ++ [ member ] }
+    { project | members = List.sortBy .name (project.members ++ [ member ]) }
 
 
 setEditedProjectMember : Member -> Project -> Project
