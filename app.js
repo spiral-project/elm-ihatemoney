@@ -6457,7 +6457,9 @@ var author$project$Types$Project = F4(
 	function (name, contact_email, members, bills) {
 		return {bills: bills, contact_email: contact_email, members: members, name: name};
 	});
+var elm$core$List$sortBy = _List_sortBy;
 var elm$json$Json$Decode$list = _Json_decodeList;
+var elm$json$Json$Decode$map = _Json_map1;
 var elm$json$Json$Decode$map4 = _Json_map4;
 var author$project$Api$decodeProjectInfo = A5(
 	elm$json$Json$Decode$map4,
@@ -6467,7 +6469,13 @@ var author$project$Api$decodeProjectInfo = A5(
 	A2(
 		elm$json$Json$Decode$field,
 		'members',
-		elm$json$Json$Decode$list(author$project$Api$decodeMember)),
+		A2(
+			elm$json$Json$Decode$map,
+			elm$core$List$sortBy(
+				function ($) {
+					return $.name;
+				}),
+			elm$json$Json$Decode$list(author$project$Api$decodeMember))),
 	elm$json$Json$Decode$succeed(_List_Nil));
 var author$project$Types$ProjectFetched = function (a) {
 	return {$: 'ProjectFetched', a: a};
@@ -6509,7 +6517,6 @@ var elm$core$List$filter = F2(
 			_List_Nil,
 			list);
 	});
-var elm$core$List$sortBy = _List_sortBy;
 var author$project$Main$setEditedProjectMember = F2(
 	function (member, project) {
 		var members = A2(
@@ -6548,10 +6555,15 @@ var author$project$Main$setMemberToProject = F2(
 		return _Utils_update(
 			project,
 			{
-				members: _Utils_ap(
-					project.members,
-					_List_fromArray(
-						[member]))
+				members: A2(
+					elm$core$List$sortBy,
+					function ($) {
+						return $.name;
+					},
+					_Utils_ap(
+						project.members,
+						_List_fromArray(
+							[member])))
 			});
 	});
 var author$project$Main$setNewMemberName = F2(
@@ -6917,7 +6929,6 @@ var author$project$Main$update = F2(
 	});
 var author$project$Types$AddNewBill = {$: 'AddNewBill'};
 var author$project$Types$Invite = {$: 'Invite'};
-var elm$json$Json$Decode$map = _Json_map1;
 var elm$json$Json$Decode$map2 = _Json_map2;
 var elm$virtual_dom$VirtualDom$toHandlerInt = function (handler) {
 	switch (handler.$) {
