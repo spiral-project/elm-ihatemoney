@@ -69,7 +69,7 @@ decodeProjectInfo =
     Decode.map4 Project
         (Decode.field "name" Decode.string)
         (Decode.field "contact_email" Decode.string)
-        (Decode.field "members" <| Decode.list decodeMember)
+        (Decode.field "members" <| Decode.map (List.sortBy .name) (Decode.list decodeMember))
         (Decode.succeed [])
 
 
