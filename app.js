@@ -2314,6 +2314,319 @@ function _Platform_mergeExportsDebug(moduleName, obj, exports)
 
 
 
+var _Bitwise_and = F2(function(a, b)
+{
+	return a & b;
+});
+
+var _Bitwise_or = F2(function(a, b)
+{
+	return a | b;
+});
+
+var _Bitwise_xor = F2(function(a, b)
+{
+	return a ^ b;
+});
+
+function _Bitwise_complement(a)
+{
+	return ~a;
+};
+
+var _Bitwise_shiftLeftBy = F2(function(offset, a)
+{
+	return a << offset;
+});
+
+var _Bitwise_shiftRightBy = F2(function(offset, a)
+{
+	return a >> offset;
+});
+
+var _Bitwise_shiftRightZfBy = F2(function(offset, a)
+{
+	return a >>> offset;
+});
+
+
+
+// SEND REQUEST
+
+var _Http_toTask = F3(function(router, toTask, request)
+{
+	return _Scheduler_binding(function(callback)
+	{
+		function done(response) {
+			callback(toTask(request.expect.a(response)));
+		}
+
+		var xhr = new XMLHttpRequest();
+		xhr.addEventListener('error', function() { done(elm$http$Http$NetworkError_); });
+		xhr.addEventListener('timeout', function() { done(elm$http$Http$Timeout_); });
+		xhr.addEventListener('load', function() { done(_Http_toResponse(request.expect.b, xhr)); });
+		elm$core$Maybe$isJust(request.tracker) && _Http_track(router, xhr, request.tracker.a);
+
+		try {
+			xhr.open(request.method, request.url, true);
+		} catch (e) {
+			return done(elm$http$Http$BadUrl_(request.url));
+		}
+
+		_Http_configureRequest(xhr, request);
+
+		request.body.a && xhr.setRequestHeader('Content-Type', request.body.a);
+		xhr.send(request.body.b);
+
+		return function() { xhr.c = true; xhr.abort(); };
+	});
+});
+
+
+// CONFIGURE
+
+function _Http_configureRequest(xhr, request)
+{
+	for (var headers = request.headers; headers.b; headers = headers.b) // WHILE_CONS
+	{
+		xhr.setRequestHeader(headers.a.a, headers.a.b);
+	}
+	xhr.timeout = request.timeout.a || 0;
+	xhr.responseType = request.expect.d;
+	xhr.withCredentials = request.allowCookiesFromOtherDomains;
+}
+
+
+// RESPONSES
+
+function _Http_toResponse(toBody, xhr)
+{
+	return A2(
+		200 <= xhr.status && xhr.status < 300 ? elm$http$Http$GoodStatus_ : elm$http$Http$BadStatus_,
+		_Http_toMetadata(xhr),
+		toBody(xhr.response)
+	);
+}
+
+
+// METADATA
+
+function _Http_toMetadata(xhr)
+{
+	return {
+		url: xhr.responseURL,
+		statusCode: xhr.status,
+		statusText: xhr.statusText,
+		headers: _Http_parseHeaders(xhr.getAllResponseHeaders())
+	};
+}
+
+
+// HEADERS
+
+function _Http_parseHeaders(rawHeaders)
+{
+	if (!rawHeaders)
+	{
+		return elm$core$Dict$empty;
+	}
+
+	var headers = elm$core$Dict$empty;
+	var headerPairs = rawHeaders.split('\r\n');
+	for (var i = headerPairs.length; i--; )
+	{
+		var headerPair = headerPairs[i];
+		var index = headerPair.indexOf(': ');
+		if (index > 0)
+		{
+			var key = headerPair.substring(0, index);
+			var value = headerPair.substring(index + 2);
+
+			headers = A3(elm$core$Dict$update, key, function(oldValue) {
+				return elm$core$Maybe$Just(elm$core$Maybe$isJust(oldValue)
+					? value + ', ' + oldValue.a
+					: value
+				);
+			}, headers);
+		}
+	}
+	return headers;
+}
+
+
+// EXPECT
+
+var _Http_expect = F3(function(type, toBody, toValue)
+{
+	return {
+		$: 0,
+		d: type,
+		b: toBody,
+		a: toValue
+	};
+});
+
+var _Http_mapExpect = F2(function(func, expect)
+{
+	return {
+		$: 0,
+		d: expect.d,
+		b: expect.b,
+		a: function(x) { return func(expect.a(x)); }
+	};
+});
+
+function _Http_toDataView(arrayBuffer)
+{
+	return new DataView(arrayBuffer);
+}
+
+
+// BODY and PARTS
+
+var _Http_emptyBody = { $: 0 };
+var _Http_pair = F2(function(a, b) { return { $: 0, a: a, b: b }; });
+
+function _Http_toFormData(parts)
+{
+	for (var formData = new FormData(); parts.b; parts = parts.b) // WHILE_CONS
+	{
+		var part = parts.a;
+		formData.append(part.a, part.b);
+	}
+	return formData;
+}
+
+var _Http_bytesToBlob = F2(function(mime, bytes)
+{
+	return new Blob([bytes], { type: mime });
+});
+
+
+// PROGRESS
+
+function _Http_track(router, xhr, tracker)
+{
+	// TODO check out lengthComputable on loadstart event
+
+	xhr.upload.addEventListener('progress', function(event) {
+		if (xhr.c) { return; }
+		_Scheduler_rawSpawn(A2(elm$core$Platform$sendToSelf, router, _Utils_Tuple2(tracker, elm$http$Http$Sending({
+			sent: event.loaded,
+			size: event.total
+		}))));
+	});
+	xhr.addEventListener('progress', function(event) {
+		if (xhr.c) { return; }
+		_Scheduler_rawSpawn(A2(elm$core$Platform$sendToSelf, router, _Utils_Tuple2(tracker, elm$http$Http$Receiving({
+			received: event.loaded,
+			size: event.lengthComputable ? elm$core$Maybe$Just(event.total) : elm$core$Maybe$Nothing
+		}))));
+	});
+}
+
+// CREATE
+
+var _Regex_never = /.^/;
+
+var _Regex_fromStringWith = F2(function(options, string)
+{
+	var flags = 'g';
+	if (options.multiline) { flags += 'm'; }
+	if (options.caseInsensitive) { flags += 'i'; }
+
+	try
+	{
+		return elm$core$Maybe$Just(new RegExp(string, flags));
+	}
+	catch(error)
+	{
+		return elm$core$Maybe$Nothing;
+	}
+});
+
+
+// USE
+
+var _Regex_contains = F2(function(re, string)
+{
+	return string.match(re) !== null;
+});
+
+
+var _Regex_findAtMost = F3(function(n, re, str)
+{
+	var out = [];
+	var number = 0;
+	var string = str;
+	var lastIndex = re.lastIndex;
+	var prevLastIndex = -1;
+	var result;
+	while (number++ < n && (result = re.exec(string)))
+	{
+		if (prevLastIndex == re.lastIndex) break;
+		var i = result.length - 1;
+		var subs = new Array(i);
+		while (i > 0)
+		{
+			var submatch = result[i];
+			subs[--i] = submatch
+				? elm$core$Maybe$Just(submatch)
+				: elm$core$Maybe$Nothing;
+		}
+		out.push(A4(elm$regex$Regex$Match, result[0], result.index, number, _List_fromArray(subs)));
+		prevLastIndex = re.lastIndex;
+	}
+	re.lastIndex = lastIndex;
+	return _List_fromArray(out);
+});
+
+
+var _Regex_replaceAtMost = F4(function(n, re, replacer, string)
+{
+	var count = 0;
+	function jsReplacer(match)
+	{
+		if (count++ >= n)
+		{
+			return match;
+		}
+		var i = arguments.length - 3;
+		var submatches = new Array(i);
+		while (i > 0)
+		{
+			var submatch = arguments[i];
+			submatches[--i] = submatch
+				? elm$core$Maybe$Just(submatch)
+				: elm$core$Maybe$Nothing;
+		}
+		return replacer(A4(elm$regex$Regex$Match, match, arguments[arguments.length - 2], count, _List_fromArray(submatches)));
+	}
+	return string.replace(re, jsReplacer);
+});
+
+var _Regex_splitAtMost = F3(function(n, re, str)
+{
+	var string = str;
+	var out = [];
+	var start = re.lastIndex;
+	var restoreLastIndex = re.lastIndex;
+	while (n--)
+	{
+		var result = re.exec(string);
+		if (!result) break;
+		out.push(string.slice(start, result.index));
+		start = re.lastIndex;
+	}
+	out.push(string.slice(start));
+	re.lastIndex = restoreLastIndex;
+	return _List_fromArray(out);
+});
+
+var _Regex_infinity = Infinity;
+
+
+
 
 // HELPERS
 
@@ -3872,43 +4185,6 @@ function _VirtualDom_dekey(keyedNode)
 
 
 
-var _Bitwise_and = F2(function(a, b)
-{
-	return a & b;
-});
-
-var _Bitwise_or = F2(function(a, b)
-{
-	return a | b;
-});
-
-var _Bitwise_xor = F2(function(a, b)
-{
-	return a ^ b;
-});
-
-function _Bitwise_complement(a)
-{
-	return ~a;
-};
-
-var _Bitwise_shiftLeftBy = F2(function(offset, a)
-{
-	return a << offset;
-});
-
-var _Bitwise_shiftRightBy = F2(function(offset, a)
-{
-	return a >> offset;
-});
-
-var _Bitwise_shiftRightZfBy = F2(function(offset, a)
-{
-	return a >>> offset;
-});
-
-
-
 
 // ELEMENT
 
@@ -4348,9 +4624,9 @@ function _Browser_load(url)
 	}));
 }
 var author$project$Types$EN = {$: 'EN'};
-var elm$core$Basics$negate = function (n) {
-	return -n;
-};
+var author$project$Types$Hidden = {$: 'Hidden'};
+var author$project$Types$Unauthenticated = {$: 'Unauthenticated'};
+var elm$core$Maybe$Nothing = {$: 'Nothing'};
 var elm$core$Basics$False = {$: 'False'};
 var elm$core$Basics$True = {$: 'True'};
 var elm$core$Result$isOk = function (result) {
@@ -4614,7 +4890,6 @@ var elm$core$Array$initialize = F2(
 var elm$core$Maybe$Just = function (a) {
 	return {$: 'Just', a: a};
 };
-var elm$core$Maybe$Nothing = {$: 'Nothing'};
 var elm$core$Result$Err = function (a) {
 	return {$: 'Err', a: a};
 };
@@ -4831,34 +5106,11 @@ var elm$core$Platform$Cmd$none = elm$core$Platform$Cmd$batch(_List_Nil);
 var author$project$Main$init = function (flags) {
 	return _Utils_Tuple2(
 		{
-			bills: _List_fromArray(
-				[
-					{
-					amount: 12.2,
-					date: '2018-12-21',
-					label: 'Bar',
-					owers: _List_fromArray(
-						['Rémy', 'Alexis']),
-					payer: 'Rémy'
-				},
-					{
-					amount: 52.2,
-					date: '2018-12-22',
-					label: 'Resto',
-					owers: _List_fromArray(
-						['Rémy', 'Alexis', 'Fred']),
-					payer: 'Alexis'
-				}
-				]),
+			auth: author$project$Types$Unauthenticated,
+			fields: {loginPassword: '', loginProjectID: '', newMember: '', newMemberWeight: '', newProjectEmail: '', newProjectError: elm$core$Maybe$Nothing, newProjectName: '', newProjectPassword: ''},
 			locale: author$project$Types$EN,
-			memberField: '',
-			members: _List_fromArray(
-				[
-					{balance: 10, name: 'Alexis'},
-					{balance: -10, name: 'Fred'},
-					{balance: 20, name: 'Rémy'}
-				]),
-			project: 'Week-end Août 2018'
+			modal: author$project$Types$Hidden,
+			project: elm$core$Maybe$Nothing
 		},
 		elm$core$Platform$Cmd$none);
 };
@@ -4867,51 +5119,1806 @@ var elm$core$Platform$Sub$none = elm$core$Platform$Sub$batch(_List_Nil);
 var author$project$Main$subscriptions = function (model) {
 	return elm$core$Platform$Sub$none;
 };
-var author$project$Types$Member = F2(
-	function (name, balance) {
-		return {balance: balance, name: name};
+var elm$core$String$foldl = _String_foldl;
+var elm$core$Basics$ge = _Utils_ge;
+var elm$core$Bitwise$and = _Bitwise_and;
+var elm$core$Bitwise$or = _Bitwise_or;
+var elm$core$Bitwise$shiftRightZfBy = _Bitwise_shiftRightZfBy;
+var elm$core$Bitwise$shiftLeftBy = _Bitwise_shiftLeftBy;
+var truqu$elm_base64$Base64$Encode$intToBase64 = function (i) {
+	switch (i) {
+		case 0:
+			return 'A';
+		case 1:
+			return 'B';
+		case 2:
+			return 'C';
+		case 3:
+			return 'D';
+		case 4:
+			return 'E';
+		case 5:
+			return 'F';
+		case 6:
+			return 'G';
+		case 7:
+			return 'H';
+		case 8:
+			return 'I';
+		case 9:
+			return 'J';
+		case 10:
+			return 'K';
+		case 11:
+			return 'L';
+		case 12:
+			return 'M';
+		case 13:
+			return 'N';
+		case 14:
+			return 'O';
+		case 15:
+			return 'P';
+		case 16:
+			return 'Q';
+		case 17:
+			return 'R';
+		case 18:
+			return 'S';
+		case 19:
+			return 'T';
+		case 20:
+			return 'U';
+		case 21:
+			return 'V';
+		case 22:
+			return 'W';
+		case 23:
+			return 'X';
+		case 24:
+			return 'Y';
+		case 25:
+			return 'Z';
+		case 26:
+			return 'a';
+		case 27:
+			return 'b';
+		case 28:
+			return 'c';
+		case 29:
+			return 'd';
+		case 30:
+			return 'e';
+		case 31:
+			return 'f';
+		case 32:
+			return 'g';
+		case 33:
+			return 'h';
+		case 34:
+			return 'i';
+		case 35:
+			return 'j';
+		case 36:
+			return 'k';
+		case 37:
+			return 'l';
+		case 38:
+			return 'm';
+		case 39:
+			return 'n';
+		case 40:
+			return 'o';
+		case 41:
+			return 'p';
+		case 42:
+			return 'q';
+		case 43:
+			return 'r';
+		case 44:
+			return 's';
+		case 45:
+			return 't';
+		case 46:
+			return 'u';
+		case 47:
+			return 'v';
+		case 48:
+			return 'w';
+		case 49:
+			return 'x';
+		case 50:
+			return 'y';
+		case 51:
+			return 'z';
+		case 52:
+			return '0';
+		case 53:
+			return '1';
+		case 54:
+			return '2';
+		case 55:
+			return '3';
+		case 56:
+			return '4';
+		case 57:
+			return '5';
+		case 58:
+			return '6';
+		case 59:
+			return '7';
+		case 60:
+			return '8';
+		case 61:
+			return '9';
+		case 62:
+			return '+';
+		default:
+			return '/';
+	}
+};
+var truqu$elm_base64$Base64$Encode$toBase64 = function (_int) {
+	return _Utils_ap(
+		truqu$elm_base64$Base64$Encode$intToBase64(63 & (_int >>> 18)),
+		_Utils_ap(
+			truqu$elm_base64$Base64$Encode$intToBase64(63 & (_int >>> 12)),
+			_Utils_ap(
+				truqu$elm_base64$Base64$Encode$intToBase64(63 & (_int >>> 6)),
+				truqu$elm_base64$Base64$Encode$intToBase64(63 & (_int >>> 0)))));
+};
+var truqu$elm_base64$Base64$Encode$add = F2(
+	function (_char, _n0) {
+		var res = _n0.a;
+		var count = _n0.b;
+		var acc = _n0.c;
+		var current = (acc << 8) | _char;
+		if (count === 2) {
+			return _Utils_Tuple3(
+				_Utils_ap(
+					res,
+					truqu$elm_base64$Base64$Encode$toBase64(current)),
+				0,
+				0);
+		} else {
+			return _Utils_Tuple3(res, count + 1, current);
+		}
 	});
+var truqu$elm_base64$Base64$Encode$chomp = F2(
+	function (char_, acc) {
+		var _char = elm$core$Char$toCode(char_);
+		return (_char < 128) ? A2(truqu$elm_base64$Base64$Encode$add, _char, acc) : ((_char < 2048) ? A2(
+			truqu$elm_base64$Base64$Encode$add,
+			128 | (63 & _char),
+			A2(truqu$elm_base64$Base64$Encode$add, 192 | (_char >>> 6), acc)) : (((_char < 55296) || ((_char >= 57344) && (_char <= 65535))) ? A2(
+			truqu$elm_base64$Base64$Encode$add,
+			128 | (63 & _char),
+			A2(
+				truqu$elm_base64$Base64$Encode$add,
+				128 | (63 & (_char >>> 6)),
+				A2(truqu$elm_base64$Base64$Encode$add, 224 | (_char >>> 12), acc))) : A2(
+			truqu$elm_base64$Base64$Encode$add,
+			128 | (63 & _char),
+			A2(
+				truqu$elm_base64$Base64$Encode$add,
+				128 | (63 & (_char >>> 6)),
+				A2(
+					truqu$elm_base64$Base64$Encode$add,
+					128 | (63 & (_char >>> 12)),
+					A2(truqu$elm_base64$Base64$Encode$add, 240 | (_char >>> 18), acc))))));
+	});
+var truqu$elm_base64$Base64$Encode$initial = _Utils_Tuple3('', 0, 0);
+var truqu$elm_base64$Base64$Encode$wrapUp = function (_n0) {
+	var res = _n0.a;
+	var cnt = _n0.b;
+	var acc = _n0.c;
+	switch (cnt) {
+		case 1:
+			return res + (truqu$elm_base64$Base64$Encode$intToBase64(63 & (acc >>> 2)) + (truqu$elm_base64$Base64$Encode$intToBase64(63 & (acc << 4)) + '=='));
+		case 2:
+			return res + (truqu$elm_base64$Base64$Encode$intToBase64(63 & (acc >>> 10)) + (truqu$elm_base64$Base64$Encode$intToBase64(63 & (acc >>> 4)) + (truqu$elm_base64$Base64$Encode$intToBase64(63 & (acc << 2)) + '=')));
+		default:
+			return res;
+	}
+};
+var truqu$elm_base64$Base64$Encode$encode = function (input) {
+	return truqu$elm_base64$Base64$Encode$wrapUp(
+		A3(elm$core$String$foldl, truqu$elm_base64$Base64$Encode$chomp, truqu$elm_base64$Base64$Encode$initial, input));
+};
+var truqu$elm_base64$Base64$encode = truqu$elm_base64$Base64$Encode$encode;
+var author$project$Api$alwaysEncode = function (string) {
+	return truqu$elm_base64$Base64$encode(string);
+};
+var elm$http$Http$Header = F2(
+	function (a, b) {
+		return {$: 'Header', a: a, b: b};
+	});
+var elm$http$Http$header = elm$http$Http$Header;
+var author$project$Api$headersForAuth = function (auth) {
+	if (auth.$ === 'Unauthenticated') {
+		return A2(elm$http$Http$header, 'Authorization', '');
+	} else {
+		var username = auth.a;
+		var password = auth.b;
+		return A2(
+			elm$http$Http$header,
+			'Authorization',
+			'Basic ' + author$project$Api$alwaysEncode(username + (':' + password)));
+	}
+};
+var author$project$Api$iHateMoneyUrl = 'https://ihatemoney.org/api';
+var author$project$Types$MemberAdded = function (a) {
+	return {$: 'MemberAdded', a: a};
+};
+var elm$core$Result$mapError = F2(
+	function (f, result) {
+		if (result.$ === 'Ok') {
+			var v = result.a;
+			return elm$core$Result$Ok(v);
+		} else {
+			var e = result.a;
+			return elm$core$Result$Err(
+				f(e));
+		}
+	});
+var elm$core$Basics$composeR = F3(
+	function (f, g, x) {
+		return g(
+			f(x));
+	});
+var elm$core$Basics$identity = function (x) {
+	return x;
+};
+var elm$core$Dict$RBEmpty_elm_builtin = {$: 'RBEmpty_elm_builtin'};
+var elm$core$Dict$empty = elm$core$Dict$RBEmpty_elm_builtin;
+var elm$core$Basics$compare = _Utils_compare;
+var elm$core$Dict$get = F2(
+	function (targetKey, dict) {
+		get:
+		while (true) {
+			if (dict.$ === 'RBEmpty_elm_builtin') {
+				return elm$core$Maybe$Nothing;
+			} else {
+				var key = dict.b;
+				var value = dict.c;
+				var left = dict.d;
+				var right = dict.e;
+				var _n1 = A2(elm$core$Basics$compare, targetKey, key);
+				switch (_n1.$) {
+					case 'LT':
+						var $temp$targetKey = targetKey,
+							$temp$dict = left;
+						targetKey = $temp$targetKey;
+						dict = $temp$dict;
+						continue get;
+					case 'EQ':
+						return elm$core$Maybe$Just(value);
+					default:
+						var $temp$targetKey = targetKey,
+							$temp$dict = right;
+						targetKey = $temp$targetKey;
+						dict = $temp$dict;
+						continue get;
+				}
+			}
+		}
+	});
+var elm$core$Dict$Black = {$: 'Black'};
+var elm$core$Dict$RBNode_elm_builtin = F5(
+	function (a, b, c, d, e) {
+		return {$: 'RBNode_elm_builtin', a: a, b: b, c: c, d: d, e: e};
+	});
+var elm$core$Dict$Red = {$: 'Red'};
+var elm$core$Dict$balance = F5(
+	function (color, key, value, left, right) {
+		if ((right.$ === 'RBNode_elm_builtin') && (right.a.$ === 'Red')) {
+			var _n1 = right.a;
+			var rK = right.b;
+			var rV = right.c;
+			var rLeft = right.d;
+			var rRight = right.e;
+			if ((left.$ === 'RBNode_elm_builtin') && (left.a.$ === 'Red')) {
+				var _n3 = left.a;
+				var lK = left.b;
+				var lV = left.c;
+				var lLeft = left.d;
+				var lRight = left.e;
+				return A5(
+					elm$core$Dict$RBNode_elm_builtin,
+					elm$core$Dict$Red,
+					key,
+					value,
+					A5(elm$core$Dict$RBNode_elm_builtin, elm$core$Dict$Black, lK, lV, lLeft, lRight),
+					A5(elm$core$Dict$RBNode_elm_builtin, elm$core$Dict$Black, rK, rV, rLeft, rRight));
+			} else {
+				return A5(
+					elm$core$Dict$RBNode_elm_builtin,
+					color,
+					rK,
+					rV,
+					A5(elm$core$Dict$RBNode_elm_builtin, elm$core$Dict$Red, key, value, left, rLeft),
+					rRight);
+			}
+		} else {
+			if ((((left.$ === 'RBNode_elm_builtin') && (left.a.$ === 'Red')) && (left.d.$ === 'RBNode_elm_builtin')) && (left.d.a.$ === 'Red')) {
+				var _n5 = left.a;
+				var lK = left.b;
+				var lV = left.c;
+				var _n6 = left.d;
+				var _n7 = _n6.a;
+				var llK = _n6.b;
+				var llV = _n6.c;
+				var llLeft = _n6.d;
+				var llRight = _n6.e;
+				var lRight = left.e;
+				return A5(
+					elm$core$Dict$RBNode_elm_builtin,
+					elm$core$Dict$Red,
+					lK,
+					lV,
+					A5(elm$core$Dict$RBNode_elm_builtin, elm$core$Dict$Black, llK, llV, llLeft, llRight),
+					A5(elm$core$Dict$RBNode_elm_builtin, elm$core$Dict$Black, key, value, lRight, right));
+			} else {
+				return A5(elm$core$Dict$RBNode_elm_builtin, color, key, value, left, right);
+			}
+		}
+	});
+var elm$core$Dict$insertHelp = F3(
+	function (key, value, dict) {
+		if (dict.$ === 'RBEmpty_elm_builtin') {
+			return A5(elm$core$Dict$RBNode_elm_builtin, elm$core$Dict$Red, key, value, elm$core$Dict$RBEmpty_elm_builtin, elm$core$Dict$RBEmpty_elm_builtin);
+		} else {
+			var nColor = dict.a;
+			var nKey = dict.b;
+			var nValue = dict.c;
+			var nLeft = dict.d;
+			var nRight = dict.e;
+			var _n1 = A2(elm$core$Basics$compare, key, nKey);
+			switch (_n1.$) {
+				case 'LT':
+					return A5(
+						elm$core$Dict$balance,
+						nColor,
+						nKey,
+						nValue,
+						A3(elm$core$Dict$insertHelp, key, value, nLeft),
+						nRight);
+				case 'EQ':
+					return A5(elm$core$Dict$RBNode_elm_builtin, nColor, nKey, value, nLeft, nRight);
+				default:
+					return A5(
+						elm$core$Dict$balance,
+						nColor,
+						nKey,
+						nValue,
+						nLeft,
+						A3(elm$core$Dict$insertHelp, key, value, nRight));
+			}
+		}
+	});
+var elm$core$Dict$insert = F3(
+	function (key, value, dict) {
+		var _n0 = A3(elm$core$Dict$insertHelp, key, value, dict);
+		if ((_n0.$ === 'RBNode_elm_builtin') && (_n0.a.$ === 'Red')) {
+			var _n1 = _n0.a;
+			var k = _n0.b;
+			var v = _n0.c;
+			var l = _n0.d;
+			var r = _n0.e;
+			return A5(elm$core$Dict$RBNode_elm_builtin, elm$core$Dict$Black, k, v, l, r);
+		} else {
+			var x = _n0;
+			return x;
+		}
+	});
+var elm$core$Dict$getMin = function (dict) {
+	getMin:
+	while (true) {
+		if ((dict.$ === 'RBNode_elm_builtin') && (dict.d.$ === 'RBNode_elm_builtin')) {
+			var left = dict.d;
+			var $temp$dict = left;
+			dict = $temp$dict;
+			continue getMin;
+		} else {
+			return dict;
+		}
+	}
+};
+var elm$core$Dict$moveRedLeft = function (dict) {
+	if (((dict.$ === 'RBNode_elm_builtin') && (dict.d.$ === 'RBNode_elm_builtin')) && (dict.e.$ === 'RBNode_elm_builtin')) {
+		if ((dict.e.d.$ === 'RBNode_elm_builtin') && (dict.e.d.a.$ === 'Red')) {
+			var clr = dict.a;
+			var k = dict.b;
+			var v = dict.c;
+			var _n1 = dict.d;
+			var lClr = _n1.a;
+			var lK = _n1.b;
+			var lV = _n1.c;
+			var lLeft = _n1.d;
+			var lRight = _n1.e;
+			var _n2 = dict.e;
+			var rClr = _n2.a;
+			var rK = _n2.b;
+			var rV = _n2.c;
+			var rLeft = _n2.d;
+			var _n3 = rLeft.a;
+			var rlK = rLeft.b;
+			var rlV = rLeft.c;
+			var rlL = rLeft.d;
+			var rlR = rLeft.e;
+			var rRight = _n2.e;
+			return A5(
+				elm$core$Dict$RBNode_elm_builtin,
+				elm$core$Dict$Red,
+				rlK,
+				rlV,
+				A5(
+					elm$core$Dict$RBNode_elm_builtin,
+					elm$core$Dict$Black,
+					k,
+					v,
+					A5(elm$core$Dict$RBNode_elm_builtin, elm$core$Dict$Red, lK, lV, lLeft, lRight),
+					rlL),
+				A5(elm$core$Dict$RBNode_elm_builtin, elm$core$Dict$Black, rK, rV, rlR, rRight));
+		} else {
+			var clr = dict.a;
+			var k = dict.b;
+			var v = dict.c;
+			var _n4 = dict.d;
+			var lClr = _n4.a;
+			var lK = _n4.b;
+			var lV = _n4.c;
+			var lLeft = _n4.d;
+			var lRight = _n4.e;
+			var _n5 = dict.e;
+			var rClr = _n5.a;
+			var rK = _n5.b;
+			var rV = _n5.c;
+			var rLeft = _n5.d;
+			var rRight = _n5.e;
+			if (clr.$ === 'Black') {
+				return A5(
+					elm$core$Dict$RBNode_elm_builtin,
+					elm$core$Dict$Black,
+					k,
+					v,
+					A5(elm$core$Dict$RBNode_elm_builtin, elm$core$Dict$Red, lK, lV, lLeft, lRight),
+					A5(elm$core$Dict$RBNode_elm_builtin, elm$core$Dict$Red, rK, rV, rLeft, rRight));
+			} else {
+				return A5(
+					elm$core$Dict$RBNode_elm_builtin,
+					elm$core$Dict$Black,
+					k,
+					v,
+					A5(elm$core$Dict$RBNode_elm_builtin, elm$core$Dict$Red, lK, lV, lLeft, lRight),
+					A5(elm$core$Dict$RBNode_elm_builtin, elm$core$Dict$Red, rK, rV, rLeft, rRight));
+			}
+		}
+	} else {
+		return dict;
+	}
+};
+var elm$core$Dict$moveRedRight = function (dict) {
+	if (((dict.$ === 'RBNode_elm_builtin') && (dict.d.$ === 'RBNode_elm_builtin')) && (dict.e.$ === 'RBNode_elm_builtin')) {
+		if ((dict.d.d.$ === 'RBNode_elm_builtin') && (dict.d.d.a.$ === 'Red')) {
+			var clr = dict.a;
+			var k = dict.b;
+			var v = dict.c;
+			var _n1 = dict.d;
+			var lClr = _n1.a;
+			var lK = _n1.b;
+			var lV = _n1.c;
+			var _n2 = _n1.d;
+			var _n3 = _n2.a;
+			var llK = _n2.b;
+			var llV = _n2.c;
+			var llLeft = _n2.d;
+			var llRight = _n2.e;
+			var lRight = _n1.e;
+			var _n4 = dict.e;
+			var rClr = _n4.a;
+			var rK = _n4.b;
+			var rV = _n4.c;
+			var rLeft = _n4.d;
+			var rRight = _n4.e;
+			return A5(
+				elm$core$Dict$RBNode_elm_builtin,
+				elm$core$Dict$Red,
+				lK,
+				lV,
+				A5(elm$core$Dict$RBNode_elm_builtin, elm$core$Dict$Black, llK, llV, llLeft, llRight),
+				A5(
+					elm$core$Dict$RBNode_elm_builtin,
+					elm$core$Dict$Black,
+					k,
+					v,
+					lRight,
+					A5(elm$core$Dict$RBNode_elm_builtin, elm$core$Dict$Red, rK, rV, rLeft, rRight)));
+		} else {
+			var clr = dict.a;
+			var k = dict.b;
+			var v = dict.c;
+			var _n5 = dict.d;
+			var lClr = _n5.a;
+			var lK = _n5.b;
+			var lV = _n5.c;
+			var lLeft = _n5.d;
+			var lRight = _n5.e;
+			var _n6 = dict.e;
+			var rClr = _n6.a;
+			var rK = _n6.b;
+			var rV = _n6.c;
+			var rLeft = _n6.d;
+			var rRight = _n6.e;
+			if (clr.$ === 'Black') {
+				return A5(
+					elm$core$Dict$RBNode_elm_builtin,
+					elm$core$Dict$Black,
+					k,
+					v,
+					A5(elm$core$Dict$RBNode_elm_builtin, elm$core$Dict$Red, lK, lV, lLeft, lRight),
+					A5(elm$core$Dict$RBNode_elm_builtin, elm$core$Dict$Red, rK, rV, rLeft, rRight));
+			} else {
+				return A5(
+					elm$core$Dict$RBNode_elm_builtin,
+					elm$core$Dict$Black,
+					k,
+					v,
+					A5(elm$core$Dict$RBNode_elm_builtin, elm$core$Dict$Red, lK, lV, lLeft, lRight),
+					A5(elm$core$Dict$RBNode_elm_builtin, elm$core$Dict$Red, rK, rV, rLeft, rRight));
+			}
+		}
+	} else {
+		return dict;
+	}
+};
+var elm$core$Dict$removeHelpPrepEQGT = F7(
+	function (targetKey, dict, color, key, value, left, right) {
+		if ((left.$ === 'RBNode_elm_builtin') && (left.a.$ === 'Red')) {
+			var _n1 = left.a;
+			var lK = left.b;
+			var lV = left.c;
+			var lLeft = left.d;
+			var lRight = left.e;
+			return A5(
+				elm$core$Dict$RBNode_elm_builtin,
+				color,
+				lK,
+				lV,
+				lLeft,
+				A5(elm$core$Dict$RBNode_elm_builtin, elm$core$Dict$Red, key, value, lRight, right));
+		} else {
+			_n2$2:
+			while (true) {
+				if ((right.$ === 'RBNode_elm_builtin') && (right.a.$ === 'Black')) {
+					if (right.d.$ === 'RBNode_elm_builtin') {
+						if (right.d.a.$ === 'Black') {
+							var _n3 = right.a;
+							var _n4 = right.d;
+							var _n5 = _n4.a;
+							return elm$core$Dict$moveRedRight(dict);
+						} else {
+							break _n2$2;
+						}
+					} else {
+						var _n6 = right.a;
+						var _n7 = right.d;
+						return elm$core$Dict$moveRedRight(dict);
+					}
+				} else {
+					break _n2$2;
+				}
+			}
+			return dict;
+		}
+	});
+var elm$core$Dict$removeMin = function (dict) {
+	if ((dict.$ === 'RBNode_elm_builtin') && (dict.d.$ === 'RBNode_elm_builtin')) {
+		var color = dict.a;
+		var key = dict.b;
+		var value = dict.c;
+		var left = dict.d;
+		var lColor = left.a;
+		var lLeft = left.d;
+		var right = dict.e;
+		if (lColor.$ === 'Black') {
+			if ((lLeft.$ === 'RBNode_elm_builtin') && (lLeft.a.$ === 'Red')) {
+				var _n3 = lLeft.a;
+				return A5(
+					elm$core$Dict$RBNode_elm_builtin,
+					color,
+					key,
+					value,
+					elm$core$Dict$removeMin(left),
+					right);
+			} else {
+				var _n4 = elm$core$Dict$moveRedLeft(dict);
+				if (_n4.$ === 'RBNode_elm_builtin') {
+					var nColor = _n4.a;
+					var nKey = _n4.b;
+					var nValue = _n4.c;
+					var nLeft = _n4.d;
+					var nRight = _n4.e;
+					return A5(
+						elm$core$Dict$balance,
+						nColor,
+						nKey,
+						nValue,
+						elm$core$Dict$removeMin(nLeft),
+						nRight);
+				} else {
+					return elm$core$Dict$RBEmpty_elm_builtin;
+				}
+			}
+		} else {
+			return A5(
+				elm$core$Dict$RBNode_elm_builtin,
+				color,
+				key,
+				value,
+				elm$core$Dict$removeMin(left),
+				right);
+		}
+	} else {
+		return elm$core$Dict$RBEmpty_elm_builtin;
+	}
+};
+var elm$core$Dict$removeHelp = F2(
+	function (targetKey, dict) {
+		if (dict.$ === 'RBEmpty_elm_builtin') {
+			return elm$core$Dict$RBEmpty_elm_builtin;
+		} else {
+			var color = dict.a;
+			var key = dict.b;
+			var value = dict.c;
+			var left = dict.d;
+			var right = dict.e;
+			if (_Utils_cmp(targetKey, key) < 0) {
+				if ((left.$ === 'RBNode_elm_builtin') && (left.a.$ === 'Black')) {
+					var _n4 = left.a;
+					var lLeft = left.d;
+					if ((lLeft.$ === 'RBNode_elm_builtin') && (lLeft.a.$ === 'Red')) {
+						var _n6 = lLeft.a;
+						return A5(
+							elm$core$Dict$RBNode_elm_builtin,
+							color,
+							key,
+							value,
+							A2(elm$core$Dict$removeHelp, targetKey, left),
+							right);
+					} else {
+						var _n7 = elm$core$Dict$moveRedLeft(dict);
+						if (_n7.$ === 'RBNode_elm_builtin') {
+							var nColor = _n7.a;
+							var nKey = _n7.b;
+							var nValue = _n7.c;
+							var nLeft = _n7.d;
+							var nRight = _n7.e;
+							return A5(
+								elm$core$Dict$balance,
+								nColor,
+								nKey,
+								nValue,
+								A2(elm$core$Dict$removeHelp, targetKey, nLeft),
+								nRight);
+						} else {
+							return elm$core$Dict$RBEmpty_elm_builtin;
+						}
+					}
+				} else {
+					return A5(
+						elm$core$Dict$RBNode_elm_builtin,
+						color,
+						key,
+						value,
+						A2(elm$core$Dict$removeHelp, targetKey, left),
+						right);
+				}
+			} else {
+				return A2(
+					elm$core$Dict$removeHelpEQGT,
+					targetKey,
+					A7(elm$core$Dict$removeHelpPrepEQGT, targetKey, dict, color, key, value, left, right));
+			}
+		}
+	});
+var elm$core$Dict$removeHelpEQGT = F2(
+	function (targetKey, dict) {
+		if (dict.$ === 'RBNode_elm_builtin') {
+			var color = dict.a;
+			var key = dict.b;
+			var value = dict.c;
+			var left = dict.d;
+			var right = dict.e;
+			if (_Utils_eq(targetKey, key)) {
+				var _n1 = elm$core$Dict$getMin(right);
+				if (_n1.$ === 'RBNode_elm_builtin') {
+					var minKey = _n1.b;
+					var minValue = _n1.c;
+					return A5(
+						elm$core$Dict$balance,
+						color,
+						minKey,
+						minValue,
+						left,
+						elm$core$Dict$removeMin(right));
+				} else {
+					return elm$core$Dict$RBEmpty_elm_builtin;
+				}
+			} else {
+				return A5(
+					elm$core$Dict$balance,
+					color,
+					key,
+					value,
+					left,
+					A2(elm$core$Dict$removeHelp, targetKey, right));
+			}
+		} else {
+			return elm$core$Dict$RBEmpty_elm_builtin;
+		}
+	});
+var elm$core$Dict$remove = F2(
+	function (key, dict) {
+		var _n0 = A2(elm$core$Dict$removeHelp, key, dict);
+		if ((_n0.$ === 'RBNode_elm_builtin') && (_n0.a.$ === 'Red')) {
+			var _n1 = _n0.a;
+			var k = _n0.b;
+			var v = _n0.c;
+			var l = _n0.d;
+			var r = _n0.e;
+			return A5(elm$core$Dict$RBNode_elm_builtin, elm$core$Dict$Black, k, v, l, r);
+		} else {
+			var x = _n0;
+			return x;
+		}
+	});
+var elm$core$Dict$update = F3(
+	function (targetKey, alter, dictionary) {
+		var _n0 = alter(
+			A2(elm$core$Dict$get, targetKey, dictionary));
+		if (_n0.$ === 'Just') {
+			var value = _n0.a;
+			return A3(elm$core$Dict$insert, targetKey, value, dictionary);
+		} else {
+			return A2(elm$core$Dict$remove, targetKey, dictionary);
+		}
+	});
+var elm$core$Maybe$isJust = function (maybe) {
+	if (maybe.$ === 'Just') {
+		return true;
+	} else {
+		return false;
+	}
+};
+var elm$core$Platform$sendToApp = _Platform_sendToApp;
+var elm$core$Platform$sendToSelf = _Platform_sendToSelf;
+var elm$core$Result$map = F2(
+	function (func, ra) {
+		if (ra.$ === 'Ok') {
+			var a = ra.a;
+			return elm$core$Result$Ok(
+				func(a));
+		} else {
+			var e = ra.a;
+			return elm$core$Result$Err(e);
+		}
+	});
+var elm$http$Http$BadStatus_ = F2(
+	function (a, b) {
+		return {$: 'BadStatus_', a: a, b: b};
+	});
+var elm$http$Http$BadUrl_ = function (a) {
+	return {$: 'BadUrl_', a: a};
+};
+var elm$http$Http$GoodStatus_ = F2(
+	function (a, b) {
+		return {$: 'GoodStatus_', a: a, b: b};
+	});
+var elm$http$Http$NetworkError_ = {$: 'NetworkError_'};
+var elm$http$Http$Receiving = function (a) {
+	return {$: 'Receiving', a: a};
+};
+var elm$http$Http$Sending = function (a) {
+	return {$: 'Sending', a: a};
+};
+var elm$http$Http$Timeout_ = {$: 'Timeout_'};
+var elm$http$Http$expectStringResponse = F2(
+	function (toMsg, toResult) {
+		return A3(
+			_Http_expect,
+			'',
+			elm$core$Basics$identity,
+			A2(elm$core$Basics$composeR, toResult, toMsg));
+	});
+var elm$http$Http$BadBody = function (a) {
+	return {$: 'BadBody', a: a};
+};
+var elm$http$Http$BadStatus = function (a) {
+	return {$: 'BadStatus', a: a};
+};
+var elm$http$Http$BadUrl = function (a) {
+	return {$: 'BadUrl', a: a};
+};
+var elm$http$Http$NetworkError = {$: 'NetworkError'};
+var elm$http$Http$Timeout = {$: 'Timeout'};
+var elm$http$Http$resolve = F2(
+	function (toResult, response) {
+		switch (response.$) {
+			case 'BadUrl_':
+				var url = response.a;
+				return elm$core$Result$Err(
+					elm$http$Http$BadUrl(url));
+			case 'Timeout_':
+				return elm$core$Result$Err(elm$http$Http$Timeout);
+			case 'NetworkError_':
+				return elm$core$Result$Err(elm$http$Http$NetworkError);
+			case 'BadStatus_':
+				var metadata = response.a;
+				return elm$core$Result$Err(
+					elm$http$Http$BadStatus(metadata.statusCode));
+			default:
+				var body = response.b;
+				return A2(
+					elm$core$Result$mapError,
+					elm$http$Http$BadBody,
+					toResult(body));
+		}
+	});
+var elm$json$Json$Decode$decodeString = _Json_runOnString;
+var elm$http$Http$expectJson = F2(
+	function (toMsg, decoder) {
+		return A2(
+			elm$http$Http$expectStringResponse,
+			toMsg,
+			elm$http$Http$resolve(
+				function (string) {
+					return A2(
+						elm$core$Result$mapError,
+						elm$json$Json$Decode$errorToString,
+						A2(elm$json$Json$Decode$decodeString, decoder, string));
+				}));
+	});
+var elm$http$Http$jsonBody = function (value) {
+	return A2(
+		_Http_pair,
+		'application/json',
+		A2(elm$json$Json$Encode$encode, 0, value));
+};
+var elm$http$Http$Request = function (a) {
+	return {$: 'Request', a: a};
+};
+var elm$core$Task$succeed = _Scheduler_succeed;
+var elm$http$Http$State = F2(
+	function (reqs, subs) {
+		return {reqs: reqs, subs: subs};
+	});
+var elm$http$Http$init = elm$core$Task$succeed(
+	A2(elm$http$Http$State, elm$core$Dict$empty, _List_Nil));
+var elm$core$Task$andThen = _Scheduler_andThen;
+var elm$core$Process$kill = _Scheduler_kill;
+var elm$core$Process$spawn = _Scheduler_spawn;
+var elm$http$Http$updateReqs = F3(
+	function (router, cmds, reqs) {
+		updateReqs:
+		while (true) {
+			if (!cmds.b) {
+				return elm$core$Task$succeed(reqs);
+			} else {
+				var cmd = cmds.a;
+				var otherCmds = cmds.b;
+				if (cmd.$ === 'Cancel') {
+					var tracker = cmd.a;
+					var _n2 = A2(elm$core$Dict$get, tracker, reqs);
+					if (_n2.$ === 'Nothing') {
+						var $temp$router = router,
+							$temp$cmds = otherCmds,
+							$temp$reqs = reqs;
+						router = $temp$router;
+						cmds = $temp$cmds;
+						reqs = $temp$reqs;
+						continue updateReqs;
+					} else {
+						var pid = _n2.a;
+						return A2(
+							elm$core$Task$andThen,
+							function (_n3) {
+								return A3(
+									elm$http$Http$updateReqs,
+									router,
+									otherCmds,
+									A2(elm$core$Dict$remove, tracker, reqs));
+							},
+							elm$core$Process$kill(pid));
+					}
+				} else {
+					var req = cmd.a;
+					return A2(
+						elm$core$Task$andThen,
+						function (pid) {
+							var _n4 = req.tracker;
+							if (_n4.$ === 'Nothing') {
+								return A3(elm$http$Http$updateReqs, router, otherCmds, reqs);
+							} else {
+								var tracker = _n4.a;
+								return A3(
+									elm$http$Http$updateReqs,
+									router,
+									otherCmds,
+									A3(elm$core$Dict$insert, tracker, pid, reqs));
+							}
+						},
+						elm$core$Process$spawn(
+							A3(
+								_Http_toTask,
+								router,
+								elm$core$Platform$sendToApp(router),
+								req)));
+				}
+			}
+		}
+	});
+var elm$http$Http$onEffects = F4(
+	function (router, cmds, subs, state) {
+		return A2(
+			elm$core$Task$andThen,
+			function (reqs) {
+				return elm$core$Task$succeed(
+					A2(elm$http$Http$State, reqs, subs));
+			},
+			A3(elm$http$Http$updateReqs, router, cmds, state.reqs));
+	});
+var elm$core$List$foldrHelper = F4(
+	function (fn, acc, ctr, ls) {
+		if (!ls.b) {
+			return acc;
+		} else {
+			var a = ls.a;
+			var r1 = ls.b;
+			if (!r1.b) {
+				return A2(fn, a, acc);
+			} else {
+				var b = r1.a;
+				var r2 = r1.b;
+				if (!r2.b) {
+					return A2(
+						fn,
+						a,
+						A2(fn, b, acc));
+				} else {
+					var c = r2.a;
+					var r3 = r2.b;
+					if (!r3.b) {
+						return A2(
+							fn,
+							a,
+							A2(
+								fn,
+								b,
+								A2(fn, c, acc)));
+					} else {
+						var d = r3.a;
+						var r4 = r3.b;
+						var res = (ctr > 500) ? A3(
+							elm$core$List$foldl,
+							fn,
+							acc,
+							elm$core$List$reverse(r4)) : A4(elm$core$List$foldrHelper, fn, acc, ctr + 1, r4);
+						return A2(
+							fn,
+							a,
+							A2(
+								fn,
+								b,
+								A2(
+									fn,
+									c,
+									A2(fn, d, res))));
+					}
+				}
+			}
+		}
+	});
+var elm$core$List$foldr = F3(
+	function (fn, acc, ls) {
+		return A4(elm$core$List$foldrHelper, fn, acc, 0, ls);
+	});
+var elm$core$List$maybeCons = F3(
+	function (f, mx, xs) {
+		var _n0 = f(mx);
+		if (_n0.$ === 'Just') {
+			var x = _n0.a;
+			return A2(elm$core$List$cons, x, xs);
+		} else {
+			return xs;
+		}
+	});
+var elm$core$List$filterMap = F2(
+	function (f, xs) {
+		return A3(
+			elm$core$List$foldr,
+			elm$core$List$maybeCons(f),
+			_List_Nil,
+			xs);
+	});
+var elm$core$Task$map2 = F3(
+	function (func, taskA, taskB) {
+		return A2(
+			elm$core$Task$andThen,
+			function (a) {
+				return A2(
+					elm$core$Task$andThen,
+					function (b) {
+						return elm$core$Task$succeed(
+							A2(func, a, b));
+					},
+					taskB);
+			},
+			taskA);
+	});
+var elm$core$Task$sequence = function (tasks) {
+	return A3(
+		elm$core$List$foldr,
+		elm$core$Task$map2(elm$core$List$cons),
+		elm$core$Task$succeed(_List_Nil),
+		tasks);
+};
+var elm$http$Http$maybeSend = F4(
+	function (router, desiredTracker, progress, _n0) {
+		var actualTracker = _n0.a;
+		var toMsg = _n0.b;
+		return _Utils_eq(desiredTracker, actualTracker) ? elm$core$Maybe$Just(
+			A2(
+				elm$core$Platform$sendToApp,
+				router,
+				toMsg(progress))) : elm$core$Maybe$Nothing;
+	});
+var elm$http$Http$onSelfMsg = F3(
+	function (router, _n0, state) {
+		var tracker = _n0.a;
+		var progress = _n0.b;
+		return A2(
+			elm$core$Task$andThen,
+			function (_n1) {
+				return elm$core$Task$succeed(state);
+			},
+			elm$core$Task$sequence(
+				A2(
+					elm$core$List$filterMap,
+					A3(elm$http$Http$maybeSend, router, tracker, progress),
+					state.subs)));
+	});
+var elm$http$Http$Cancel = function (a) {
+	return {$: 'Cancel', a: a};
+};
+var elm$http$Http$cmdMap = F2(
+	function (func, cmd) {
+		if (cmd.$ === 'Cancel') {
+			var tracker = cmd.a;
+			return elm$http$Http$Cancel(tracker);
+		} else {
+			var r = cmd.a;
+			return elm$http$Http$Request(
+				{
+					allowCookiesFromOtherDomains: r.allowCookiesFromOtherDomains,
+					body: r.body,
+					expect: A2(_Http_mapExpect, func, r.expect),
+					headers: r.headers,
+					method: r.method,
+					timeout: r.timeout,
+					tracker: r.tracker,
+					url: r.url
+				});
+		}
+	});
+var elm$http$Http$MySub = F2(
+	function (a, b) {
+		return {$: 'MySub', a: a, b: b};
+	});
+var elm$http$Http$subMap = F2(
+	function (func, _n0) {
+		var tracker = _n0.a;
+		var toMsg = _n0.b;
+		return A2(
+			elm$http$Http$MySub,
+			tracker,
+			A2(elm$core$Basics$composeR, toMsg, func));
+	});
+_Platform_effectManagers['Http'] = _Platform_createManager(elm$http$Http$init, elm$http$Http$onEffects, elm$http$Http$onSelfMsg, elm$http$Http$cmdMap, elm$http$Http$subMap);
+var elm$http$Http$command = _Platform_leaf('Http');
+var elm$http$Http$subscription = _Platform_leaf('Http');
+var elm$http$Http$request = function (r) {
+	return elm$http$Http$command(
+		elm$http$Http$Request(
+			{allowCookiesFromOtherDomains: false, body: r.body, expect: r.expect, headers: r.headers, method: r.method, timeout: r.timeout, tracker: r.tracker, url: r.url}));
+};
+var elm$json$Json$Decode$int = _Json_decodeInt;
+var elm$json$Json$Encode$object = function (pairs) {
+	return _Json_wrap(
+		A3(
+			elm$core$List$foldl,
+			F2(
+				function (_n0, obj) {
+					var k = _n0.a;
+					var v = _n0.b;
+					return A3(_Json_addField, k, v, obj);
+				}),
+			_Json_emptyObject(_Utils_Tuple0),
+			pairs));
+};
+var elm$json$Json$Encode$string = _Json_wrap;
+var author$project$Api$addMemberToProject = F2(
+	function (auth, name) {
+		var projectID = function () {
+			if (auth.$ === 'Basic') {
+				var user = auth.a;
+				return user;
+			} else {
+				return '';
+			}
+		}();
+		return elm$http$Http$request(
+			{
+				body: elm$http$Http$jsonBody(
+					elm$json$Json$Encode$object(
+						_List_fromArray(
+							[
+								_Utils_Tuple2(
+								'name',
+								elm$json$Json$Encode$string(name))
+							]))),
+				expect: A2(elm$http$Http$expectJson, author$project$Types$MemberAdded, elm$json$Json$Decode$int),
+				headers: _List_fromArray(
+					[
+						author$project$Api$headersForAuth(auth)
+					]),
+				method: 'POST',
+				timeout: elm$core$Maybe$Nothing,
+				tracker: elm$core$Maybe$Nothing,
+				url: author$project$Api$iHateMoneyUrl + ('/projects/' + (projectID + '/members'))
+			});
+	});
+var hecrj$elm_slug$Slug$Slug = function (a) {
+	return {$: 'Slug', a: a};
+};
+var elm$core$String$map = _String_map;
+var elm$core$String$toLower = _String_toLower;
+var elm$core$String$words = _String_words;
+var elm$regex$Regex$Match = F4(
+	function (match, index, number, submatches) {
+		return {index: index, match: match, number: number, submatches: submatches};
+	});
+var elm$regex$Regex$replace = _Regex_replaceAtMost(_Regex_infinity);
+var hecrj$elm_slug$Slug$isAlphanumeric = function (c) {
+	return ((_Utils_cmp(
+		c,
+		_Utils_chr('0')) > -1) && (_Utils_cmp(
+		c,
+		_Utils_chr('9')) < 1)) || ((_Utils_cmp(
+		c,
+		_Utils_chr('a')) > -1) && (_Utils_cmp(
+		c,
+		_Utils_chr('z')) < 1));
+};
+var elm$core$Maybe$withDefault = F2(
+	function (_default, maybe) {
+		if (maybe.$ === 'Just') {
+			var value = maybe.a;
+			return value;
+		} else {
+			return _default;
+		}
+	});
+var elm$regex$Regex$fromStringWith = _Regex_fromStringWith;
+var elm$regex$Regex$fromString = function (string) {
+	return A2(
+		elm$regex$Regex$fromStringWith,
+		{caseInsensitive: false, multiline: false},
+		string);
+};
+var elm$regex$Regex$never = _Regex_never;
+var hecrj$elm_slug$Slug$simpleQuoteRegex = A2(
+	elm$core$Maybe$withDefault,
+	elm$regex$Regex$never,
+	elm$regex$Regex$fromString('\''));
+var hecrj$elm_slug$Slug$processWords = function () {
+	var mapHelp = function (c) {
+		return hecrj$elm_slug$Slug$isAlphanumeric(c) ? c : _Utils_chr(' ');
+	};
+	return A2(
+		elm$core$Basics$composeR,
+		A2(
+			elm$regex$Regex$replace,
+			hecrj$elm_slug$Slug$simpleQuoteRegex,
+			function (_n0) {
+				return '';
+			}),
+		A2(
+			elm$core$Basics$composeR,
+			elm$core$String$toLower,
+			A2(
+				elm$core$Basics$composeR,
+				elm$core$String$map(mapHelp),
+				elm$core$String$words)));
+}();
+var hecrj$elm_slug$Slug$generate = function (text) {
+	var words = hecrj$elm_slug$Slug$processWords(text);
+	return _Utils_eq(
+		words,
+		_List_fromArray(
+			[''])) ? elm$core$Maybe$Nothing : elm$core$Maybe$Just(
+		hecrj$elm_slug$Slug$Slug(
+			A2(elm$core$String$join, '-', words)));
+};
+var hecrj$elm_slug$Slug$toString = function (_n0) {
+	var s = _n0.a;
+	return s;
+};
+var author$project$Api$encodeProject = F3(
+	function (projectName, projectCode, projectEmail) {
+		var slug = function () {
+			var _n0 = hecrj$elm_slug$Slug$generate(projectName);
+			if (_n0.$ === 'Just') {
+				var s = _n0.a;
+				return hecrj$elm_slug$Slug$toString(s);
+			} else {
+				return '';
+			}
+		}();
+		return elm$json$Json$Encode$object(
+			_List_fromArray(
+				[
+					_Utils_Tuple2(
+					'name',
+					elm$json$Json$Encode$string(projectName)),
+					_Utils_Tuple2(
+					'id',
+					elm$json$Json$Encode$string(slug)),
+					_Utils_Tuple2(
+					'password',
+					elm$json$Json$Encode$string(projectCode)),
+					_Utils_Tuple2(
+					'contact_email',
+					elm$json$Json$Encode$string(projectEmail))
+				]));
+	});
+var author$project$Types$ProjectCreated = function (a) {
+	return {$: 'ProjectCreated', a: a};
+};
+var elm$json$Json$Decode$string = _Json_decodeString;
+var author$project$Api$createProject = F3(
+	function (projectName, projectCode, projectEmail) {
+		return elm$http$Http$request(
+			{
+				body: elm$http$Http$jsonBody(
+					A3(author$project$Api$encodeProject, projectName, projectCode, projectEmail)),
+				expect: A2(elm$http$Http$expectJson, author$project$Types$ProjectCreated, elm$json$Json$Decode$string),
+				headers: _List_Nil,
+				method: 'POST',
+				timeout: elm$core$Maybe$Nothing,
+				tracker: elm$core$Maybe$Nothing,
+				url: author$project$Api$iHateMoneyUrl + '/projects'
+			});
+	});
+var author$project$Types$Member = F5(
+	function (id, name, weight, activated, balance) {
+		return {activated: activated, balance: balance, id: id, name: name, weight: weight};
+	});
+var elm$json$Json$Decode$bool = _Json_decodeBool;
+var elm$json$Json$Decode$field = _Json_decodeField;
+var elm$json$Json$Decode$map5 = _Json_map5;
+var elm$json$Json$Decode$succeed = _Json_succeed;
+var author$project$Api$decodeMember = A6(
+	elm$json$Json$Decode$map5,
+	author$project$Types$Member,
+	A2(elm$json$Json$Decode$field, 'id', elm$json$Json$Decode$int),
+	A2(elm$json$Json$Decode$field, 'name', elm$json$Json$Decode$string),
+	A2(elm$json$Json$Decode$field, 'weight', elm$json$Json$Decode$int),
+	A2(elm$json$Json$Decode$field, 'activated', elm$json$Json$Decode$bool),
+	elm$json$Json$Decode$succeed(0.0));
+var author$project$Types$MemberEdited = function (a) {
+	return {$: 'MemberEdited', a: a};
+};
+var elm$json$Json$Encode$int = _Json_wrap;
+var author$project$Api$editProjectMember = F4(
+	function (auth, member_id, name, weight) {
+		var projectID = function () {
+			if (auth.$ === 'Basic') {
+				var user = auth.a;
+				return user;
+			} else {
+				return '';
+			}
+		}();
+		return elm$http$Http$request(
+			{
+				body: elm$http$Http$jsonBody(
+					elm$json$Json$Encode$object(
+						_List_fromArray(
+							[
+								_Utils_Tuple2(
+								'name',
+								elm$json$Json$Encode$string(name)),
+								_Utils_Tuple2(
+								'weight',
+								elm$json$Json$Encode$int(weight))
+							]))),
+				expect: A2(elm$http$Http$expectJson, author$project$Types$MemberEdited, author$project$Api$decodeMember),
+				headers: _List_fromArray(
+					[
+						author$project$Api$headersForAuth(auth)
+					]),
+				method: 'PUT',
+				timeout: elm$core$Maybe$Nothing,
+				tracker: elm$core$Maybe$Nothing,
+				url: author$project$Api$iHateMoneyUrl + ('/projects/' + (projectID + ('/members/' + elm$core$String$fromInt(member_id))))
+			});
+	});
+var author$project$Types$Project = F4(
+	function (name, contact_email, members, bills) {
+		return {bills: bills, contact_email: contact_email, members: members, name: name};
+	});
+var elm$json$Json$Decode$list = _Json_decodeList;
+var elm$json$Json$Decode$map4 = _Json_map4;
+var author$project$Api$decodeProjectInfo = A5(
+	elm$json$Json$Decode$map4,
+	author$project$Types$Project,
+	A2(elm$json$Json$Decode$field, 'name', elm$json$Json$Decode$string),
+	A2(elm$json$Json$Decode$field, 'contact_email', elm$json$Json$Decode$string),
+	A2(
+		elm$json$Json$Decode$field,
+		'members',
+		elm$json$Json$Decode$list(author$project$Api$decodeMember)),
+	elm$json$Json$Decode$succeed(_List_Nil));
+var author$project$Types$ProjectFetched = function (a) {
+	return {$: 'ProjectFetched', a: a};
+};
+var elm$http$Http$emptyBody = _Http_emptyBody;
+var author$project$Api$fetchProjectInfo = F2(
+	function (auth, projectID) {
+		return elm$http$Http$request(
+			{
+				body: elm$http$Http$emptyBody,
+				expect: A2(elm$http$Http$expectJson, author$project$Types$ProjectFetched, author$project$Api$decodeProjectInfo),
+				headers: _List_fromArray(
+					[
+						author$project$Api$headersForAuth(auth)
+					]),
+				method: 'GET',
+				timeout: elm$core$Maybe$Nothing,
+				tracker: elm$core$Maybe$Nothing,
+				url: author$project$Api$iHateMoneyUrl + ('/projects/' + projectID)
+			});
+	});
+var elm$core$Basics$neq = _Utils_notEqual;
+var elm$core$List$append = F2(
+	function (xs, ys) {
+		if (!ys.b) {
+			return xs;
+		} else {
+			return A3(elm$core$List$foldr, elm$core$List$cons, ys, xs);
+		}
+	});
+var elm$core$List$filter = F2(
+	function (isGood, list) {
+		return A3(
+			elm$core$List$foldr,
+			F2(
+				function (x, xs) {
+					return isGood(x) ? A2(elm$core$List$cons, x, xs) : xs;
+				}),
+			_List_Nil,
+			list);
+	});
+var elm$core$List$sortBy = _List_sortBy;
+var author$project$Main$setEditedProjectMember = F2(
+	function (member, project) {
+		var members = A2(
+			elm$core$List$sortBy,
+			function ($) {
+				return $.name;
+			},
+			A2(
+				elm$core$List$append,
+				_List_fromArray(
+					[member]),
+				A2(
+					elm$core$List$filter,
+					function (m) {
+						return !_Utils_eq(m.id, member.id);
+					},
+					project.members)));
+		return _Utils_update(
+			project,
+			{members: members});
+	});
+var author$project$Main$setLoginPassword = F2(
+	function (value, fields) {
+		return _Utils_update(
+			fields,
+			{loginPassword: value});
+	});
+var author$project$Main$setLoginProjectID = F2(
+	function (value, fields) {
+		return _Utils_update(
+			fields,
+			{loginProjectID: value});
+	});
+var author$project$Main$setMemberToProject = F2(
+	function (member, project) {
+		return _Utils_update(
+			project,
+			{
+				members: _Utils_ap(
+					project.members,
+					_List_fromArray(
+						[member]))
+			});
+	});
+var author$project$Main$setNewMemberName = F2(
+	function (newMember, fields) {
+		return _Utils_update(
+			fields,
+			{newMember: newMember});
+	});
+var author$project$Main$setNewMemberWeight = F2(
+	function (newWeight, fields) {
+		return _Utils_update(
+			fields,
+			{newMemberWeight: newWeight});
+	});
+var author$project$Main$setNewProjectEmail = F2(
+	function (value, fields) {
+		return _Utils_update(
+			fields,
+			{newProjectEmail: value});
+	});
+var author$project$Main$setNewProjectError = F2(
+	function (value, fields) {
+		return _Utils_update(
+			fields,
+			{
+				newProjectError: elm$core$Maybe$Just(value)
+			});
+	});
+var author$project$Main$setNewProjectName = F2(
+	function (value, fields) {
+		return _Utils_update(
+			fields,
+			{newProjectError: elm$core$Maybe$Nothing, newProjectName: value});
+	});
+var author$project$Main$setNewProjectPassword = F2(
+	function (value, fields) {
+		return _Utils_update(
+			fields,
+			{newProjectPassword: value});
+	});
+var author$project$Types$Basic = F2(
+	function (a, b) {
+		return {$: 'Basic', a: a, b: b};
+	});
+var elm$core$Debug$log = _Debug_log;
+var elm$core$List$head = function (list) {
+	if (list.b) {
+		var x = list.a;
+		var xs = list.b;
+		return elm$core$Maybe$Just(x);
+	} else {
+		return elm$core$Maybe$Nothing;
+	}
+};
+var elm$core$String$toInt = _String_toInt;
 var author$project$Main$update = F2(
 	function (msg, model) {
 		switch (msg.$) {
-			case 'NewNameTyped':
-				var new_member_name = msg.a;
+			case 'NewMemberName':
+				var value = msg.a;
+				var fields = A2(author$project$Main$setNewMemberName, value, model.fields);
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
-						{memberField: new_member_name}),
+						{fields: fields}),
+					elm$core$Platform$Cmd$none);
+			case 'NewMemberWeight':
+				var value = msg.a;
+				var fields = A2(author$project$Main$setNewMemberWeight, value, model.fields);
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{fields: fields}),
 					elm$core$Platform$Cmd$none);
 			case 'AddMember':
+				var _n1 = model.project;
+				if (_n1.$ === 'Just') {
+					var project = _n1.a;
+					return _Utils_Tuple2(
+						model,
+						A2(author$project$Api$addMemberToProject, model.auth, model.fields.newMember));
+				} else {
+					return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
+				}
+			case 'TriggerEditMember':
+				var member_id = msg.a;
+				var _n2 = model.project;
+				if (_n2.$ === 'Just') {
+					var project = _n2.a;
+					return _Utils_Tuple2(
+						model,
+						A4(
+							author$project$Api$editProjectMember,
+							model.auth,
+							member_id,
+							model.fields.newMember,
+							A2(
+								elm$core$Maybe$withDefault,
+								1,
+								elm$core$String$toInt(model.fields.newMemberWeight))));
+				} else {
+					return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
+				}
+			case 'MemberAdded':
+				if (msg.a.$ === 'Ok') {
+					var id = msg.a.a;
+					var _n3 = model.project;
+					if (_n3.$ === 'Just') {
+						var project = _n3.a;
+						var member = A5(author$project$Types$Member, id, model.fields.newMember, 1, true, 0.0);
+						var newProject = A2(author$project$Main$setMemberToProject, member, project);
+						var fields = A2(author$project$Main$setNewMemberName, '', model.fields);
+						return _Utils_Tuple2(
+							_Utils_update(
+								model,
+								{
+									fields: fields,
+									project: elm$core$Maybe$Just(newProject)
+								}),
+							elm$core$Platform$Cmd$none);
+					} else {
+						return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
+					}
+				} else {
+					var err = msg.a.a;
+					var _n4 = A2(elm$core$Debug$log, 'Error while adding the member', err);
+					return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
+				}
+			case 'MemberEdited':
+				if (msg.a.$ === 'Ok') {
+					var member = msg.a.a;
+					var _n5 = model.project;
+					if (_n5.$ === 'Just') {
+						var project = _n5.a;
+						var newProject = A2(author$project$Main$setEditedProjectMember, member, project);
+						var fields = A2(
+							author$project$Main$setNewMemberWeight,
+							'',
+							A2(author$project$Main$setNewMemberName, '', model.fields));
+						return _Utils_Tuple2(
+							_Utils_update(
+								model,
+								{
+									fields: fields,
+									modal: author$project$Types$Hidden,
+									project: elm$core$Maybe$Just(newProject)
+								}),
+							elm$core$Platform$Cmd$none);
+					} else {
+						return _Utils_Tuple2(
+							_Utils_update(
+								model,
+								{modal: author$project$Types$Hidden}),
+							elm$core$Platform$Cmd$none);
+					}
+				} else {
+					var err = msg.a.a;
+					var _n6 = A2(elm$core$Debug$log, 'Error while adding the member', err);
+					return _Utils_Tuple2(
+						_Utils_update(
+							model,
+							{modal: author$project$Types$Hidden}),
+						elm$core$Platform$Cmd$none);
+				}
+			case 'NewProjectName':
+				var value = msg.a;
+				var fields = A2(author$project$Main$setNewProjectName, value, model.fields);
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
-						{
-							memberField: '',
-							members: _Utils_ap(
-								model.members,
-								_List_fromArray(
-									[
-										A2(author$project$Types$Member, model.memberField, 0)
-									]))
-						}),
+						{fields: fields}),
 					elm$core$Platform$Cmd$none);
-			default:
+			case 'NewProjectPassword':
+				var value = msg.a;
+				var fields = A2(author$project$Main$setNewProjectPassword, value, model.fields);
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{fields: fields}),
+					elm$core$Platform$Cmd$none);
+			case 'NewProjectEmail':
+				var value = msg.a;
+				var fields = A2(author$project$Main$setNewProjectEmail, value, model.fields);
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{fields: fields}),
+					elm$core$Platform$Cmd$none);
+			case 'CreateProject':
+				var projectID = model.fields.newProjectName;
+				var slug = hecrj$elm_slug$Slug$generate(projectID);
+				var password = model.fields.newProjectPassword;
+				var email = model.fields.newProjectEmail;
+				if (slug.$ === 'Just') {
+					var fields = A2(
+						author$project$Main$setNewProjectEmail,
+						'',
+						A2(
+							author$project$Main$setNewProjectPassword,
+							'',
+							A2(author$project$Main$setNewProjectName, '', model.fields)));
+					return _Utils_Tuple2(
+						_Utils_update(
+							model,
+							{
+								auth: A2(author$project$Types$Basic, projectID, password),
+								fields: fields
+							}),
+						A3(author$project$Api$createProject, projectID, password, email));
+				} else {
+					var fields = A2(author$project$Main$setNewProjectError, 'Invalid project name: ' + projectID, model.fields);
+					var _n8 = A2(elm$core$Debug$log, 'Invalid ProjectName', projectID);
+					return _Utils_Tuple2(
+						_Utils_update(
+							model,
+							{fields: fields}),
+						elm$core$Platform$Cmd$none);
+				}
+			case 'ProjectCreated':
+				if (msg.a.$ === 'Ok') {
+					var projectID = msg.a.a;
+					var password = function () {
+						var _n9 = model.auth;
+						if (_n9.$ === 'Basic') {
+							var user = _n9.a;
+							var pass = _n9.b;
+							return pass;
+						} else {
+							return '';
+						}
+					}();
+					var auth = A2(author$project$Types$Basic, projectID, password);
+					return _Utils_Tuple2(
+						_Utils_update(
+							model,
+							{auth: auth}),
+						A2(author$project$Api$fetchProjectInfo, auth, projectID));
+				} else {
+					var err = msg.a.a;
+					var _n10 = A2(elm$core$Debug$log, 'Error while creating the project', err);
+					return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
+				}
+			case 'LoginProjectID':
+				var value = msg.a;
+				var fields = A2(author$project$Main$setLoginProjectID, value, model.fields);
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{fields: fields}),
+					elm$core$Platform$Cmd$none);
+			case 'LoginPassword':
+				var value = msg.a;
+				var fields = A2(author$project$Main$setLoginPassword, value, model.fields);
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{fields: fields}),
+					elm$core$Platform$Cmd$none);
+			case 'Login':
+				var projectID = model.fields.loginProjectID;
+				var password = model.fields.loginPassword;
+				var fields = A2(
+					author$project$Main$setLoginPassword,
+					'',
+					A2(author$project$Main$setLoginProjectID, '', model.fields));
+				var auth = A2(author$project$Types$Basic, projectID, password);
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{auth: auth, fields: fields}),
+					A2(author$project$Api$fetchProjectInfo, auth, projectID));
+			case 'DemoLogin':
+				var fields = A2(
+					author$project$Main$setLoginPassword,
+					'',
+					A2(author$project$Main$setLoginProjectID, '', model.fields));
+				var auth = A2(author$project$Types$Basic, 'demo', 'demo');
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{auth: auth, fields: fields}),
+					A2(author$project$Api$fetchProjectInfo, auth, 'demo'));
+			case 'LogoutUser':
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{auth: author$project$Types$Unauthenticated}),
+					elm$core$Platform$Cmd$none);
+			case 'ProjectFetched':
+				if (msg.a.$ === 'Ok') {
+					var project = msg.a.a;
+					return _Utils_Tuple2(
+						_Utils_update(
+							model,
+							{
+								project: elm$core$Maybe$Just(project)
+							}),
+						elm$core$Platform$Cmd$none);
+				} else {
+					var err = msg.a.a;
+					var _n11 = A2(elm$core$Debug$log, 'Error while loading the project', err);
+					return _Utils_Tuple2(
+						_Utils_update(
+							model,
+							{auth: author$project$Types$Unauthenticated}),
+						elm$core$Platform$Cmd$none);
+				}
+			case 'ChangeLocale':
 				var locale = msg.a;
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
 						{locale: locale}),
 					elm$core$Platform$Cmd$none);
+			case 'EditModal':
+				var modal_type = msg.a;
+				var _n12 = model.project;
+				if (_n12.$ === 'Just') {
+					var project = _n12.a;
+					if (modal_type.$ === 'MemberModal') {
+						var member_id = modal_type.a;
+						var getMember = elm$core$List$head(
+							A2(
+								elm$core$List$filter,
+								function (m) {
+									return _Utils_eq(m.id, member_id);
+								},
+								project.members));
+						if (getMember.$ === 'Just') {
+							var member = getMember.a;
+							return _Utils_Tuple2(
+								_Utils_update(
+									model,
+									{
+										fields: A2(
+											author$project$Main$setNewMemberWeight,
+											elm$core$String$fromInt(member.weight),
+											A2(author$project$Main$setNewMemberName, member.name, model.fields)),
+										modal: modal_type
+									}),
+								elm$core$Platform$Cmd$none);
+						} else {
+							return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
+						}
+					} else {
+						var fields = A2(
+							author$project$Main$setNewMemberWeight,
+							'',
+							A2(author$project$Main$setNewMemberName, '', model.fields));
+						return _Utils_Tuple2(
+							_Utils_update(
+								model,
+								{fields: fields, modal: modal_type}),
+							elm$core$Platform$Cmd$none);
+					}
+				} else {
+					return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
+				}
+			default:
+				var id = msg.a;
+				return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
 		}
 	});
 var author$project$Types$AddNewBill = {$: 'AddNewBill'};
 var author$project$Types$Invite = {$: 'Invite'};
-var elm$core$Basics$identity = function (x) {
-	return x;
-};
 var elm$json$Json$Decode$map = _Json_map1;
 var elm$json$Json$Decode$map2 = _Json_map2;
-var elm$json$Json$Decode$succeed = _Json_succeed;
 var elm$virtual_dom$VirtualDom$toHandlerInt = function (handler) {
 	switch (handler.$) {
 		case 'Normal':
@@ -4936,7 +6943,6 @@ var elm$virtual_dom$VirtualDom$attribute = F2(
 			_VirtualDom_noJavaScriptOrHtmlUri(value));
 	});
 var elm$html$Html$Attributes$attribute = elm$virtual_dom$VirtualDom$attribute;
-var elm$json$Json$Encode$string = _Json_wrap;
 var elm$html$Html$Attributes$stringProperty = F2(
 	function (key, string) {
 		return A2(
@@ -5000,15 +7006,16 @@ var author$project$Types$Each = function (a) {
 	return {$: 'Each', a: a};
 };
 var author$project$Types$Edit = {$: 'Edit'};
-var elm$core$List$sortBy = _List_sortBy;
 var elm$core$List$sort = function (xs) {
 	return A2(elm$core$List$sortBy, elm$core$Basics$identity, xs);
 };
 var elm$html$Html$td = _VirtualDom_node('td');
 var elm$html$Html$tr = _VirtualDom_node('tr');
 var elm$html$Html$Attributes$title = elm$html$Html$Attributes$stringProperty('title');
-var elm$core$Basics$ge = _Utils_ge;
 var elm$core$Basics$not = _Basics_not;
+var elm$core$Basics$negate = function (n) {
+	return -n;
+};
 var elm$core$Basics$abs = function (n) {
 	return (n < 0) ? (-n) : n;
 };
@@ -5024,22 +7031,12 @@ var elm$core$Maybe$map = F2(
 			return elm$core$Maybe$Nothing;
 		}
 	});
-var elm$core$Maybe$withDefault = F2(
-	function (_default, maybe) {
-		if (maybe.$ === 'Just') {
-			var value = maybe.a;
-			return value;
-		} else {
-			return _default;
-		}
-	});
 var elm$core$String$fromFloat = _String_fromNumber;
 var elm$core$String$length = _String_length;
 var elm$core$String$cons = _String_cons;
 var elm$core$String$fromChar = function (_char) {
 	return A2(elm$core$String$cons, _char, '');
 };
-var elm$core$Bitwise$and = _Bitwise_and;
 var elm$core$Bitwise$shiftRightBy = _Bitwise_shiftRightBy;
 var elm$core$String$repeatHelp = F3(
 	function (n, chunk, result) {
@@ -5064,7 +7061,6 @@ var elm$core$String$padRight = F3(
 	});
 var elm$core$String$reverse = _String_reverse;
 var elm$core$String$slice = _String_slice;
-var elm$core$Basics$neq = _Utils_notEqual;
 var elm$core$List$any = F2(
 	function (isOkay, list) {
 		any:
@@ -5156,7 +7152,6 @@ var elm$core$String$dropLeft = F2(
 			string);
 	});
 var elm$core$String$startsWith = _String_startsWith;
-var elm$core$String$toInt = _String_toInt;
 var elm$core$Tuple$mapFirst = F2(
 	function (func, _n0) {
 		var x = _n0.a;
@@ -5400,61 +7395,6 @@ var author$project$Types$ForWhom = {$: 'ForWhom'};
 var author$project$Types$HowMuch = {$: 'HowMuch'};
 var author$project$Types$When = {$: 'When'};
 var author$project$Types$WhoPaid = {$: 'WhoPaid'};
-var elm$core$List$foldrHelper = F4(
-	function (fn, acc, ctr, ls) {
-		if (!ls.b) {
-			return acc;
-		} else {
-			var a = ls.a;
-			var r1 = ls.b;
-			if (!r1.b) {
-				return A2(fn, a, acc);
-			} else {
-				var b = r1.a;
-				var r2 = r1.b;
-				if (!r2.b) {
-					return A2(
-						fn,
-						a,
-						A2(fn, b, acc));
-				} else {
-					var c = r2.a;
-					var r3 = r2.b;
-					if (!r3.b) {
-						return A2(
-							fn,
-							a,
-							A2(
-								fn,
-								b,
-								A2(fn, c, acc)));
-					} else {
-						var d = r3.a;
-						var r4 = r3.b;
-						var res = (ctr > 500) ? A3(
-							elm$core$List$foldl,
-							fn,
-							acc,
-							elm$core$List$reverse(r4)) : A4(elm$core$List$foldrHelper, fn, acc, ctr + 1, r4);
-						return A2(
-							fn,
-							a,
-							A2(
-								fn,
-								b,
-								A2(
-									fn,
-									c,
-									A2(fn, d, res))));
-					}
-				}
-			}
-		}
-	});
-var elm$core$List$foldr = F3(
-	function (fn, acc, ls) {
-		return A4(elm$core$List$foldrHelper, fn, acc, 0, ls);
-	});
 var elm$core$List$map = F2(
 	function (f, xs) {
 		return A3(
@@ -5601,8 +7541,13 @@ var author$project$Footer$footerView = function (t) {
 var author$project$Locales$EN$getString = function (id) {
 	switch (id.$) {
 		case 'AppTitle':
-			var projectName = id.a;
-			return 'Account Manager - ' + projectName;
+			if (id.a.$ === 'Just') {
+				var projectName = id.a.a;
+				return 'Account Manager - ' + projectName;
+			} else {
+				var _n1 = id.a;
+				return 'Account Manager';
+			}
 		case 'Bills':
 			return 'Bills';
 		case 'Settle':
@@ -5625,6 +7570,8 @@ var author$project$Locales$EN$getString = function (id) {
 			return 'deactivate';
 		case 'Edit':
 			return 'edit';
+		case 'EditMember':
+			return 'Edit this member';
 		case 'Delete':
 			return 'delete';
 		case 'Invite':
@@ -5648,15 +7595,58 @@ var author$project$Locales$EN$getString = function (id) {
 			return ' (' + (amountEach + ' each)');
 		case 'FreeSoftware':
 			return 'This is a Free software';
-		default:
+		case 'YouCanContribute':
 			return ', you can contribute and improve it!';
+		case 'ManageYourExpenses':
+			return 'Manage your shared';
+		case 'EasilyShared':
+			return 'expenses, easily';
+		case 'TryDemo':
+			return 'Try out the demo';
+		case 'SharingHouse':
+			return 'You\'re sharing a house?';
+		case 'GoingOnHoliday':
+			return 'Going on holidays with friends?';
+		case 'SimplySharingMoney':
+			return 'Simply sharing money with others?';
+		case 'WeCanHelp':
+			return 'We can help!';
+		case 'LogToExistingProject':
+			return 'Log to an existing project…';
+		case 'ProjectID':
+			return 'Project identifier';
+		case 'PrivateCode':
+			return 'Private code';
+		case 'LogIn':
+			return 'Log in';
+		case 'CantRememberPassword':
+			return 'Can\'t remember your password?';
+		case 'CreateNewProject':
+			return '…or create a new one';
+		case 'ProjectName':
+			return 'Project name';
+		case 'Email':
+			return 'Email';
+		case 'LetsGetStarted':
+			return 'Let\'s get started';
+		case 'Name':
+			return 'Name';
+		case 'Weight':
+			return 'Weight';
+		default:
+			return 'Cancel';
 	}
 };
 var author$project$Locales$FR$getString = function (id) {
 	switch (id.$) {
 		case 'AppTitle':
-			var projectName = id.a;
-			return 'Gestion de compte - ' + projectName;
+			if (id.a.$ === 'Just') {
+				var projectName = id.a.a;
+				return 'Gestion de compte - ' + projectName;
+			} else {
+				var _n1 = id.a;
+				return 'Gestion de compte';
+			}
 		case 'Bills':
 			return 'Factures';
 		case 'Settle':
@@ -5679,6 +7669,8 @@ var author$project$Locales$FR$getString = function (id) {
 			return 'désactiver';
 		case 'Edit':
 			return 'éditer';
+		case 'EditMember':
+			return 'Éditer le membre';
 		case 'Delete':
 			return 'supprimer';
 		case 'Invite':
@@ -5702,8 +7694,46 @@ var author$project$Locales$FR$getString = function (id) {
 			return ' (' + (amountEach + ' chacun)');
 		case 'FreeSoftware':
 			return 'Ceci est un logiciel libre';
-		default:
+		case 'YouCanContribute':
 			return ', vous pouvez y contribuer et l\'améliorer !';
+		case 'ManageYourExpenses':
+			return 'Gérez vos dépenses';
+		case 'EasilyShared':
+			return 'partagées, facilement';
+		case 'TryDemo':
+			return 'Essayez la démo';
+		case 'SharingHouse':
+			return 'Vous êtes en colocation ?';
+		case 'GoingOnHoliday':
+			return 'Partez en vacances avec des amis ?';
+		case 'SimplySharingMoney':
+			return 'Ça vous arrive de partager de l’argent avec d’autres ?';
+		case 'WeCanHelp':
+			return 'On peut vous aider !';
+		case 'LogToExistingProject':
+			return 'Se connecter à un projet existant…';
+		case 'ProjectID':
+			return 'Identifiant du projet';
+		case 'PrivateCode':
+			return 'Code d’accès';
+		case 'LogIn':
+			return 'Se connecter';
+		case 'CantRememberPassword':
+			return 'Vous ne vous souvenez plus du code d’accès ?';
+		case 'CreateNewProject':
+			return '…ou créez en un nouveau';
+		case 'ProjectName':
+			return 'Nom de projet';
+		case 'Email':
+			return 'E-mail';
+		case 'LetsGetStarted':
+			return 'C’est parti !';
+		case 'Name':
+			return 'Nom';
+		case 'Weight':
+			return 'Parts';
+		default:
+			return 'Annuler';
 	}
 };
 var author$project$Locales$getString = F2(
@@ -5714,25 +7744,63 @@ var author$project$Locales$getString = F2(
 			return author$project$Locales$FR$getString(id);
 		}
 	});
-var author$project$Types$Bills = {$: 'Bills'};
-var author$project$Types$ChangeLocale = function (a) {
-	return {$: 'ChangeLocale', a: a};
+var author$project$Types$CantRememberPassword = {$: 'CantRememberPassword'};
+var author$project$Types$CreateNewProject = {$: 'CreateNewProject'};
+var author$project$Types$CreateProject = {$: 'CreateProject'};
+var author$project$Types$DemoLogin = {$: 'DemoLogin'};
+var author$project$Types$EasilyShared = {$: 'EasilyShared'};
+var author$project$Types$Email = {$: 'Email'};
+var author$project$Types$GoingOnHoliday = {$: 'GoingOnHoliday'};
+var author$project$Types$LetsGetStarted = {$: 'LetsGetStarted'};
+var author$project$Types$LogIn = {$: 'LogIn'};
+var author$project$Types$LogToExistingProject = {$: 'LogToExistingProject'};
+var author$project$Types$Login = {$: 'Login'};
+var author$project$Types$LoginPassword = function (a) {
+	return {$: 'LoginPassword', a: a};
 };
-var author$project$Types$FR = {$: 'FR'};
-var author$project$Types$Logout = {$: 'Logout'};
-var author$project$Types$Options = {$: 'Options'};
-var author$project$Types$ProjectSettings = {$: 'ProjectSettings'};
-var author$project$Types$Settle = {$: 'Settle'};
-var author$project$Types$StartNewProject = {$: 'StartNewProject'};
-var author$project$Types$Statistics = {$: 'Statistics'};
+var author$project$Types$LoginProjectID = function (a) {
+	return {$: 'LoginProjectID', a: a};
+};
+var author$project$Types$ManageYourExpenses = {$: 'ManageYourExpenses'};
+var author$project$Types$NewProjectEmail = function (a) {
+	return {$: 'NewProjectEmail', a: a};
+};
+var author$project$Types$NewProjectName = function (a) {
+	return {$: 'NewProjectName', a: a};
+};
+var author$project$Types$NewProjectPassword = function (a) {
+	return {$: 'NewProjectPassword', a: a};
+};
+var author$project$Types$PrivateCode = {$: 'PrivateCode'};
+var author$project$Types$ProjectID = {$: 'ProjectID'};
+var author$project$Types$ProjectName = {$: 'ProjectName'};
+var author$project$Types$SharingHouse = {$: 'SharingHouse'};
+var author$project$Types$SimplySharingMoney = {$: 'SimplySharingMoney'};
+var author$project$Types$TryDemo = {$: 'TryDemo'};
+var author$project$Types$WeCanHelp = {$: 'WeCanHelp'};
+var elm$html$Html$br = _VirtualDom_node('br');
 var elm$html$Html$button = _VirtualDom_node('button');
-var elm$html$Html$h1 = _VirtualDom_node('h1');
-var elm$html$Html$li = _VirtualDom_node('li');
-var elm$html$Html$nav = _VirtualDom_node('nav');
-var elm$html$Html$span = _VirtualDom_node('span');
+var elm$html$Html$fieldset = _VirtualDom_node('fieldset');
+var elm$html$Html$form = _VirtualDom_node('form');
+var elm$html$Html$h2 = _VirtualDom_node('h2');
+var elm$html$Html$header = _VirtualDom_node('header');
+var elm$html$Html$input = _VirtualDom_node('input');
+var elm$html$Html$label = _VirtualDom_node('label');
+var elm$html$Html$legend = _VirtualDom_node('legend');
 var elm$html$Html$strong = _VirtualDom_node('strong');
-var elm$html$Html$ul = _VirtualDom_node('ul');
+var elm$html$Html$Attributes$for = elm$html$Html$Attributes$stringProperty('htmlFor');
+var elm$html$Html$Attributes$name = elm$html$Html$Attributes$stringProperty('name');
+var elm$json$Json$Encode$bool = _Json_wrap;
+var elm$html$Html$Attributes$boolProperty = F2(
+	function (key, bool) {
+		return A2(
+			_VirtualDom_property,
+			key,
+			elm$json$Json$Encode$bool(bool));
+	});
+var elm$html$Html$Attributes$required = elm$html$Html$Attributes$boolProperty('required');
 var elm$html$Html$Attributes$type_ = elm$html$Html$Attributes$stringProperty('type');
+var elm$html$Html$Attributes$value = elm$html$Html$Attributes$stringProperty('value');
 var elm$virtual_dom$VirtualDom$Normal = function (a) {
 	return {$: 'Normal', a: a};
 };
@@ -5750,6 +7818,787 @@ var elm$html$Html$Events$onClick = function (msg) {
 		'click',
 		elm$json$Json$Decode$succeed(msg));
 };
+var elm$html$Html$Events$alwaysStop = function (x) {
+	return _Utils_Tuple2(x, true);
+};
+var elm$virtual_dom$VirtualDom$MayStopPropagation = function (a) {
+	return {$: 'MayStopPropagation', a: a};
+};
+var elm$html$Html$Events$stopPropagationOn = F2(
+	function (event, decoder) {
+		return A2(
+			elm$virtual_dom$VirtualDom$on,
+			event,
+			elm$virtual_dom$VirtualDom$MayStopPropagation(decoder));
+	});
+var elm$json$Json$Decode$at = F2(
+	function (fields, decoder) {
+		return A3(elm$core$List$foldr, elm$json$Json$Decode$field, decoder, fields);
+	});
+var elm$html$Html$Events$targetValue = A2(
+	elm$json$Json$Decode$at,
+	_List_fromArray(
+		['target', 'value']),
+	elm$json$Json$Decode$string);
+var elm$html$Html$Events$onInput = function (tagger) {
+	return A2(
+		elm$html$Html$Events$stopPropagationOn,
+		'input',
+		A2(
+			elm$json$Json$Decode$map,
+			elm$html$Html$Events$alwaysStop,
+			A2(elm$json$Json$Decode$map, tagger, elm$html$Html$Events$targetValue)));
+};
+var elm$html$Html$Events$alwaysPreventDefault = function (msg) {
+	return _Utils_Tuple2(msg, true);
+};
+var elm$virtual_dom$VirtualDom$MayPreventDefault = function (a) {
+	return {$: 'MayPreventDefault', a: a};
+};
+var elm$html$Html$Events$preventDefaultOn = F2(
+	function (event, decoder) {
+		return A2(
+			elm$virtual_dom$VirtualDom$on,
+			event,
+			elm$virtual_dom$VirtualDom$MayPreventDefault(decoder));
+	});
+var elm$html$Html$Events$onSubmit = function (msg) {
+	return A2(
+		elm$html$Html$Events$preventDefaultOn,
+		'submit',
+		A2(
+			elm$json$Json$Decode$map,
+			elm$html$Html$Events$alwaysPreventDefault,
+			elm$json$Json$Decode$succeed(msg)));
+};
+var author$project$Login$loginView = F3(
+	function (t, selectedLocale, fields) {
+		return A2(
+			elm$html$Html$div,
+			_List_fromArray(
+				[
+					elm$html$Html$Attributes$class('container-fluid')
+				]),
+			_List_fromArray(
+				[
+					A2(
+					elm$html$Html$header,
+					_List_fromArray(
+						[
+							elm$html$Html$Attributes$id('header'),
+							elm$html$Html$Attributes$class('row')
+						]),
+					_List_fromArray(
+						[
+							A2(
+							elm$html$Html$div,
+							_List_fromArray(
+								[
+									elm$html$Html$Attributes$class('col-xs-12 col-sm-5 offset-md-2')
+								]),
+							_List_fromArray(
+								[
+									A2(
+									elm$html$Html$h2,
+									_List_Nil,
+									_List_fromArray(
+										[
+											elm$html$Html$text(
+											t(author$project$Types$ManageYourExpenses)),
+											A2(elm$html$Html$br, _List_Nil, _List_Nil),
+											elm$html$Html$text(
+											t(author$project$Types$EasilyShared))
+										])),
+									A2(
+									elm$html$Html$a,
+									_List_fromArray(
+										[
+											elm$html$Html$Attributes$href('#'),
+											elm$html$Html$Events$onClick(author$project$Types$DemoLogin),
+											elm$html$Html$Attributes$class('tryout btn')
+										]),
+									_List_fromArray(
+										[
+											elm$html$Html$text(
+											t(author$project$Types$TryDemo))
+										]))
+								])),
+							A2(
+							elm$html$Html$div,
+							_List_fromArray(
+								[
+									elm$html$Html$Attributes$class('col-xs-12 col-sm-4')
+								]),
+							_List_fromArray(
+								[
+									A2(
+									elm$html$Html$p,
+									_List_fromArray(
+										[
+											elm$html$Html$Attributes$class('additional-content')
+										]),
+									_List_fromArray(
+										[
+											elm$html$Html$text(
+											t(author$project$Types$SharingHouse)),
+											A2(elm$html$Html$br, _List_Nil, _List_Nil),
+											elm$html$Html$text(
+											t(author$project$Types$GoingOnHoliday)),
+											A2(elm$html$Html$br, _List_Nil, _List_Nil),
+											elm$html$Html$text(
+											t(author$project$Types$SimplySharingMoney)),
+											A2(elm$html$Html$br, _List_Nil, _List_Nil),
+											A2(
+											elm$html$Html$strong,
+											_List_Nil,
+											_List_fromArray(
+												[
+													elm$html$Html$text(
+													t(author$project$Types$WeCanHelp))
+												]))
+										]))
+								]))
+						])),
+					A2(
+					elm$html$Html$div,
+					_List_fromArray(
+						[
+							elm$html$Html$Attributes$class('row home')
+						]),
+					_List_fromArray(
+						[
+							A2(
+							elm$html$Html$div,
+							_List_fromArray(
+								[
+									elm$html$Html$Attributes$class('col-xs-12 col-sm-5 col-md-4 offset-md-2')
+								]),
+							_List_fromArray(
+								[
+									A2(
+									elm$html$Html$form,
+									_List_fromArray(
+										[
+											elm$html$Html$Attributes$id('authentication-form'),
+											elm$html$Html$Attributes$class('form-horizontal'),
+											elm$html$Html$Events$onSubmit(author$project$Types$Login)
+										]),
+									_List_fromArray(
+										[
+											A2(
+											elm$html$Html$fieldset,
+											_List_fromArray(
+												[
+													elm$html$Html$Attributes$class('form-group')
+												]),
+											_List_fromArray(
+												[
+													A2(
+													elm$html$Html$legend,
+													_List_Nil,
+													_List_fromArray(
+														[
+															elm$html$Html$text(
+															t(author$project$Types$LogToExistingProject))
+														])),
+													A2(
+													elm$html$Html$div,
+													_List_fromArray(
+														[
+															elm$html$Html$Attributes$class('form-group')
+														]),
+													_List_fromArray(
+														[
+															A2(
+															elm$html$Html$label,
+															_List_fromArray(
+																[
+																	elm$html$Html$Attributes$for('id')
+																]),
+															_List_fromArray(
+																[
+																	elm$html$Html$text(
+																	t(author$project$Types$ProjectID))
+																])),
+															A2(
+															elm$html$Html$div,
+															_List_fromArray(
+																[
+																	elm$html$Html$Attributes$class('controls')
+																]),
+															_List_fromArray(
+																[
+																	A2(
+																	elm$html$Html$input,
+																	_List_fromArray(
+																		[
+																			elm$html$Html$Attributes$class('form-control'),
+																			elm$html$Html$Attributes$id('id'),
+																			elm$html$Html$Attributes$name('id'),
+																			elm$html$Html$Attributes$required(true),
+																			elm$html$Html$Attributes$type_('text'),
+																			elm$html$Html$Events$onInput(author$project$Types$LoginProjectID),
+																			elm$html$Html$Attributes$value(fields.loginProjectID)
+																		]),
+																	_List_Nil)
+																]))
+														])),
+													A2(
+													elm$html$Html$div,
+													_List_fromArray(
+														[
+															elm$html$Html$Attributes$class('form-group')
+														]),
+													_List_fromArray(
+														[
+															A2(
+															elm$html$Html$label,
+															_List_fromArray(
+																[
+																	elm$html$Html$Attributes$for('password')
+																]),
+															_List_fromArray(
+																[
+																	elm$html$Html$text(
+																	t(author$project$Types$PrivateCode))
+																])),
+															A2(
+															elm$html$Html$div,
+															_List_fromArray(
+																[
+																	elm$html$Html$Attributes$class('controls')
+																]),
+															_List_fromArray(
+																[
+																	A2(
+																	elm$html$Html$input,
+																	_List_fromArray(
+																		[
+																			elm$html$Html$Attributes$class('form-control'),
+																			elm$html$Html$Attributes$id('password'),
+																			elm$html$Html$Attributes$name('password'),
+																			elm$html$Html$Attributes$required(true),
+																			elm$html$Html$Attributes$type_('password'),
+																			elm$html$Html$Events$onInput(author$project$Types$LoginPassword),
+																			elm$html$Html$Attributes$value(fields.loginPassword)
+																		]),
+																	_List_Nil)
+																]))
+														]))
+												])),
+											A2(
+											elm$html$Html$div,
+											_List_fromArray(
+												[
+													elm$html$Html$Attributes$class('controls')
+												]),
+											_List_fromArray(
+												[
+													A2(
+													elm$html$Html$button,
+													_List_fromArray(
+														[
+															elm$html$Html$Attributes$class('btn'),
+															elm$html$Html$Attributes$type_('submit')
+														]),
+													_List_fromArray(
+														[
+															elm$html$Html$text(
+															t(author$project$Types$LogIn))
+														])),
+													A2(
+													elm$html$Html$a,
+													_List_fromArray(
+														[
+															elm$html$Html$Attributes$class('password-reminder'),
+															elm$html$Html$Attributes$href('#')
+														]),
+													_List_fromArray(
+														[
+															elm$html$Html$text(
+															t(author$project$Types$CantRememberPassword))
+														]))
+												]))
+										]))
+								])),
+							A2(
+							elm$html$Html$div,
+							_List_fromArray(
+								[
+									elm$html$Html$Attributes$class('col-xs-12 col-sm-5 col-md-3 offset-sm-1')
+								]),
+							_List_fromArray(
+								[
+									A2(
+									elm$html$Html$form,
+									_List_fromArray(
+										[
+											elm$html$Html$Attributes$id('creation-form'),
+											elm$html$Html$Attributes$class('form-horizontal'),
+											elm$html$Html$Events$onSubmit(author$project$Types$CreateProject)
+										]),
+									_List_fromArray(
+										[
+											A2(
+											elm$html$Html$fieldset,
+											_List_fromArray(
+												[
+													elm$html$Html$Attributes$class('form-group')
+												]),
+											_List_fromArray(
+												[
+													A2(
+													elm$html$Html$legend,
+													_List_Nil,
+													_List_fromArray(
+														[
+															elm$html$Html$text(
+															t(author$project$Types$CreateNewProject))
+														])),
+													A2(
+													elm$html$Html$div,
+													_List_fromArray(
+														[
+															elm$html$Html$Attributes$class('form-group')
+														]),
+													_List_fromArray(
+														[
+															A2(
+															elm$html$Html$label,
+															_List_fromArray(
+																[
+																	elm$html$Html$Attributes$for('name')
+																]),
+															_List_fromArray(
+																[
+																	elm$html$Html$text(
+																	t(author$project$Types$ProjectName))
+																])),
+															A2(
+															elm$html$Html$div,
+															_List_fromArray(
+																[
+																	elm$html$Html$Attributes$class('controls')
+																]),
+															_List_fromArray(
+																[
+																	A2(
+																	elm$html$Html$input,
+																	_List_fromArray(
+																		[
+																			elm$html$Html$Attributes$class('form-control'),
+																			elm$html$Html$Attributes$id('name'),
+																			elm$html$Html$Attributes$name('name'),
+																			elm$html$Html$Attributes$required(true),
+																			elm$html$Html$Attributes$type_('text'),
+																			elm$html$Html$Events$onInput(author$project$Types$NewProjectName),
+																			elm$html$Html$Attributes$value(fields.newProjectName)
+																		]),
+																	_List_Nil)
+																]))
+														])),
+													A2(
+													elm$html$Html$div,
+													_List_fromArray(
+														[
+															elm$html$Html$Attributes$class('form-group')
+														]),
+													_List_fromArray(
+														[
+															A2(
+															elm$html$Html$label,
+															_List_fromArray(
+																[
+																	elm$html$Html$Attributes$for('password')
+																]),
+															_List_fromArray(
+																[
+																	elm$html$Html$text(
+																	t(author$project$Types$PrivateCode))
+																])),
+															A2(
+															elm$html$Html$div,
+															_List_fromArray(
+																[
+																	elm$html$Html$Attributes$class('controls')
+																]),
+															_List_fromArray(
+																[
+																	A2(
+																	elm$html$Html$input,
+																	_List_fromArray(
+																		[
+																			elm$html$Html$Attributes$class('form-control'),
+																			elm$html$Html$Attributes$id('password'),
+																			elm$html$Html$Attributes$name('password'),
+																			elm$html$Html$Attributes$required(true),
+																			elm$html$Html$Attributes$type_('password'),
+																			elm$html$Html$Events$onInput(author$project$Types$NewProjectPassword),
+																			elm$html$Html$Attributes$value(fields.newProjectPassword)
+																		]),
+																	_List_Nil)
+																]))
+														])),
+													A2(
+													elm$html$Html$div,
+													_List_fromArray(
+														[
+															elm$html$Html$Attributes$class('form-group')
+														]),
+													_List_fromArray(
+														[
+															A2(
+															elm$html$Html$label,
+															_List_fromArray(
+																[
+																	elm$html$Html$Attributes$for('contact_email')
+																]),
+															_List_fromArray(
+																[
+																	elm$html$Html$text(
+																	t(author$project$Types$Email))
+																])),
+															A2(
+															elm$html$Html$div,
+															_List_fromArray(
+																[
+																	elm$html$Html$Attributes$class('controls')
+																]),
+															_List_fromArray(
+																[
+																	A2(
+																	elm$html$Html$input,
+																	_List_fromArray(
+																		[
+																			elm$html$Html$Attributes$class('form-control'),
+																			elm$html$Html$Attributes$id('contact_email'),
+																			elm$html$Html$Attributes$name('contact_email'),
+																			elm$html$Html$Attributes$required(true),
+																			elm$html$Html$Attributes$type_('text'),
+																			elm$html$Html$Events$onInput(author$project$Types$NewProjectEmail),
+																			elm$html$Html$Attributes$value(fields.newProjectEmail)
+																		]),
+																	_List_Nil)
+																]))
+														]))
+												])),
+											function () {
+											var _n0 = fields.newProjectError;
+											if (_n0.$ === 'Just') {
+												var err = _n0.a;
+												return A2(
+													elm$html$Html$div,
+													_List_fromArray(
+														[
+															elm$html$Html$Attributes$class('errors')
+														]),
+													_List_fromArray(
+														[
+															elm$html$Html$text(err)
+														]));
+											} else {
+												return A2(
+													elm$html$Html$div,
+													_List_fromArray(
+														[
+															elm$html$Html$Attributes$class('controls')
+														]),
+													_List_fromArray(
+														[
+															A2(
+															elm$html$Html$button,
+															_List_fromArray(
+																[
+																	elm$html$Html$Attributes$class('btn'),
+																	elm$html$Html$Attributes$type_('submit')
+																]),
+															_List_fromArray(
+																[
+																	elm$html$Html$text(
+																	t(author$project$Types$LetsGetStarted))
+																]))
+														]));
+											}
+										}()
+										]))
+								]))
+						]))
+				]));
+	});
+var elm$core$String$left = F2(
+	function (n, string) {
+		return (n < 1) ? '' : A3(elm$core$String$slice, 0, n, string);
+	});
+var elm$core$String$toUpper = _String_toUpper;
+var author$project$Capitalize$toCapital = function (str) {
+	return _Utils_ap(
+		elm$core$String$toUpper(
+			A2(elm$core$String$left, 1, str)),
+		A2(elm$core$String$dropLeft, 1, str));
+};
+var author$project$Types$EditModal = function (a) {
+	return {$: 'EditModal', a: a};
+};
+var elm$html$Html$h3 = _VirtualDom_node('h3');
+var elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
+var elm$html$Html$Attributes$style = elm$virtual_dom$VirtualDom$style;
+var author$project$Modal$modalView = F5(
+	function (title, submitTitle, cancelTitle, msg, form) {
+		return A2(
+			elm$html$Html$div,
+			_List_fromArray(
+				[
+					elm$html$Html$Attributes$class('modal fade show'),
+					A2(elm$html$Html$Attributes$attribute, 'role', 'dialog'),
+					A2(elm$html$Html$Attributes$style, 'display', 'block')
+				]),
+			_List_fromArray(
+				[
+					A2(
+					elm$html$Html$div,
+					_List_fromArray(
+						[
+							elm$html$Html$Attributes$class('modal-dialog'),
+							A2(elm$html$Html$Attributes$attribute, 'role', 'document')
+						]),
+					_List_fromArray(
+						[
+							A2(
+							elm$html$Html$div,
+							_List_fromArray(
+								[
+									elm$html$Html$Attributes$class('modal-content')
+								]),
+							_List_fromArray(
+								[
+									A2(
+									elm$html$Html$div,
+									_List_fromArray(
+										[
+											elm$html$Html$Attributes$class('modal-header')
+										]),
+									_List_fromArray(
+										[
+											A2(
+											elm$html$Html$h3,
+											_List_fromArray(
+												[
+													elm$html$Html$Attributes$class('modal-title')
+												]),
+											_List_fromArray(
+												[
+													elm$html$Html$text(title)
+												])),
+											A2(
+											elm$html$Html$a,
+											_List_fromArray(
+												[
+													elm$html$Html$Attributes$href('#'),
+													elm$html$Html$Attributes$class('close'),
+													elm$html$Html$Events$onClick(
+													author$project$Types$EditModal(author$project$Types$Hidden))
+												]),
+											_List_fromArray(
+												[
+													elm$html$Html$text('×')
+												]))
+										])),
+									A2(
+									elm$html$Html$form,
+									_List_fromArray(
+										[
+											elm$html$Html$Attributes$class('modal-body container'),
+											elm$html$Html$Events$onSubmit(msg)
+										]),
+									_List_fromArray(
+										[
+											form,
+											A2(
+											elm$html$Html$div,
+											_List_fromArray(
+												[
+													elm$html$Html$Attributes$class('actions')
+												]),
+											_List_fromArray(
+												[
+													A2(
+													elm$html$Html$input,
+													_List_fromArray(
+														[
+															elm$html$Html$Attributes$class('btn btn-primary'),
+															elm$html$Html$Attributes$type_('submit'),
+															elm$html$Html$Attributes$value(submitTitle)
+														]),
+													_List_Nil),
+													A2(
+													elm$html$Html$input,
+													_List_fromArray(
+														[
+															elm$html$Html$Attributes$class('btn'),
+															elm$html$Html$Attributes$type_('button'),
+															elm$html$Html$Events$onClick(
+															author$project$Types$EditModal(author$project$Types$Hidden)),
+															elm$html$Html$Attributes$value(cancelTitle)
+														]),
+													_List_Nil)
+												]))
+										]))
+								]))
+						]))
+				]));
+	});
+var author$project$Types$Cancel = {$: 'Cancel'};
+var author$project$Types$EditMember = {$: 'EditMember'};
+var author$project$Types$Name = {$: 'Name'};
+var author$project$Types$NewMemberName = function (a) {
+	return {$: 'NewMemberName', a: a};
+};
+var author$project$Types$NewMemberWeight = function (a) {
+	return {$: 'NewMemberWeight', a: a};
+};
+var author$project$Types$TriggerEditMember = function (a) {
+	return {$: 'TriggerEditMember', a: a};
+};
+var author$project$Types$Weight = {$: 'Weight'};
+var elm$html$Html$Attributes$min = elm$html$Html$Attributes$stringProperty('min');
+var elm$html$Html$Attributes$step = function (n) {
+	return A2(elm$html$Html$Attributes$stringProperty, 'step', n);
+};
+var author$project$Modal$handleModal = F3(
+	function (t, model, project) {
+		var _n0 = model.modal;
+		if (_n0.$ === 'MemberModal') {
+			var member_id = _n0.a;
+			var getMember = elm$core$List$head(
+				A2(
+					elm$core$List$filter,
+					function (m) {
+						return _Utils_eq(m.id, member_id);
+					},
+					project.members));
+			if (getMember.$ === 'Just') {
+				var member = getMember.a;
+				return A5(
+					author$project$Modal$modalView,
+					t(author$project$Types$EditMember),
+					author$project$Capitalize$toCapital(
+						t(author$project$Types$Edit)),
+					t(author$project$Types$Cancel),
+					author$project$Types$TriggerEditMember(member_id),
+					A2(
+						elm$html$Html$fieldset,
+						_List_Nil,
+						_List_fromArray(
+							[
+								A2(
+								elm$html$Html$div,
+								_List_fromArray(
+									[
+										elm$html$Html$Attributes$class('form-group row')
+									]),
+								_List_fromArray(
+									[
+										A2(
+										elm$html$Html$label,
+										_List_fromArray(
+											[
+												elm$html$Html$Attributes$class('col-3'),
+												elm$html$Html$Attributes$for('name')
+											]),
+										_List_fromArray(
+											[
+												elm$html$Html$text(
+												t(author$project$Types$Name))
+											])),
+										A2(
+										elm$html$Html$div,
+										_List_fromArray(
+											[
+												elm$html$Html$Attributes$class('controls col-9')
+											]),
+										_List_fromArray(
+											[
+												A2(
+												elm$html$Html$input,
+												_List_fromArray(
+													[
+														elm$html$Html$Attributes$class('form-control'),
+														elm$html$Html$Attributes$id('name'),
+														elm$html$Html$Attributes$type_('text'),
+														elm$html$Html$Attributes$value(model.fields.newMember),
+														elm$html$Html$Events$onInput(author$project$Types$NewMemberName)
+													]),
+												_List_Nil)
+											]))
+									])),
+								A2(
+								elm$html$Html$div,
+								_List_fromArray(
+									[
+										elm$html$Html$Attributes$class('form-group row')
+									]),
+								_List_fromArray(
+									[
+										A2(
+										elm$html$Html$label,
+										_List_fromArray(
+											[
+												elm$html$Html$Attributes$class('col-3'),
+												elm$html$Html$Attributes$for('weight')
+											]),
+										_List_fromArray(
+											[
+												elm$html$Html$text(
+												t(author$project$Types$Weight))
+											])),
+										A2(
+										elm$html$Html$div,
+										_List_fromArray(
+											[
+												elm$html$Html$Attributes$class('controls col-9')
+											]),
+										_List_fromArray(
+											[
+												A2(
+												elm$html$Html$input,
+												_List_fromArray(
+													[
+														elm$html$Html$Attributes$class('form-control'),
+														elm$html$Html$Attributes$id('weight'),
+														elm$html$Html$Attributes$type_('number'),
+														elm$html$Html$Events$onInput(author$project$Types$NewMemberWeight),
+														elm$html$Html$Attributes$min('0'),
+														elm$html$Html$Attributes$step('1'),
+														elm$html$Html$Attributes$value(model.fields.newMemberWeight)
+													]),
+												_List_Nil)
+											]))
+									]))
+							])));
+			} else {
+				return A2(elm$html$Html$div, _List_Nil, _List_Nil);
+			}
+		} else {
+			return A2(elm$html$Html$div, _List_Nil, _List_Nil);
+		}
+	});
+var author$project$Types$Bills = {$: 'Bills'};
+var author$project$Types$ChangeLocale = function (a) {
+	return {$: 'ChangeLocale', a: a};
+};
+var author$project$Types$FR = {$: 'FR'};
+var author$project$Types$Logout = {$: 'Logout'};
+var author$project$Types$LogoutUser = {$: 'LogoutUser'};
+var author$project$Types$Options = {$: 'Options'};
+var author$project$Types$ProjectSettings = {$: 'ProjectSettings'};
+var author$project$Types$Settle = {$: 'Settle'};
+var author$project$Types$StartNewProject = {$: 'StartNewProject'};
+var author$project$Types$Statistics = {$: 'Statistics'};
+var elm$html$Html$h1 = _VirtualDom_node('h1');
+var elm$html$Html$li = _VirtualDom_node('li');
+var elm$html$Html$nav = _VirtualDom_node('nav');
+var elm$html$Html$span = _VirtualDom_node('span');
+var elm$html$Html$ul = _VirtualDom_node('ul');
 var author$project$NavBar$navBarView = F3(
 	function (t, project, selectedLocale) {
 		return A2(
@@ -5849,7 +8698,7 @@ var author$project$NavBar$navBarView = F3(
 																]),
 															_List_fromArray(
 																[
-																	elm$html$Html$text(project)
+																	elm$html$Html$text(project.name)
 																]))
 														]))
 												]))
@@ -6027,7 +8876,8 @@ var author$project$NavBar$navBarView = F3(
 																	_List_fromArray(
 																		[
 																			elm$html$Html$Attributes$class('dropdown-item'),
-																			elm$html$Html$Attributes$href('#')
+																			elm$html$Html$Attributes$href('#'),
+																			elm$html$Html$Events$onClick(author$project$Types$LogoutUser)
 																		]),
 																	_List_fromArray(
 																		[
@@ -6088,7 +8938,145 @@ var author$project$NavBar$navBarView = F3(
 						]))
 				]));
 	});
+var author$project$NavBar$simpleNavBarView = F2(
+	function (t, selectedLocale) {
+		return A2(
+			elm$html$Html$div,
+			_List_fromArray(
+				[
+					elm$html$Html$Attributes$class('container')
+				]),
+			_List_fromArray(
+				[
+					A2(
+					elm$html$Html$nav,
+					_List_fromArray(
+						[
+							elm$html$Html$Attributes$class('navbar navbar-toggleable-sm fixed-top navbar-inverse bg-inverse')
+						]),
+					_List_fromArray(
+						[
+							A2(
+							elm$html$Html$button,
+							_List_fromArray(
+								[
+									elm$html$Html$Attributes$class('navbar-toggler'),
+									elm$html$Html$Attributes$type_('button'),
+									A2(elm$html$Html$Attributes$attribute, 'data-toggle', 'collapse'),
+									A2(elm$html$Html$Attributes$attribute, 'data-target', '#navbarToggler'),
+									A2(elm$html$Html$Attributes$attribute, 'aria-controls', 'navbarToggler'),
+									A2(elm$html$Html$Attributes$attribute, 'aria-expanded', 'false'),
+									A2(elm$html$Html$Attributes$attribute, 'aria-label', 'Toggle navigation')
+								]),
+							_List_fromArray(
+								[
+									A2(
+									elm$html$Html$span,
+									_List_fromArray(
+										[
+											elm$html$Html$Attributes$class('navbar-toggler-icon')
+										]),
+									_List_Nil)
+								])),
+							A2(
+							elm$html$Html$div,
+							_List_fromArray(
+								[
+									elm$html$Html$Attributes$class('collapse navbar-collapse'),
+									elm$html$Html$Attributes$id('navbarToggler')
+								]),
+							_List_fromArray(
+								[
+									A2(
+									elm$html$Html$h1,
+									_List_Nil,
+									_List_fromArray(
+										[
+											A2(
+											elm$html$Html$a,
+											_List_fromArray(
+												[
+													elm$html$Html$Attributes$class('navbar-brand'),
+													elm$html$Html$Attributes$href('#')
+												]),
+											_List_fromArray(
+												[
+													elm$html$Html$text('#! money?')
+												]))
+										])),
+									A2(
+									elm$html$Html$ul,
+									_List_fromArray(
+										[
+											elm$html$Html$Attributes$class('navbar-nav ml-auto mr-auto')
+										]),
+									_List_Nil),
+									A2(
+									elm$html$Html$ul,
+									_List_fromArray(
+										[
+											elm$html$Html$Attributes$class('navbar-nav secondary-nav')
+										]),
+									_List_fromArray(
+										[
+											A2(
+											elm$html$Html$li,
+											_List_fromArray(
+												[
+													elm$html$Html$Attributes$class(
+													'nav-item' + (_Utils_eq(selectedLocale, author$project$Types$FR) ? ' active' : ''))
+												]),
+											_List_fromArray(
+												[
+													A2(
+													elm$html$Html$a,
+													_List_fromArray(
+														[
+															elm$html$Html$Attributes$class('nav-link'),
+															elm$html$Html$Attributes$href('#'),
+															elm$html$Html$Events$onClick(
+															author$project$Types$ChangeLocale(author$project$Types$FR))
+														]),
+													_List_fromArray(
+														[
+															elm$html$Html$text('fr')
+														]))
+												])),
+											A2(
+											elm$html$Html$li,
+											_List_fromArray(
+												[
+													elm$html$Html$Attributes$class(
+													'nav-item' + (_Utils_eq(selectedLocale, author$project$Types$EN) ? ' active' : ''))
+												]),
+											_List_fromArray(
+												[
+													A2(
+													elm$html$Html$a,
+													_List_fromArray(
+														[
+															elm$html$Html$Attributes$class('nav-link'),
+															elm$html$Html$Attributes$href('#'),
+															elm$html$Html$Events$onClick(
+															author$project$Types$ChangeLocale(author$project$Types$EN))
+														]),
+													_List_fromArray(
+														[
+															elm$html$Html$text('en')
+														]))
+												]))
+										]))
+								]))
+						]))
+				]));
+	});
 var author$project$Types$Deactivate = {$: 'Deactivate'};
+var author$project$Types$DeactivateMember = function (a) {
+	return {$: 'DeactivateMember', a: a};
+};
+var author$project$Types$MemberModal = function (a) {
+	return {$: 'MemberModal', a: a};
+};
 var author$project$SideBar$memberInfo = F2(
 	function (t, member) {
 		var sign = (member.balance > 0) ? '+' : '';
@@ -6138,7 +9126,9 @@ var author$project$SideBar$memberInfo = F2(
 									elm$html$Html$button,
 									_List_fromArray(
 										[
-											elm$html$Html$Attributes$type_('button')
+											elm$html$Html$Attributes$type_('button'),
+											elm$html$Html$Events$onClick(
+											author$project$Types$DeactivateMember(member.id))
 										]),
 									_List_fromArray(
 										[
@@ -6164,7 +9154,10 @@ var author$project$SideBar$memberInfo = F2(
 									elm$html$Html$button,
 									_List_fromArray(
 										[
-											elm$html$Html$Attributes$type_('button')
+											elm$html$Html$Attributes$type_('button'),
+											elm$html$Html$Events$onClick(
+											author$project$Types$EditModal(
+												author$project$Types$MemberModal(member.id)))
 										]),
 									_List_fromArray(
 										[
@@ -6190,83 +9183,9 @@ var author$project$SideBar$memberInfo = F2(
 	});
 var author$project$Types$Add = {$: 'Add'};
 var author$project$Types$AddMember = {$: 'AddMember'};
-var author$project$Types$NewNameTyped = function (a) {
-	return {$: 'NewNameTyped', a: a};
-};
 var author$project$Types$TypeUserName = {$: 'TypeUserName'};
 var elm$html$Html$aside = _VirtualDom_node('aside');
-var elm$html$Html$form = _VirtualDom_node('form');
-var elm$html$Html$input = _VirtualDom_node('input');
-var elm$html$Html$label = _VirtualDom_node('label');
-var elm$html$Html$Attributes$for = elm$html$Html$Attributes$stringProperty('htmlFor');
 var elm$html$Html$Attributes$placeholder = elm$html$Html$Attributes$stringProperty('placeholder');
-var elm$json$Json$Encode$bool = _Json_wrap;
-var elm$html$Html$Attributes$boolProperty = F2(
-	function (key, bool) {
-		return A2(
-			_VirtualDom_property,
-			key,
-			elm$json$Json$Encode$bool(bool));
-	});
-var elm$html$Html$Attributes$required = elm$html$Html$Attributes$boolProperty('required');
-var elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
-var elm$html$Html$Attributes$style = elm$virtual_dom$VirtualDom$style;
-var elm$html$Html$Attributes$value = elm$html$Html$Attributes$stringProperty('value');
-var elm$html$Html$Events$alwaysStop = function (x) {
-	return _Utils_Tuple2(x, true);
-};
-var elm$virtual_dom$VirtualDom$MayStopPropagation = function (a) {
-	return {$: 'MayStopPropagation', a: a};
-};
-var elm$html$Html$Events$stopPropagationOn = F2(
-	function (event, decoder) {
-		return A2(
-			elm$virtual_dom$VirtualDom$on,
-			event,
-			elm$virtual_dom$VirtualDom$MayStopPropagation(decoder));
-	});
-var elm$json$Json$Decode$field = _Json_decodeField;
-var elm$json$Json$Decode$at = F2(
-	function (fields, decoder) {
-		return A3(elm$core$List$foldr, elm$json$Json$Decode$field, decoder, fields);
-	});
-var elm$json$Json$Decode$string = _Json_decodeString;
-var elm$html$Html$Events$targetValue = A2(
-	elm$json$Json$Decode$at,
-	_List_fromArray(
-		['target', 'value']),
-	elm$json$Json$Decode$string);
-var elm$html$Html$Events$onInput = function (tagger) {
-	return A2(
-		elm$html$Html$Events$stopPropagationOn,
-		'input',
-		A2(
-			elm$json$Json$Decode$map,
-			elm$html$Html$Events$alwaysStop,
-			A2(elm$json$Json$Decode$map, tagger, elm$html$Html$Events$targetValue)));
-};
-var elm$html$Html$Events$alwaysPreventDefault = function (msg) {
-	return _Utils_Tuple2(msg, true);
-};
-var elm$virtual_dom$VirtualDom$MayPreventDefault = function (a) {
-	return {$: 'MayPreventDefault', a: a};
-};
-var elm$html$Html$Events$preventDefaultOn = F2(
-	function (event, decoder) {
-		return A2(
-			elm$virtual_dom$VirtualDom$on,
-			event,
-			elm$virtual_dom$VirtualDom$MayPreventDefault(decoder));
-	});
-var elm$html$Html$Events$onSubmit = function (msg) {
-	return A2(
-		elm$html$Html$Events$preventDefaultOn,
-		'submit',
-		A2(
-			elm$json$Json$Decode$map,
-			elm$html$Html$Events$alwaysPreventDefault,
-			elm$json$Json$Decode$succeed(msg)));
-};
 var author$project$SideBar$sideBarView = F3(
 	function (t, memberField, members) {
 		return A2(
@@ -6329,7 +9248,7 @@ var author$project$SideBar$sideBarView = F3(
 													elm$html$Html$Attributes$required(true),
 													elm$html$Html$Attributes$type_('text'),
 													elm$html$Html$Attributes$value(memberField),
-													elm$html$Html$Events$onInput(author$project$Types$NewNameTyped)
+													elm$html$Html$Events$onInput(author$project$Types$NewMemberName)
 												]),
 											_List_Nil),
 											A2(
@@ -6372,33 +9291,53 @@ var author$project$Types$AppTitle = function (a) {
 };
 var author$project$Main$view = function (model) {
 	var t = author$project$Locales$getString(model.locale);
-	return {
-		body: _List_fromArray(
-			[
-				A3(author$project$NavBar$navBarView, t, model.project, model.locale),
-				A2(
-				elm$html$Html$div,
-				_List_fromArray(
-					[
-						elm$html$Html$Attributes$class('container-fluid')
-					]),
-				_List_fromArray(
-					[
-						A3(author$project$SideBar$sideBarView, t, model.memberField, model.members),
-						A2(author$project$BillBoard$billBoardView, t, model.bills)
-					])),
-				A2(
-				elm$html$Html$div,
-				_List_fromArray(
-					[
-						elm$html$Html$Attributes$class('messages')
-					]),
-				_List_Nil),
-				author$project$Footer$footerView(t)
-			]),
-		title: t(
-			author$project$Types$AppTitle(model.project))
-	};
+	var _n0 = _Utils_Tuple2(model.auth, model.project);
+	if ((_n0.a.$ === 'Basic') && (_n0.b.$ === 'Just')) {
+		var _n1 = _n0.a;
+		var user = _n1.a;
+		var password = _n1.b;
+		var project = _n0.b.a;
+		return {
+			body: _List_fromArray(
+				[
+					A3(author$project$NavBar$navBarView, t, project, model.locale),
+					A3(author$project$Modal$handleModal, t, model, project),
+					A2(
+					elm$html$Html$div,
+					_List_fromArray(
+						[
+							elm$html$Html$Attributes$class('container-fluid')
+						]),
+					_List_fromArray(
+						[
+							A3(author$project$SideBar$sideBarView, t, model.fields.newMember, project.members),
+							A2(author$project$BillBoard$billBoardView, t, project.bills)
+						])),
+					A2(
+					elm$html$Html$div,
+					_List_fromArray(
+						[
+							elm$html$Html$Attributes$class('messages')
+						]),
+					_List_Nil),
+					author$project$Footer$footerView(t)
+				]),
+			title: t(
+				author$project$Types$AppTitle(
+					elm$core$Maybe$Just(project.name)))
+		};
+	} else {
+		return {
+			body: _List_fromArray(
+				[
+					A2(author$project$NavBar$simpleNavBarView, t, model.locale),
+					A3(author$project$Login$loginView, t, model.locale, model.fields),
+					author$project$Footer$footerView(t)
+				]),
+			title: t(
+				author$project$Types$AppTitle(elm$core$Maybe$Nothing))
+		};
+	}
 };
 var elm$browser$Browser$External = function (a) {
 	return {$: 'External', a: a};
@@ -6421,9 +9360,7 @@ var elm$core$Basics$never = function (_n0) {
 var elm$core$Task$Perform = function (a) {
 	return {$: 'Perform', a: a};
 };
-var elm$core$Task$succeed = _Scheduler_succeed;
 var elm$core$Task$init = elm$core$Task$succeed(_Utils_Tuple0);
-var elm$core$Task$andThen = _Scheduler_andThen;
 var elm$core$Task$map = F2(
 	function (func, taskA) {
 		return A2(
@@ -6434,29 +9371,6 @@ var elm$core$Task$map = F2(
 			},
 			taskA);
 	});
-var elm$core$Task$map2 = F3(
-	function (func, taskA, taskB) {
-		return A2(
-			elm$core$Task$andThen,
-			function (a) {
-				return A2(
-					elm$core$Task$andThen,
-					function (b) {
-						return elm$core$Task$succeed(
-							A2(func, a, b));
-					},
-					taskB);
-			},
-			taskA);
-	});
-var elm$core$Task$sequence = function (tasks) {
-	return A3(
-		elm$core$List$foldr,
-		elm$core$Task$map2(elm$core$List$cons),
-		elm$core$Task$succeed(_List_Nil),
-		tasks);
-};
-var elm$core$Platform$sendToApp = _Platform_sendToApp;
 var elm$core$Task$spawnCmd = F2(
 	function (router, _n0) {
 		var task = _n0.a;
@@ -6503,10 +9417,6 @@ var elm$core$String$indexes = _String_indexes;
 var elm$core$String$isEmpty = function (string) {
 	return string === '';
 };
-var elm$core$String$left = F2(
-	function (n, string) {
-		return (n < 1) ? '' : A3(elm$core$String$slice, 0, n, string);
-	});
 var elm$core$String$contains = _String_contains;
 var elm$url$Url$Url = F6(
 	function (protocol, host, port_, path, query, fragment) {
