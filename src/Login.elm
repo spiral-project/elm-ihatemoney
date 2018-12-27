@@ -16,7 +16,7 @@ loginView t selectedLocale fields =
                     , br [] []
                     , text <| t EasilyShared
                     ]
-                , a [ href "/demo", class "tryout btn" ] [ text <| t TryDemo ]
+                , a [ href "#", onClick DemoLogin, class "tryout btn" ] [ text <| t TryDemo ]
                 ]
             , div [ class "col-xs-12 col-sm-4" ]
                 [ p [ class "additional-content" ]

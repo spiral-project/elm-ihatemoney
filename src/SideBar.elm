@@ -59,10 +59,10 @@ memberInfo t member =
             , span [ class "light extra-info" ] [ text "(x1)" ]
             ]
         , td []
-            [ div [ class "action delete" ] [ button [ type_ "button" ] [ text <| t Deactivate ] ]
+            [ div [ class "action delete" ] [ button [ type_ "button", onClick <| DeactivateMember member.id ] [ text <| t Deactivate ] ]
             ]
         , td []
-            [ div [ class "action edit" ] [ button [ type_ "button" ] [ text <| t Edit ] ]
+            [ div [ class "action edit" ] [ button [ type_ "button", onClick <| EditModal (MemberModal member.id) ] [ text <| t Edit ] ]
             ]
         , td [ class <| "balance-value " ++ className ]
             [ round 2 member.balance

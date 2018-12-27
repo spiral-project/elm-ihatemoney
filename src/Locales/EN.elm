@@ -48,6 +48,9 @@ getString id =
         Edit ->
             "edit"
 
+        EditMember ->
+            "Edit this member"
+
         Delete ->
             "delete"
 
@@ -134,3 +137,13 @@ getString id =
 
         LetsGetStarted ->
             "Let's get started"
+
+        -- Member Edit Form
+        Name ->
+            "Name"
+
+        Weight ->
+            "Weight"
+
+        Cancel ->
+            "Cancel"

@@ -1,6 +1,6 @@
 module Main exposing (main)
 
-import Api exposing (addMemberToProject, createProject, fetchProjectInfo)
+import Api exposing (addMemberToProject, createProject, editProjectMember, fetchProjectInfo)
 import BillBoard exposing (billBoardView)
 import Browser exposing (Document)
 import Footer exposing (footerView)
@@ -10,6 +10,7 @@ import Html.Events exposing (..)
 import Http
 import Locales exposing (getString)
 import Login exposing (loginView)
+import Modal exposing (handleModal)
 import NavBar exposing (navBarView, simpleNavBarView)
 import Round exposing (round)
 import SideBar exposing (sideBarView)
@@ -24,6 +25,7 @@ init flags =
       , project = Nothing
       , fields =
             { newMember = ""
+            , newMemberWeight = ""
             , loginProjectID = ""
             , loginPassword = ""
             , newProjectName = ""
@@ -31,6 +33,7 @@ init flags =
             , newProjectEmail = ""
             , newProjectError = Nothing
             }
+      , modal = Hidden
       }
     , Cmd.none
     )
@@ -49,6 +52,11 @@ main =
 setNewMemberName : String -> Fields -> Fields
 setNewMemberName newMember fields =
     { fields | newMember = newMember }
+
+
+setNewMemberWeight : String -> Fields -> Fields
+setNewMemberWeight newWeight fields =
+    { fields | newMemberWeight = newWeight }
 
 
 setNewProjectName : String -> Fields -> Fields
@@ -86,6 +94,17 @@ setMemberToProject member project =
     { project | members = project.members ++ [ member ] }
 
 
+setEditedProjectMember : Member -> Project -> Project
+setEditedProjectMember member project =
+    let
+        members =
+            List.filter (\m -> m.id /= member.id) project.members
+                |> List.append [ member ]
+                |> List.sortBy .name
+    in
+    { project | members = members }
+
+
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
@@ -96,10 +115,27 @@ update msg model =
             in
             ( { model | fields = fields }, Cmd.none )
 
+        NewMemberWeight value ->
+            let
+                fields =
+                    setNewMemberWeight value model.fields
+            in
+            ( { model | fields = fields }, Cmd.none )
+
         AddMember ->
             case model.project of
                 Just project ->
                     ( model, addMemberToProject model.auth model.fields.newMember )
+
+                Nothing ->
+                    ( model, Cmd.none )
+
+        TriggerEditMember member_id ->
+            case model.project of
+                Just project ->
+                    ( model
+                    , editProjectMember model.auth member_id model.fields.newMember (Maybe.withDefault 1 <| String.toInt model.fields.newMemberWeight)
+                    )
 
                 Nothing ->
                     ( model, Cmd.none )
@@ -133,6 +169,34 @@ update msg model =
                     Debug.log "Error while adding the member" err
             in
             ( model, Cmd.none )
+
+        MemberEdited (Ok member) ->
+            case model.project of
+                Just project ->
+                    let
+                        fields =
+                            model.fields |> setNewMemberName "" |> setNewMemberWeight ""
+
+                        newProject =
+                            setEditedProjectMember member project
+                    in
+                    ( { model
+                        | project = Just newProject
+                        , fields = fields
+                        , modal = Hidden
+                      }
+                    , Cmd.none
+                    )
+
+                Nothing ->
+                    ( { model | modal = Hidden }, Cmd.none )
+
+        MemberEdited (Err err) ->
+            let
+                _ =
+                    Debug.log "Error while adding the member" err
+            in
+            ( { model | modal = Hidden }, Cmd.none )
 
         NewProjectName value ->
             let
@@ -246,6 +310,18 @@ update msg model =
             , fetchProjectInfo auth projectID
             )
 
+        DemoLogin ->
+            let
+                fields =
+                    model.fields |> setLoginProjectID "" |> setLoginPassword ""
+
+                auth =
+                    Basic "demo" "demo"
+            in
+            ( { model | fields = fields, auth = auth }
+            , fetchProjectInfo auth "demo"
+            )
+
         LogoutUser ->
             ( { model | auth = Unauthenticated }, Cmd.none )
 
@@ -266,6 +342,46 @@ update msg model =
         ChangeLocale locale ->
             ( { model | locale = locale }, Cmd.none )
 
+        EditModal modal_type ->
+            case model.project of
+                Just project ->
+                    case modal_type of
+                        MemberModal member_id ->
+                            let
+                                getMember =
+                                    List.filter (\m -> m.id == member_id) project.members |> List.head
+                            in
+                            case getMember of
+                                Just member ->
+                                    ( { model
+                                        | modal = modal_type
+                                        , fields =
+                                            model.fields
+                                                |> setNewMemberName member.name
+                                                |> setNewMemberWeight (String.fromInt member.weight)
+                                      }
+                                    , Cmd.none
+                                    )
+
+                                Nothing ->
+                                    ( model, Cmd.none )
+
+                        Hidden ->
+                            let
+                                fields =
+                                    model.fields
+                                        |> setNewMemberName ""
+                                        |> setNewMemberWeight ""
+                            in
+                            ( { model | modal = modal_type, fields = fields }, Cmd.none )
+
+                Nothing ->
+                    ( model, Cmd.none )
+
+        DeactivateMember id ->
+            -- XXX: Run deactivate member
+            ( model, Cmd.none )
+
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
@@ -283,6 +399,7 @@ view model =
             { title = t <| AppTitle (Just project.name)
             , body =
                 [ navBarView t project model.locale
+                , handleModal t model project
                 , div
                     [ class "container-fluid" ]
                     [ sideBarView t model.fields.newMember project.members

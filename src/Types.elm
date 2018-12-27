@@ -6,6 +6,7 @@ module Types exposing
     , LocaleIdentifier(..)
     , Localizer
     , Member
+    , ModalType(..)
     , Model
     , Msg(..)
     , Project
@@ -19,6 +20,7 @@ type alias Model =
     , locale : Locale
     , project : Maybe Project
     , fields : Fields
+    , modal : ModalType
     }
 
 
@@ -32,6 +34,7 @@ type alias Project =
 
 type alias Fields =
     { newMember : String
+    , newMemberWeight : String
     , loginProjectID : String
     , loginPassword : String
     , newProjectName : String
@@ -48,7 +51,10 @@ type Authentication
 
 type Msg
     = NewMemberName String
+    | NewMemberWeight String
     | AddMember
+    | TriggerEditMember Int
+    | DemoLogin
     | LoginProjectID String
     | LoginPassword String
     | Login
@@ -61,6 +67,14 @@ type Msg
     | ProjectCreated (Result Http.Error String)
     | ProjectFetched (Result Http.Error Project)
     | MemberAdded (Result Http.Error Int)
+    | MemberEdited (Result Http.Error Member)
+    | EditModal ModalType
+    | DeactivateMember Int
+
+
+type ModalType
+    = MemberModal Int
+    | Hidden
 
 
 type alias Member =
@@ -131,3 +145,7 @@ type LocaleIdentifier
     | ProjectName
     | Email
     | LetsGetStarted
+    | EditMember
+    | Name
+    | Weight
+    | Cancel
