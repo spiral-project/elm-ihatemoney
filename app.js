@@ -6399,6 +6399,38 @@ var author$project$Api$createProject = F3(
 				url: author$project$Api$iHateMoneyUrl + '/projects'
 			});
 	});
+var author$project$Types$MemberDeleted = F2(
+	function (a, b) {
+		return {$: 'MemberDeleted', a: a, b: b};
+	});
+var elm$http$Http$emptyBody = _Http_emptyBody;
+var author$project$Api$deleteProjectMember = F2(
+	function (auth, member_id) {
+		var projectID = function () {
+			if (auth.$ === 'Basic') {
+				var user = auth.a;
+				return user;
+			} else {
+				return '';
+			}
+		}();
+		return elm$http$Http$request(
+			{
+				body: elm$http$Http$emptyBody,
+				expect: A2(
+					elm$http$Http$expectJson,
+					author$project$Types$MemberDeleted(member_id),
+					elm$json$Json$Decode$string),
+				headers: _List_fromArray(
+					[
+						author$project$Api$headersForAuth(auth)
+					]),
+				method: 'DELETE',
+				timeout: elm$core$Maybe$Nothing,
+				tracker: elm$core$Maybe$Nothing,
+				url: author$project$Api$iHateMoneyUrl + ('/projects/' + (projectID + ('/members/' + elm$core$String$fromInt(member_id))))
+			});
+	});
 var author$project$Types$Member = F5(
 	function (id, name, weight, activated, balance) {
 		return {activated: activated, balance: balance, id: id, name: name, weight: weight};
@@ -6480,7 +6512,6 @@ var author$project$Api$decodeProjectInfo = A5(
 var author$project$Types$ProjectFetched = function (a) {
 	return {$: 'ProjectFetched', a: a};
 };
-var elm$http$Http$emptyBody = _Http_emptyBody;
 var author$project$Api$fetchProjectInfo = F2(
 	function (auth, projectID) {
 		return elm$http$Http$request(
@@ -6498,14 +6529,6 @@ var author$project$Api$fetchProjectInfo = F2(
 			});
 	});
 var elm$core$Basics$neq = _Utils_notEqual;
-var elm$core$List$append = F2(
-	function (xs, ys) {
-		if (!ys.b) {
-			return xs;
-		} else {
-			return A3(elm$core$List$foldr, elm$core$List$cons, ys, xs);
-		}
-	});
 var elm$core$List$filter = F2(
 	function (isGood, list) {
 		return A3(
@@ -6516,6 +6539,26 @@ var elm$core$List$filter = F2(
 				}),
 			_List_Nil,
 			list);
+	});
+var author$project$Main$setDeletedProjectMember = F2(
+	function (member_id, project) {
+		var members = A2(
+			elm$core$List$filter,
+			function (m) {
+				return !_Utils_eq(m.id, member_id);
+			},
+			project.members);
+		return _Utils_update(
+			project,
+			{members: members});
+	});
+var elm$core$List$append = F2(
+	function (xs, ys) {
+		if (!ys.b) {
+			return xs;
+		} else {
+			return A3(elm$core$List$foldr, elm$core$List$cons, ys, xs);
+		}
 	});
 var author$project$Main$setEditedProjectMember = F2(
 	function (member, project) {
@@ -6721,12 +6764,38 @@ var author$project$Main$update = F2(
 					}
 				} else {
 					var err = msg.a.a;
-					var _n6 = A2(elm$core$Debug$log, 'Error while adding the member', err);
+					var _n6 = A2(elm$core$Debug$log, 'Error while editing the member', err);
 					return _Utils_Tuple2(
 						_Utils_update(
 							model,
 							{modal: author$project$Types$Hidden}),
 						elm$core$Platform$Cmd$none);
+				}
+			case 'MemberDeleted':
+				if (msg.b.$ === 'Ok') {
+					var member_id = msg.a;
+					var _n7 = model.project;
+					if (_n7.$ === 'Just') {
+						var project = _n7.a;
+						var newProject = A2(author$project$Main$setDeletedProjectMember, member_id, project);
+						return _Utils_Tuple2(
+							_Utils_update(
+								model,
+								{
+									project: elm$core$Maybe$Just(newProject)
+								}),
+							elm$core$Platform$Cmd$none);
+					} else {
+						return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
+					}
+				} else {
+					var member_id = msg.a;
+					var err = msg.b.a;
+					var _n8 = A2(
+						elm$core$Debug$log,
+						'Error while removing the member ' + elm$core$String$fromInt(member_id),
+						err);
+					return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
 				}
 			case 'NewProjectName':
 				var value = msg.a;
@@ -6775,7 +6844,7 @@ var author$project$Main$update = F2(
 						A3(author$project$Api$createProject, projectID, password, email));
 				} else {
 					var fields = A2(author$project$Main$setNewProjectError, 'Invalid project name: ' + projectID, model.fields);
-					var _n8 = A2(elm$core$Debug$log, 'Invalid ProjectName', projectID);
+					var _n10 = A2(elm$core$Debug$log, 'Invalid ProjectName', projectID);
 					return _Utils_Tuple2(
 						_Utils_update(
 							model,
@@ -6786,10 +6855,10 @@ var author$project$Main$update = F2(
 				if (msg.a.$ === 'Ok') {
 					var projectID = msg.a.a;
 					var password = function () {
-						var _n9 = model.auth;
-						if (_n9.$ === 'Basic') {
-							var user = _n9.a;
-							var pass = _n9.b;
+						var _n11 = model.auth;
+						if (_n11.$ === 'Basic') {
+							var user = _n11.a;
+							var pass = _n11.b;
 							return pass;
 						} else {
 							return '';
@@ -6803,7 +6872,7 @@ var author$project$Main$update = F2(
 						A2(author$project$Api$fetchProjectInfo, auth, projectID));
 				} else {
 					var err = msg.a.a;
-					var _n10 = A2(elm$core$Debug$log, 'Error while creating the project', err);
+					var _n12 = A2(elm$core$Debug$log, 'Error while creating the project', err);
 					return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
 				}
 			case 'LoginProjectID':
@@ -6864,7 +6933,7 @@ var author$project$Main$update = F2(
 						elm$core$Platform$Cmd$none);
 				} else {
 					var err = msg.a.a;
-					var _n11 = A2(elm$core$Debug$log, 'Error while loading the project', err);
+					var _n13 = A2(elm$core$Debug$log, 'Error while loading the project', err);
 					return _Utils_Tuple2(
 						_Utils_update(
 							model,
@@ -6880,9 +6949,9 @@ var author$project$Main$update = F2(
 					elm$core$Platform$Cmd$none);
 			case 'EditModal':
 				var modal_type = msg.a;
-				var _n12 = model.project;
-				if (_n12.$ === 'Just') {
-					var project = _n12.a;
+				var _n14 = model.project;
+				if (_n14.$ === 'Just') {
+					var project = _n14.a;
 					if (modal_type.$ === 'MemberModal') {
 						var member_id = modal_type.a;
 						var getMember = elm$core$List$head(
@@ -6923,8 +6992,16 @@ var author$project$Main$update = F2(
 					return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
 				}
 			default:
-				var id = msg.a;
-				return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
+				var member_id = msg.a;
+				var _n17 = model.project;
+				if (_n17.$ === 'Just') {
+					var project = _n17.a;
+					return _Utils_Tuple2(
+						model,
+						A2(author$project$Api$deleteProjectMember, model.auth, member_id));
+				} else {
+					return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
+				}
 		}
 	});
 var author$project$Types$AddNewBill = {$: 'AddNewBill'};
