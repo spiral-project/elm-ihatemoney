@@ -66,6 +66,7 @@ type Msg
     | ChangeLocale Locale
     | ProjectCreated (Result Http.Error String)
     | ProjectFetched (Result Http.Error Project)
+    | BillsFetched (Result Http.Error (List Bill))
     | MemberAdded (Result Http.Error Int)
     | MemberEdited (Result Http.Error Member)
     | MemberDeleted Int (Result Http.Error String)
@@ -83,7 +84,6 @@ type alias Member =
     , name : String
     , weight : Int
     , activated : Bool
-    , balance : Float
     }
 
 
@@ -91,8 +91,8 @@ type alias Bill =
     { date : String
     , amount : Float
     , label : String
-    , payer : String
-    , owers : List String
+    , payer : Int
+    , owers : List Member
     }
 
 

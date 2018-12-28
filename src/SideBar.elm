@@ -7,8 +7,8 @@ import Round exposing (round)
 import Types exposing (..)
 
 
-sideBarView : Localizer -> String -> List Member -> Html Msg
-sideBarView t memberField members =
+sideBarView : Localizer -> String -> List Member -> List Bill -> Html Msg
+sideBarView t memberField members bills =
     div [ class "row", style "height" "100%" ]
         [ aside [ id "sidebar", class "sidebar col-xs-12 col-md-3 ", style "height" "100%" ]
             [ Html.form [ id "add-member-form", onSubmit AddMember, class "form-inline" ]
@@ -28,25 +28,55 @@ sideBarView t memberField members =
                     ]
                 ]
             , div [ id "table_overflow" ]
-                [ List.map (memberInfo t) members
+                [ List.map (memberInfo t bills) members
                     |> table [ class "balance table" ]
                 ]
             ]
         ]
 
 
-memberInfo : Localizer -> Member -> Html Msg
-memberInfo t member =
+getMemberBalance : Member -> List Bill -> Float
+getMemberBalance member bills =
     let
+        totalPaid =
+            List.filter (\bill -> bill.payer == member.id) bills
+                |> List.map .amount
+                |> List.sum
+
+        -- Return the sum of the shares
+        billsShares =
+            List.filter (\bill -> List.any (\ower -> ower.id == member.id) bill.owers) bills
+                |> List.map
+                    (\bill ->
+                        bill.amount
+                            / (List.map .weight bill.owers
+                                |> List.sum
+                                |> toFloat
+                              )
+                    )
+                |> List.sum
+
+        totalOwed =
+            billsShares * toFloat member.weight
+    in
+    totalPaid - totalOwed
+
+
+memberInfo : Localizer -> List Bill -> Member -> Html Msg
+memberInfo t bills member =
+    let
+        memberBalance =
+            getMemberBalance member bills
+
         className =
-            if member.balance < 0 then
+            if memberBalance < 0 then
                 "negative"
 
             else
                 "positive"
 
         sign =
-            if member.balance > 0 then
+            if memberBalance > 0 then
                 "+"
 
             else
@@ -65,7 +95,7 @@ memberInfo t member =
             [ div [ class "action edit" ] [ button [ type_ "button", onClick <| EditModal (MemberModal member.id) ] [ text <| t Edit ] ]
             ]
         , td [ class <| "balance-value " ++ className ]
-            [ round 2 member.balance
+            [ round 2 memberBalance
                 |> (++) sign
                 |> text
             ]

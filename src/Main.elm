@@ -1,6 +1,14 @@
 module Main exposing (main)
 
-import Api exposing (addMemberToProject, createProject, deleteProjectMember, editProjectMember, fetchProjectInfo)
+import Api
+    exposing
+        ( addMemberToProject
+        , createProject
+        , deleteProjectMember
+        , editProjectMember
+        , fetchProjectBills
+        , fetchProjectInfo
+        )
 import BillBoard exposing (billBoardView)
 import Browser exposing (Document)
 import Footer exposing (footerView)
@@ -157,7 +165,7 @@ update msg model =
                             setNewMemberName "" model.fields
 
                         member =
-                            Member id model.fields.newMember 1 True 0.0
+                            Member id model.fields.newMember 1 True
 
                         newProject =
                             setMemberToProject member project
@@ -358,16 +366,48 @@ update msg model =
             ( { model | auth = Unauthenticated }, Cmd.none )
 
         ProjectFetched (Ok project) ->
+            let
+                projectId =
+                    case model.auth of
+                        Basic user pass ->
+                            user
+
+                        Unauthenticated ->
+                            ""
+            in
             ( { model
                 | project = Just project
               }
-            , Cmd.none
+            , fetchProjectBills model.auth projectId
             )
 
         ProjectFetched (Err err) ->
             let
                 _ =
                     Debug.log "Error while loading the project" err
+            in
+            ( { model | auth = Unauthenticated }, Cmd.none )
+
+        BillsFetched (Ok bills) ->
+            case model.project of
+                Just project ->
+                    let
+                        newProject =
+                            { project | bills = bills }
+                    in
+                    ( { model
+                        | project = Just newProject
+                      }
+                    , Cmd.none
+                    )
+
+                Nothing ->
+                    ( model, Cmd.none )
+
+        BillsFetched (Err err) ->
+            let
+                _ =
+                    Debug.log "Error while loading the project bills" err
             in
             ( { model | auth = Unauthenticated }, Cmd.none )
 
@@ -440,8 +480,8 @@ view model =
                 , handleModal t model project
                 , div
                     [ class "container-fluid" ]
-                    [ sideBarView t model.fields.newMember project.members
-                    , billBoardView t project.bills
+                    [ sideBarView t model.fields.newMember project.members project.bills
+                    , billBoardView t project.members project.bills
                     ]
                 , div [ class "messages" ] []
                 , footerView t

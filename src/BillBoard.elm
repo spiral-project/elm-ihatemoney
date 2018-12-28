@@ -7,12 +7,12 @@ import Round exposing (round)
 import Types exposing (..)
 
 
-billBoardView : Localizer -> List Bill -> Html Msg
-billBoardView t bills =
+billBoardView : Localizer -> List Member -> List Bill -> Html Msg
+billBoardView t members bills =
     div
         [ class "offset-md-3 col-xs-12 col-md-9" ]
         [ billBoardHeader t
-        , billBoardTable t bills
+        , billBoardTable t members bills
         ]
 
 
@@ -32,8 +32,8 @@ billBoardHeader t =
         ]
 
 
-billBoardTable : Localizer -> List Bill -> Html Msg
-billBoardTable t bills =
+billBoardTable : Localizer -> List Member -> List Bill -> Html Msg
+billBoardTable t members bills =
     table [ id "bill_table", class "col table table-striped table-hover" ]
         [ thead []
             [ tr []
@@ -45,19 +45,27 @@ billBoardTable t bills =
                 , th [] [ text <| t Actions ]
                 ]
             ]
-        , List.map (billInfoView t) bills
+        , List.map (billInfoView t members) bills
             |> tbody []
         ]
 
 
-billInfoView : Localizer -> Bill -> Html Msg
-billInfoView t bill =
+billInfoView : Localizer -> List Member -> Bill -> Html Msg
+billInfoView t members bill =
+    let
+        payerName =
+            List.filter (\m -> m.id == bill.payer) members
+                |> List.head
+                |> Maybe.withDefault (Member 0 "Unknown" 1 False)
+                |> .name
+    in
     tr []
         [ td [] [ text bill.date ]
-        , td [] [ text bill.payer ]
+        , td [] [ text payerName ]
         , td [] [ text bill.label ]
         , td []
-            [ List.sort bill.owers
+            [ List.sortBy .name bill.owers
+                |> List.map .name
                 |> String.join ", "
                 |> text
             ]
@@ -66,11 +74,13 @@ billInfoView t bill =
                 amount =
                     round 2 bill.amount
 
-                numberOfPeople =
-                    List.length bill.owers |> toFloat
+                numberOfShares =
+                    List.map .weight bill.owers
+                        |> List.sum
+                        |> toFloat
 
                 amountEach =
-                    round 2 <| bill.amount / numberOfPeople
+                    round 2 <| bill.amount / numberOfShares
               in
               amount ++ t (Each amountEach) |> text
             ]

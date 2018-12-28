@@ -3,6 +3,7 @@ module Api exposing
     , createProject
     , deleteProjectMember
     , editProjectMember
+    , fetchProjectBills
     , fetchProjectInfo
     )
 
@@ -81,12 +82,11 @@ decodeProjectInfo =
 
 decodeMember : Decode.Decoder Member
 decodeMember =
-    Decode.map5 Member
+    Decode.map4 Member
         (Decode.field "id" Decode.int)
         (Decode.field "name" Decode.string)
         (Decode.field "weight" Decode.int)
         (Decode.field "activated" Decode.bool)
-        (Decode.succeed 0.0)
 
 
 fetchProjectInfo : Authentication -> String -> Cmd Msg
@@ -96,6 +96,29 @@ fetchProjectInfo auth projectID =
         , url = iHateMoneyUrl ++ "/projects/" ++ projectID
         , headers = [ headersForAuth auth ]
         , expect = Http.expectJson ProjectFetched decodeProjectInfo
+        , timeout = Nothing
+        , tracker = Nothing
+        , body = Http.emptyBody
+        }
+
+
+decodeProjectBill : Decode.Decoder Bill
+decodeProjectBill =
+    Decode.map5 Bill
+        (Decode.field "date" Decode.string)
+        (Decode.field "amount" Decode.float)
+        (Decode.field "what" Decode.string)
+        (Decode.field "payer_id" Decode.int)
+        (Decode.field "owers" (Decode.list decodeMember))
+
+
+fetchProjectBills : Authentication -> String -> Cmd Msg
+fetchProjectBills auth projectID =
+    Http.request
+        { method = "GET"
+        , url = iHateMoneyUrl ++ "/projects/" ++ projectID ++ "/bills"
+        , headers = [ headersForAuth auth ]
+        , expect = Http.expectJson BillsFetched (Decode.list decodeProjectBill)
         , timeout = Nothing
         , tracker = Nothing
         , body = Http.emptyBody
