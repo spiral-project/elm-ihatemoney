@@ -54,6 +54,9 @@ getString id =
         Delete ->
             "delete"
 
+        Reactivate ->
+            "reactivate"
+
         -- Bills Board
         Invite ->
             "Invite people to join this project!"

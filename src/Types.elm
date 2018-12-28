@@ -54,6 +54,7 @@ type Msg
     | NewMemberWeight String
     | AddMember
     | TriggerEditMember Int
+    | ReactivateMember Int String
     | DemoLogin
     | LoginProjectID String
     | LoginPassword String
@@ -119,6 +120,7 @@ type LocaleIdentifier
     | Deactivate
     | Edit
     | Delete
+    | Reactivate
     | Invite
     | FreeSoftware
     | YouCanContribute

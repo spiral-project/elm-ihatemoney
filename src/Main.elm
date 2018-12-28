@@ -8,6 +8,7 @@ import Api
         , editProjectMember
         , fetchProjectBills
         , fetchProjectInfo
+        , reactivateProjectMember
         )
 import BillBoard exposing (billBoardView)
 import Browser exposing (Document)
@@ -152,6 +153,16 @@ update msg model =
                 Just project ->
                     ( model
                     , editProjectMember model.auth member_id model.fields.newMember (Maybe.withDefault 1 <| String.toInt model.fields.newMemberWeight)
+                    )
+
+                Nothing ->
+                    ( model, Cmd.none )
+
+        ReactivateMember member_id name ->
+            case model.project of
+                Just project ->
+                    ( model
+                    , reactivateProjectMember model.auth member_id name
                     )
 
                 Nothing ->

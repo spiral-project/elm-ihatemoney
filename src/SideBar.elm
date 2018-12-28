@@ -82,21 +82,43 @@ memberInfo t bills member =
             else
                 ""
     in
-    tr [ id "bal-member-1" ]
-        [ td
-            [ class "balance-name" ]
-            [ text member.name
-            , span [ class "light extra-info" ] [ text "(x1)" ]
+    if not member.activated && memberBalance > -0.01 && memberBalance < 0.01 then
+        -- Deactivated member with no balance
+        span [] []
+
+    else if member.activated then
+        tr [ id "bal-member-1" ]
+            [ td
+                [ class "balance-name" ]
+                [ text member.name
+                , span [ class "light extra-info" ] [ text "(x1)" ]
+                ]
+            , td []
+                [ div [ class "action delete" ] [ button [ type_ "button", onClick <| DeactivateMember member.id ] [ text <| t Deactivate ] ]
+                , div [ class "action edit" ] [ button [ type_ "button", onClick <| EditModal (MemberModal member.id) ] [ text <| t Edit ] ]
+                ]
+            , td [ class <| "balance-value " ++ className ]
+                [ round 2 memberBalance
+                    |> (++) sign
+                    |> text
+                ]
             ]
-        , td []
-            [ div [ class "action delete" ] [ button [ type_ "button", onClick <| DeactivateMember member.id ] [ text <| t Deactivate ] ]
+
+    else
+        tr [ id "bal-member-1", action "reactivate" ]
+            [ td
+                [ class "balance-name" ]
+                [ text member.name
+                , span [ class "light extra-info" ] [ text "(x1)" ]
+                ]
+            , td []
+                [ div [ class "action reactivate" ]
+                    [ button [ type_ "button", onClick <| ReactivateMember member.id member.name ] [ text <| t Reactivate ]
+                    ]
+                ]
+            , td [ class <| "balance-value " ++ className ]
+                [ round 2 memberBalance
+                    |> (++) sign
+                    |> text
+                ]
             ]
-        , td []
-            [ div [ class "action edit" ] [ button [ type_ "button", onClick <| EditModal (MemberModal member.id) ] [ text <| t Edit ] ]
-            ]
-        , td [ class <| "balance-value " ++ className ]
-            [ round 2 memberBalance
-                |> (++) sign
-                |> text
-            ]
-        ]

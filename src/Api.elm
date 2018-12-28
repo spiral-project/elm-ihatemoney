@@ -5,6 +5,7 @@ module Api exposing
     , editProjectMember
     , fetchProjectBills
     , fetchProjectInfo
+    , reactivateProjectMember
     )
 
 import Base64
@@ -188,4 +189,26 @@ deleteProjectMember auth member_id =
         , timeout = Nothing
         , tracker = Nothing
         , body = Http.emptyBody
+        }
+
+
+reactivateProjectMember : Authentication -> Int -> String -> Cmd Msg
+reactivateProjectMember auth member_id name =
+    let
+        projectID =
+            case auth of
+                Basic user _ ->
+                    user
+
+                Unauthenticated ->
+                    ""
+    in
+    Http.request
+        { method = "PUT"
+        , url = iHateMoneyUrl ++ "/projects/" ++ projectID ++ "/members/" ++ String.fromInt member_id
+        , headers = [ headersForAuth auth ]
+        , expect = Http.expectJson MemberEdited decodeMember
+        , timeout = Nothing
+        , tracker = Nothing
+        , body = Http.jsonBody <| Encode.object [ ( "name", Encode.string name ), ( "activated", Encode.bool True ) ]
         }
