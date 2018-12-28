@@ -1,4 +1,10 @@
-module Api exposing (addMemberToProject, createProject, editProjectMember, fetchProjectInfo)
+module Api exposing
+    ( addMemberToProject
+    , createProject
+    , deleteProjectMember
+    , editProjectMember
+    , fetchProjectInfo
+    )
 
 import Base64
 import Http
@@ -137,4 +143,26 @@ editProjectMember auth member_id name weight =
         , timeout = Nothing
         , tracker = Nothing
         , body = Http.jsonBody <| Encode.object [ ( "name", Encode.string name ), ( "weight", Encode.int weight ) ]
+        }
+
+
+deleteProjectMember : Authentication -> Int -> Cmd Msg
+deleteProjectMember auth member_id =
+    let
+        projectID =
+            case auth of
+                Basic user _ ->
+                    user
+
+                Unauthenticated ->
+                    ""
+    in
+    Http.request
+        { method = "DELETE"
+        , url = iHateMoneyUrl ++ "/projects/" ++ projectID ++ "/members/" ++ String.fromInt member_id
+        , headers = [ headersForAuth auth ]
+        , expect = Http.expectJson (MemberDeleted member_id) Decode.string
+        , timeout = Nothing
+        , tracker = Nothing
+        , body = Http.emptyBody
         }

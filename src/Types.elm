@@ -68,6 +68,7 @@ type Msg
     | ProjectFetched (Result Http.Error Project)
     | MemberAdded (Result Http.Error Int)
     | MemberEdited (Result Http.Error Member)
+    | MemberDeleted Int (Result Http.Error String)
     | EditModal ModalType
     | DeactivateMember Int
 

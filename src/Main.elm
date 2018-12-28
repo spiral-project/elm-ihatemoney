@@ -1,6 +1,6 @@
 module Main exposing (main)
 
-import Api exposing (addMemberToProject, createProject, editProjectMember, fetchProjectInfo)
+import Api exposing (addMemberToProject, createProject, deleteProjectMember, editProjectMember, fetchProjectInfo)
 import BillBoard exposing (billBoardView)
 import Browser exposing (Document)
 import Footer exposing (footerView)
@@ -105,6 +105,15 @@ setEditedProjectMember member project =
     { project | members = members }
 
 
+setDeletedProjectMember : Int -> Project -> Project
+setDeletedProjectMember member_id project =
+    let
+        members =
+            List.filter (\m -> m.id /= member_id) project.members
+    in
+    { project | members = members }
+
+
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
@@ -194,9 +203,32 @@ update msg model =
         MemberEdited (Err err) ->
             let
                 _ =
-                    Debug.log "Error while adding the member" err
+                    Debug.log "Error while editing the member" err
             in
             ( { model | modal = Hidden }, Cmd.none )
+
+        MemberDeleted member_id (Ok _) ->
+            case model.project of
+                Just project ->
+                    let
+                        newProject =
+                            setDeletedProjectMember member_id project
+                    in
+                    ( { model
+                        | project = Just newProject
+                      }
+                    , Cmd.none
+                    )
+
+                Nothing ->
+                    ( model, Cmd.none )
+
+        MemberDeleted member_id (Err err) ->
+            let
+                _ =
+                    Debug.log ("Error while removing the member " ++ String.fromInt member_id) err
+            in
+            ( model, Cmd.none )
 
         NewProjectName value ->
             let
@@ -378,9 +410,15 @@ update msg model =
                 Nothing ->
                     ( model, Cmd.none )
 
-        DeactivateMember id ->
-            -- XXX: Run deactivate member
-            ( model, Cmd.none )
+        DeactivateMember member_id ->
+            case model.project of
+                Just project ->
+                    ( model
+                    , deleteProjectMember model.auth member_id
+                    )
+
+                Nothing ->
+                    ( model, Cmd.none )
 
 
 subscriptions : Model -> Sub Msg
