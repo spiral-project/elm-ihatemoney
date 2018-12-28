@@ -6431,22 +6431,20 @@ var author$project$Api$deleteProjectMember = F2(
 				url: author$project$Api$iHateMoneyUrl + ('/projects/' + (projectID + ('/members/' + elm$core$String$fromInt(member_id))))
 			});
 	});
-var author$project$Types$Member = F5(
-	function (id, name, weight, activated, balance) {
-		return {activated: activated, balance: balance, id: id, name: name, weight: weight};
+var author$project$Types$Member = F4(
+	function (id, name, weight, activated) {
+		return {activated: activated, id: id, name: name, weight: weight};
 	});
 var elm$json$Json$Decode$bool = _Json_decodeBool;
 var elm$json$Json$Decode$field = _Json_decodeField;
-var elm$json$Json$Decode$map5 = _Json_map5;
-var elm$json$Json$Decode$succeed = _Json_succeed;
-var author$project$Api$decodeMember = A6(
-	elm$json$Json$Decode$map5,
+var elm$json$Json$Decode$map4 = _Json_map4;
+var author$project$Api$decodeMember = A5(
+	elm$json$Json$Decode$map4,
 	author$project$Types$Member,
 	A2(elm$json$Json$Decode$field, 'id', elm$json$Json$Decode$int),
 	A2(elm$json$Json$Decode$field, 'name', elm$json$Json$Decode$string),
 	A2(elm$json$Json$Decode$field, 'weight', elm$json$Json$Decode$int),
-	A2(elm$json$Json$Decode$field, 'activated', elm$json$Json$Decode$bool),
-	elm$json$Json$Decode$succeed(0.0));
+	A2(elm$json$Json$Decode$field, 'activated', elm$json$Json$Decode$bool));
 var author$project$Types$MemberEdited = function (a) {
 	return {$: 'MemberEdited', a: a};
 };
@@ -6485,14 +6483,53 @@ var author$project$Api$editProjectMember = F4(
 				url: author$project$Api$iHateMoneyUrl + ('/projects/' + (projectID + ('/members/' + elm$core$String$fromInt(member_id))))
 			});
 	});
+var author$project$Types$Bill = F5(
+	function (date, amount, label, payer, owers) {
+		return {amount: amount, date: date, label: label, owers: owers, payer: payer};
+	});
+var elm$json$Json$Decode$float = _Json_decodeFloat;
+var elm$json$Json$Decode$list = _Json_decodeList;
+var elm$json$Json$Decode$map5 = _Json_map5;
+var author$project$Api$decodeProjectBill = A6(
+	elm$json$Json$Decode$map5,
+	author$project$Types$Bill,
+	A2(elm$json$Json$Decode$field, 'date', elm$json$Json$Decode$string),
+	A2(elm$json$Json$Decode$field, 'amount', elm$json$Json$Decode$float),
+	A2(elm$json$Json$Decode$field, 'what', elm$json$Json$Decode$string),
+	A2(elm$json$Json$Decode$field, 'payer_id', elm$json$Json$Decode$int),
+	A2(
+		elm$json$Json$Decode$field,
+		'owers',
+		elm$json$Json$Decode$list(author$project$Api$decodeMember)));
+var author$project$Types$BillsFetched = function (a) {
+	return {$: 'BillsFetched', a: a};
+};
+var author$project$Api$fetchProjectBills = F2(
+	function (auth, projectID) {
+		return elm$http$Http$request(
+			{
+				body: elm$http$Http$emptyBody,
+				expect: A2(
+					elm$http$Http$expectJson,
+					author$project$Types$BillsFetched,
+					elm$json$Json$Decode$list(author$project$Api$decodeProjectBill)),
+				headers: _List_fromArray(
+					[
+						author$project$Api$headersForAuth(auth)
+					]),
+				method: 'GET',
+				timeout: elm$core$Maybe$Nothing,
+				tracker: elm$core$Maybe$Nothing,
+				url: author$project$Api$iHateMoneyUrl + ('/projects/' + (projectID + '/bills'))
+			});
+	});
 var author$project$Types$Project = F4(
 	function (name, contact_email, members, bills) {
 		return {bills: bills, contact_email: contact_email, members: members, name: name};
 	});
 var elm$core$List$sortBy = _List_sortBy;
-var elm$json$Json$Decode$list = _Json_decodeList;
 var elm$json$Json$Decode$map = _Json_map1;
-var elm$json$Json$Decode$map4 = _Json_map4;
+var elm$json$Json$Decode$succeed = _Json_succeed;
 var author$project$Api$decodeProjectInfo = A5(
 	elm$json$Json$Decode$map4,
 	author$project$Types$Project,
@@ -6716,7 +6753,7 @@ var author$project$Main$update = F2(
 					var _n3 = model.project;
 					if (_n3.$ === 'Just') {
 						var project = _n3.a;
-						var member = A5(author$project$Types$Member, id, model.fields.newMember, 1, true, 0.0);
+						var member = A4(author$project$Types$Member, id, model.fields.newMember, 1, true);
 						var newProject = A2(author$project$Main$setMemberToProject, member, project);
 						var fields = A2(author$project$Main$setNewMemberName, '', model.fields);
 						return _Utils_Tuple2(
@@ -6924,16 +6961,54 @@ var author$project$Main$update = F2(
 			case 'ProjectFetched':
 				if (msg.a.$ === 'Ok') {
 					var project = msg.a.a;
+					var projectId = function () {
+						var _n13 = model.auth;
+						if (_n13.$ === 'Basic') {
+							var user = _n13.a;
+							var pass = _n13.b;
+							return user;
+						} else {
+							return '';
+						}
+					}();
 					return _Utils_Tuple2(
 						_Utils_update(
 							model,
 							{
 								project: elm$core$Maybe$Just(project)
 							}),
-						elm$core$Platform$Cmd$none);
+						A2(author$project$Api$fetchProjectBills, model.auth, projectId));
 				} else {
 					var err = msg.a.a;
-					var _n13 = A2(elm$core$Debug$log, 'Error while loading the project', err);
+					var _n14 = A2(elm$core$Debug$log, 'Error while loading the project', err);
+					return _Utils_Tuple2(
+						_Utils_update(
+							model,
+							{auth: author$project$Types$Unauthenticated}),
+						elm$core$Platform$Cmd$none);
+				}
+			case 'BillsFetched':
+				if (msg.a.$ === 'Ok') {
+					var bills = msg.a.a;
+					var _n15 = model.project;
+					if (_n15.$ === 'Just') {
+						var project = _n15.a;
+						var newProject = _Utils_update(
+							project,
+							{bills: bills});
+						return _Utils_Tuple2(
+							_Utils_update(
+								model,
+								{
+									project: elm$core$Maybe$Just(newProject)
+								}),
+							elm$core$Platform$Cmd$none);
+					} else {
+						return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
+					}
+				} else {
+					var err = msg.a.a;
+					var _n16 = A2(elm$core$Debug$log, 'Error while loading the project bills', err);
 					return _Utils_Tuple2(
 						_Utils_update(
 							model,
@@ -6949,9 +7024,9 @@ var author$project$Main$update = F2(
 					elm$core$Platform$Cmd$none);
 			case 'EditModal':
 				var modal_type = msg.a;
-				var _n14 = model.project;
-				if (_n14.$ === 'Just') {
-					var project = _n14.a;
+				var _n17 = model.project;
+				if (_n17.$ === 'Just') {
+					var project = _n17.a;
 					if (modal_type.$ === 'MemberModal') {
 						var member_id = modal_type.a;
 						var getMember = elm$core$List$head(
@@ -6993,9 +7068,9 @@ var author$project$Main$update = F2(
 				}
 			default:
 				var member_id = msg.a;
-				var _n17 = model.project;
-				if (_n17.$ === 'Just') {
-					var project = _n17.a;
+				var _n20 = model.project;
+				if (_n20.$ === 'Just') {
+					var project = _n20.a;
 					return _Utils_Tuple2(
 						model,
 						A2(author$project$Api$deleteProjectMember, model.auth, member_id));
@@ -7094,8 +7169,22 @@ var author$project$Types$Each = function (a) {
 	return {$: 'Each', a: a};
 };
 var author$project$Types$Edit = {$: 'Edit'};
-var elm$core$List$sort = function (xs) {
-	return A2(elm$core$List$sortBy, elm$core$Basics$identity, xs);
+var elm$core$List$map = F2(
+	function (f, xs) {
+		return A3(
+			elm$core$List$foldr,
+			F2(
+				function (x, acc) {
+					return A2(
+						elm$core$List$cons,
+						f(x),
+						acc);
+				}),
+			_List_Nil,
+			xs);
+	});
+var elm$core$List$sum = function (numbers) {
+	return A3(elm$core$List$foldl, elm$core$Basics$add, 0, numbers);
 };
 var elm$html$Html$td = _VirtualDom_node('td');
 var elm$html$Html$tr = _VirtualDom_node('tr');
@@ -7383,8 +7472,18 @@ var myrho$elm_round$Round$round = myrho$elm_round$Round$roundFun(
 				}
 			}
 		}));
-var author$project$BillBoard$billInfoView = F2(
-	function (t, bill) {
+var author$project$BillBoard$billInfoView = F3(
+	function (t, members, bill) {
+		var payerName = A2(
+			elm$core$Maybe$withDefault,
+			A4(author$project$Types$Member, 0, 'Unknown', 1, false),
+			elm$core$List$head(
+				A2(
+					elm$core$List$filter,
+					function (m) {
+						return _Utils_eq(m.id, bill.payer);
+					},
+					members))).name;
 		return A2(
 			elm$html$Html$tr,
 			_List_Nil,
@@ -7402,7 +7501,7 @@ var author$project$BillBoard$billInfoView = F2(
 					_List_Nil,
 					_List_fromArray(
 						[
-							elm$html$Html$text(bill.payer)
+							elm$html$Html$text(payerName)
 						])),
 					A2(
 					elm$html$Html$td,
@@ -7420,7 +7519,17 @@ var author$project$BillBoard$billInfoView = F2(
 							A2(
 								elm$core$String$join,
 								', ',
-								elm$core$List$sort(bill.owers)))
+								A2(
+									elm$core$List$map,
+									function ($) {
+										return $.name;
+									},
+									A2(
+										elm$core$List$sortBy,
+										function ($) {
+											return $.name;
+										},
+										bill.owers))))
 						])),
 					A2(
 					elm$html$Html$td,
@@ -7428,8 +7537,14 @@ var author$project$BillBoard$billInfoView = F2(
 					_List_fromArray(
 						[
 							function () {
-							var numberOfPeople = elm$core$List$length(bill.owers);
-							var amountEach = A2(myrho$elm_round$Round$round, 2, bill.amount / numberOfPeople);
+							var numberOfShares = elm$core$List$sum(
+								A2(
+									elm$core$List$map,
+									function ($) {
+										return $.weight;
+									},
+									bill.owers));
+							var amountEach = A2(myrho$elm_round$Round$round, 2, bill.amount / numberOfShares);
 							var amount = A2(myrho$elm_round$Round$round, 2, bill.amount);
 							return elm$html$Html$text(
 								_Utils_ap(
@@ -7483,26 +7598,12 @@ var author$project$Types$ForWhom = {$: 'ForWhom'};
 var author$project$Types$HowMuch = {$: 'HowMuch'};
 var author$project$Types$When = {$: 'When'};
 var author$project$Types$WhoPaid = {$: 'WhoPaid'};
-var elm$core$List$map = F2(
-	function (f, xs) {
-		return A3(
-			elm$core$List$foldr,
-			F2(
-				function (x, acc) {
-					return A2(
-						elm$core$List$cons,
-						f(x),
-						acc);
-				}),
-			_List_Nil,
-			xs);
-	});
 var elm$html$Html$table = _VirtualDom_node('table');
 var elm$html$Html$tbody = _VirtualDom_node('tbody');
 var elm$html$Html$th = _VirtualDom_node('th');
 var elm$html$Html$thead = _VirtualDom_node('thead');
-var author$project$BillBoard$billBoardTable = F2(
-	function (t, bills) {
+var author$project$BillBoard$billBoardTable = F3(
+	function (t, members, bills) {
 		return A2(
 			elm$html$Html$table,
 			_List_fromArray(
@@ -7577,12 +7678,12 @@ var author$project$BillBoard$billBoardTable = F2(
 					_List_Nil,
 					A2(
 						elm$core$List$map,
-						author$project$BillBoard$billInfoView(t),
+						A2(author$project$BillBoard$billInfoView, t, members),
 						bills))
 				]));
 	});
-var author$project$BillBoard$billBoardView = F2(
-	function (t, bills) {
+var author$project$BillBoard$billBoardView = F3(
+	function (t, members, bills) {
 		return A2(
 			elm$html$Html$div,
 			_List_fromArray(
@@ -7592,7 +7693,7 @@ var author$project$BillBoard$billBoardView = F2(
 			_List_fromArray(
 				[
 					author$project$BillBoard$billBoardHeader(t),
-					A2(author$project$BillBoard$billBoardTable, t, bills)
+					A3(author$project$BillBoard$billBoardTable, t, members, bills)
 				]));
 	});
 var author$project$Types$FreeSoftware = {$: 'FreeSoftware'};
@@ -9158,6 +9259,46 @@ var author$project$NavBar$simpleNavBarView = F2(
 						]))
 				]));
 	});
+var author$project$SideBar$getMemberBalance = F2(
+	function (member, bills) {
+		var totalPaid = elm$core$List$sum(
+			A2(
+				elm$core$List$map,
+				function ($) {
+					return $.amount;
+				},
+				A2(
+					elm$core$List$filter,
+					function (bill) {
+						return _Utils_eq(bill.payer, member.id);
+					},
+					bills)));
+		var billsShares = elm$core$List$sum(
+			A2(
+				elm$core$List$map,
+				function (bill) {
+					return bill.amount / elm$core$List$sum(
+						A2(
+							elm$core$List$map,
+							function ($) {
+								return $.weight;
+							},
+							bill.owers));
+				},
+				A2(
+					elm$core$List$filter,
+					function (bill) {
+						return A2(
+							elm$core$List$any,
+							function (ower) {
+								return _Utils_eq(ower.id, member.id);
+							},
+							bill.owers);
+					},
+					bills)));
+		var totalOwed = billsShares * member.weight;
+		return totalPaid - totalOwed;
+	});
 var author$project$Types$Deactivate = {$: 'Deactivate'};
 var author$project$Types$DeactivateMember = function (a) {
 	return {$: 'DeactivateMember', a: a};
@@ -9165,10 +9306,11 @@ var author$project$Types$DeactivateMember = function (a) {
 var author$project$Types$MemberModal = function (a) {
 	return {$: 'MemberModal', a: a};
 };
-var author$project$SideBar$memberInfo = F2(
-	function (t, member) {
-		var sign = (member.balance > 0) ? '+' : '';
-		var className = (member.balance < 0) ? 'negative' : 'positive';
+var author$project$SideBar$memberInfo = F3(
+	function (t, bills, member) {
+		var memberBalance = A2(author$project$SideBar$getMemberBalance, member, bills);
+		var sign = (memberBalance > 0) ? '+' : '';
+		var className = (memberBalance < 0) ? 'negative' : 'positive';
 		return A2(
 			elm$html$Html$tr,
 			_List_fromArray(
@@ -9265,7 +9407,7 @@ var author$project$SideBar$memberInfo = F2(
 							elm$html$Html$text(
 							_Utils_ap(
 								sign,
-								A2(myrho$elm_round$Round$round, 2, member.balance)))
+								A2(myrho$elm_round$Round$round, 2, memberBalance)))
 						]))
 				]));
 	});
@@ -9274,8 +9416,8 @@ var author$project$Types$AddMember = {$: 'AddMember'};
 var author$project$Types$TypeUserName = {$: 'TypeUserName'};
 var elm$html$Html$aside = _VirtualDom_node('aside');
 var elm$html$Html$Attributes$placeholder = elm$html$Html$Attributes$stringProperty('placeholder');
-var author$project$SideBar$sideBarView = F3(
-	function (t, memberField, members) {
+var author$project$SideBar$sideBarView = F4(
+	function (t, memberField, members, bills) {
 		return A2(
 			elm$html$Html$div,
 			_List_fromArray(
@@ -9368,7 +9510,7 @@ var author$project$SideBar$sideBarView = F3(
 										]),
 									A2(
 										elm$core$List$map,
-										author$project$SideBar$memberInfo(t),
+										A2(author$project$SideBar$memberInfo, t, bills),
 										members))
 								]))
 						]))
@@ -9398,8 +9540,8 @@ var author$project$Main$view = function (model) {
 						]),
 					_List_fromArray(
 						[
-							A3(author$project$SideBar$sideBarView, t, model.fields.newMember, project.members),
-							A2(author$project$BillBoard$billBoardView, t, project.bills)
+							A4(author$project$SideBar$sideBarView, t, model.fields.newMember, project.members, project.bills),
+							A3(author$project$BillBoard$billBoardView, t, project.members, project.bills)
 						])),
 					A2(
 					elm$html$Html$div,
