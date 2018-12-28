@@ -6565,6 +6565,41 @@ var author$project$Api$fetchProjectInfo = F2(
 				url: author$project$Api$iHateMoneyUrl + ('/projects/' + projectID)
 			});
 	});
+var elm$json$Json$Encode$bool = _Json_wrap;
+var author$project$Api$reactivateProjectMember = F3(
+	function (auth, member_id, name) {
+		var projectID = function () {
+			if (auth.$ === 'Basic') {
+				var user = auth.a;
+				return user;
+			} else {
+				return '';
+			}
+		}();
+		return elm$http$Http$request(
+			{
+				body: elm$http$Http$jsonBody(
+					elm$json$Json$Encode$object(
+						_List_fromArray(
+							[
+								_Utils_Tuple2(
+								'name',
+								elm$json$Json$Encode$string(name)),
+								_Utils_Tuple2(
+								'activated',
+								elm$json$Json$Encode$bool(true))
+							]))),
+				expect: A2(elm$http$Http$expectJson, author$project$Types$MemberEdited, author$project$Api$decodeMember),
+				headers: _List_fromArray(
+					[
+						author$project$Api$headersForAuth(auth)
+					]),
+				method: 'PUT',
+				timeout: elm$core$Maybe$Nothing,
+				tracker: elm$core$Maybe$Nothing,
+				url: author$project$Api$iHateMoneyUrl + ('/projects/' + (projectID + ('/members/' + elm$core$String$fromInt(member_id))))
+			});
+	});
 var elm$core$Basics$neq = _Utils_notEqual;
 var elm$core$List$filter = F2(
 	function (isGood, list) {
@@ -6747,12 +6782,24 @@ var author$project$Main$update = F2(
 				} else {
 					return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
 				}
+			case 'ReactivateMember':
+				var member_id = msg.a;
+				var name = msg.b;
+				var _n3 = model.project;
+				if (_n3.$ === 'Just') {
+					var project = _n3.a;
+					return _Utils_Tuple2(
+						model,
+						A3(author$project$Api$reactivateProjectMember, model.auth, member_id, name));
+				} else {
+					return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
+				}
 			case 'MemberAdded':
 				if (msg.a.$ === 'Ok') {
 					var id = msg.a.a;
-					var _n3 = model.project;
-					if (_n3.$ === 'Just') {
-						var project = _n3.a;
+					var _n4 = model.project;
+					if (_n4.$ === 'Just') {
+						var project = _n4.a;
 						var member = A4(author$project$Types$Member, id, model.fields.newMember, 1, true);
 						var newProject = A2(author$project$Main$setMemberToProject, member, project);
 						var fields = A2(author$project$Main$setNewMemberName, '', model.fields);
@@ -6769,15 +6816,15 @@ var author$project$Main$update = F2(
 					}
 				} else {
 					var err = msg.a.a;
-					var _n4 = A2(elm$core$Debug$log, 'Error while adding the member', err);
+					var _n5 = A2(elm$core$Debug$log, 'Error while adding the member', err);
 					return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
 				}
 			case 'MemberEdited':
 				if (msg.a.$ === 'Ok') {
 					var member = msg.a.a;
-					var _n5 = model.project;
-					if (_n5.$ === 'Just') {
-						var project = _n5.a;
+					var _n6 = model.project;
+					if (_n6.$ === 'Just') {
+						var project = _n6.a;
 						var newProject = A2(author$project$Main$setEditedProjectMember, member, project);
 						var fields = A2(
 							author$project$Main$setNewMemberWeight,
@@ -6801,7 +6848,7 @@ var author$project$Main$update = F2(
 					}
 				} else {
 					var err = msg.a.a;
-					var _n6 = A2(elm$core$Debug$log, 'Error while editing the member', err);
+					var _n7 = A2(elm$core$Debug$log, 'Error while editing the member', err);
 					return _Utils_Tuple2(
 						_Utils_update(
 							model,
@@ -6811,9 +6858,9 @@ var author$project$Main$update = F2(
 			case 'MemberDeleted':
 				if (msg.b.$ === 'Ok') {
 					var member_id = msg.a;
-					var _n7 = model.project;
-					if (_n7.$ === 'Just') {
-						var project = _n7.a;
+					var _n8 = model.project;
+					if (_n8.$ === 'Just') {
+						var project = _n8.a;
 						var newProject = A2(author$project$Main$setDeletedProjectMember, member_id, project);
 						return _Utils_Tuple2(
 							_Utils_update(
@@ -6828,7 +6875,7 @@ var author$project$Main$update = F2(
 				} else {
 					var member_id = msg.a;
 					var err = msg.b.a;
-					var _n8 = A2(
+					var _n9 = A2(
 						elm$core$Debug$log,
 						'Error while removing the member ' + elm$core$String$fromInt(member_id),
 						err);
@@ -6881,7 +6928,7 @@ var author$project$Main$update = F2(
 						A3(author$project$Api$createProject, projectID, password, email));
 				} else {
 					var fields = A2(author$project$Main$setNewProjectError, 'Invalid project name: ' + projectID, model.fields);
-					var _n10 = A2(elm$core$Debug$log, 'Invalid ProjectName', projectID);
+					var _n11 = A2(elm$core$Debug$log, 'Invalid ProjectName', projectID);
 					return _Utils_Tuple2(
 						_Utils_update(
 							model,
@@ -6892,10 +6939,10 @@ var author$project$Main$update = F2(
 				if (msg.a.$ === 'Ok') {
 					var projectID = msg.a.a;
 					var password = function () {
-						var _n11 = model.auth;
-						if (_n11.$ === 'Basic') {
-							var user = _n11.a;
-							var pass = _n11.b;
+						var _n12 = model.auth;
+						if (_n12.$ === 'Basic') {
+							var user = _n12.a;
+							var pass = _n12.b;
 							return pass;
 						} else {
 							return '';
@@ -6909,7 +6956,7 @@ var author$project$Main$update = F2(
 						A2(author$project$Api$fetchProjectInfo, auth, projectID));
 				} else {
 					var err = msg.a.a;
-					var _n12 = A2(elm$core$Debug$log, 'Error while creating the project', err);
+					var _n13 = A2(elm$core$Debug$log, 'Error while creating the project', err);
 					return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
 				}
 			case 'LoginProjectID':
@@ -6962,10 +7009,10 @@ var author$project$Main$update = F2(
 				if (msg.a.$ === 'Ok') {
 					var project = msg.a.a;
 					var projectId = function () {
-						var _n13 = model.auth;
-						if (_n13.$ === 'Basic') {
-							var user = _n13.a;
-							var pass = _n13.b;
+						var _n14 = model.auth;
+						if (_n14.$ === 'Basic') {
+							var user = _n14.a;
+							var pass = _n14.b;
 							return user;
 						} else {
 							return '';
@@ -6980,7 +7027,7 @@ var author$project$Main$update = F2(
 						A2(author$project$Api$fetchProjectBills, model.auth, projectId));
 				} else {
 					var err = msg.a.a;
-					var _n14 = A2(elm$core$Debug$log, 'Error while loading the project', err);
+					var _n15 = A2(elm$core$Debug$log, 'Error while loading the project', err);
 					return _Utils_Tuple2(
 						_Utils_update(
 							model,
@@ -6990,9 +7037,9 @@ var author$project$Main$update = F2(
 			case 'BillsFetched':
 				if (msg.a.$ === 'Ok') {
 					var bills = msg.a.a;
-					var _n15 = model.project;
-					if (_n15.$ === 'Just') {
-						var project = _n15.a;
+					var _n16 = model.project;
+					if (_n16.$ === 'Just') {
+						var project = _n16.a;
 						var newProject = _Utils_update(
 							project,
 							{bills: bills});
@@ -7008,7 +7055,7 @@ var author$project$Main$update = F2(
 					}
 				} else {
 					var err = msg.a.a;
-					var _n16 = A2(elm$core$Debug$log, 'Error while loading the project bills', err);
+					var _n17 = A2(elm$core$Debug$log, 'Error while loading the project bills', err);
 					return _Utils_Tuple2(
 						_Utils_update(
 							model,
@@ -7024,9 +7071,9 @@ var author$project$Main$update = F2(
 					elm$core$Platform$Cmd$none);
 			case 'EditModal':
 				var modal_type = msg.a;
-				var _n17 = model.project;
-				if (_n17.$ === 'Just') {
-					var project = _n17.a;
+				var _n18 = model.project;
+				if (_n18.$ === 'Just') {
+					var project = _n18.a;
 					if (modal_type.$ === 'MemberModal') {
 						var member_id = modal_type.a;
 						var getMember = elm$core$List$head(
@@ -7068,9 +7115,9 @@ var author$project$Main$update = F2(
 				}
 			default:
 				var member_id = msg.a;
-				var _n20 = model.project;
-				if (_n20.$ === 'Just') {
-					var project = _n20.a;
+				var _n21 = model.project;
+				if (_n21.$ === 'Just') {
+					var project = _n21.a;
 					return _Utils_Tuple2(
 						model,
 						A2(author$project$Api$deleteProjectMember, model.auth, member_id));
@@ -7763,6 +7810,8 @@ var author$project$Locales$EN$getString = function (id) {
 			return 'Edit this member';
 		case 'Delete':
 			return 'delete';
+		case 'Reactivate':
+			return 'reactivate';
 		case 'Invite':
 			return 'Invite people to join this project!';
 		case 'AddNewBill':
@@ -7862,6 +7911,8 @@ var author$project$Locales$FR$getString = function (id) {
 			return 'Éditer le membre';
 		case 'Delete':
 			return 'supprimer';
+		case 'Reactivate':
+			return 'ré-activer';
 		case 'Invite':
 			return 'Invitez d’autres personnes à rejoindre ce projet !';
 		case 'AddNewBill':
@@ -7979,7 +8030,6 @@ var elm$html$Html$legend = _VirtualDom_node('legend');
 var elm$html$Html$strong = _VirtualDom_node('strong');
 var elm$html$Html$Attributes$for = elm$html$Html$Attributes$stringProperty('htmlFor');
 var elm$html$Html$Attributes$name = elm$html$Html$Attributes$stringProperty('name');
-var elm$json$Json$Encode$bool = _Json_wrap;
 var elm$html$Html$Attributes$boolProperty = F2(
 	function (key, bool) {
 		return A2(
@@ -9306,12 +9356,23 @@ var author$project$Types$DeactivateMember = function (a) {
 var author$project$Types$MemberModal = function (a) {
 	return {$: 'MemberModal', a: a};
 };
+var author$project$Types$Reactivate = {$: 'Reactivate'};
+var author$project$Types$ReactivateMember = F2(
+	function (a, b) {
+		return {$: 'ReactivateMember', a: a, b: b};
+	});
+var elm$html$Html$Attributes$action = function (uri) {
+	return A2(
+		elm$html$Html$Attributes$stringProperty,
+		'action',
+		_VirtualDom_noJavaScriptUri(uri));
+};
 var author$project$SideBar$memberInfo = F3(
 	function (t, bills, member) {
 		var memberBalance = A2(author$project$SideBar$getMemberBalance, member, bills);
 		var sign = (memberBalance > 0) ? '+' : '';
 		var className = (memberBalance < 0) ? 'negative' : 'positive';
-		return A2(
+		return ((!member.activated) && ((_Utils_cmp(memberBalance, -1.0e-2) > 0) && (memberBalance < 1.0e-2))) ? A2(elm$html$Html$span, _List_Nil, _List_Nil) : (member.activated ? A2(
 			elm$html$Html$tr,
 			_List_fromArray(
 				[
@@ -9365,13 +9426,7 @@ var author$project$SideBar$memberInfo = F3(
 											elm$html$Html$text(
 											t(author$project$Types$Deactivate))
 										]))
-								]))
-						])),
-					A2(
-					elm$html$Html$td,
-					_List_Nil,
-					_List_fromArray(
-						[
+								])),
 							A2(
 							elm$html$Html$div,
 							_List_fromArray(
@@ -9409,7 +9464,77 @@ var author$project$SideBar$memberInfo = F3(
 								sign,
 								A2(myrho$elm_round$Round$round, 2, memberBalance)))
 						]))
-				]));
+				])) : A2(
+			elm$html$Html$tr,
+			_List_fromArray(
+				[
+					elm$html$Html$Attributes$id('bal-member-1'),
+					elm$html$Html$Attributes$action('reactivate')
+				]),
+			_List_fromArray(
+				[
+					A2(
+					elm$html$Html$td,
+					_List_fromArray(
+						[
+							elm$html$Html$Attributes$class('balance-name')
+						]),
+					_List_fromArray(
+						[
+							elm$html$Html$text(member.name),
+							A2(
+							elm$html$Html$span,
+							_List_fromArray(
+								[
+									elm$html$Html$Attributes$class('light extra-info')
+								]),
+							_List_fromArray(
+								[
+									elm$html$Html$text('(x1)')
+								]))
+						])),
+					A2(
+					elm$html$Html$td,
+					_List_Nil,
+					_List_fromArray(
+						[
+							A2(
+							elm$html$Html$div,
+							_List_fromArray(
+								[
+									elm$html$Html$Attributes$class('action reactivate')
+								]),
+							_List_fromArray(
+								[
+									A2(
+									elm$html$Html$button,
+									_List_fromArray(
+										[
+											elm$html$Html$Attributes$type_('button'),
+											elm$html$Html$Events$onClick(
+											A2(author$project$Types$ReactivateMember, member.id, member.name))
+										]),
+									_List_fromArray(
+										[
+											elm$html$Html$text(
+											t(author$project$Types$Reactivate))
+										]))
+								]))
+						])),
+					A2(
+					elm$html$Html$td,
+					_List_fromArray(
+						[
+							elm$html$Html$Attributes$class('balance-value ' + className)
+						]),
+					_List_fromArray(
+						[
+							elm$html$Html$text(
+							_Utils_ap(
+								sign,
+								A2(myrho$elm_round$Round$round, 2, memberBalance)))
+						]))
+				])));
 	});
 var author$project$Types$Add = {$: 'Add'};
 var author$project$Types$AddMember = {$: 'AddMember'};
