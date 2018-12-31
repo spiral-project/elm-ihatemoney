@@ -69,11 +69,14 @@ memberInfo t bills member =
             getMemberBalance member bills
 
         className =
-            if memberBalance < 0 then
+            if memberBalance <= -0.005 then
                 "negative"
 
-            else
+            else if memberBalance >= 0.005 then
                 "positive"
+
+            else
+                ""
 
         sign =
             if memberBalance > 0 then
@@ -82,7 +85,7 @@ memberInfo t bills member =
             else
                 ""
     in
-    if not member.activated && memberBalance > -0.01 && memberBalance < 0.01 then
+    if not member.activated && memberBalance > -0.005 && memberBalance < 0.005 then
         -- Deactivated member with no balance
         span [] []
 
