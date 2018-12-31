@@ -5110,7 +5110,8 @@ var author$project$Main$init = function (flags) {
 			fields: {loginPassword: '', loginProjectID: '', newMember: '', newMemberWeight: '', newProjectEmail: '', newProjectError: elm$core$Maybe$Nothing, newProjectName: '', newProjectPassword: ''},
 			locale: author$project$Types$EN,
 			modal: author$project$Types$Hidden,
-			project: elm$core$Maybe$Nothing
+			project: elm$core$Maybe$Nothing,
+			selectedBill: elm$core$Maybe$Nothing
 		},
 		elm$core$Platform$Cmd$none);
 };
@@ -6527,7 +6528,19 @@ var author$project$Types$Project = F4(
 	function (name, contact_email, members, bills) {
 		return {bills: bills, contact_email: contact_email, members: members, name: name};
 	});
+var elm$core$Basics$composeL = F3(
+	function (g, f, x) {
+		return g(
+			f(x));
+	});
 var elm$core$List$sortBy = _List_sortBy;
+var author$project$Utils$sortByLowerCaseName = elm$core$List$sortBy(
+	A2(
+		elm$core$Basics$composeL,
+		elm$core$String$toLower,
+		function ($) {
+			return $.name;
+		}));
 var elm$json$Json$Decode$map = _Json_map1;
 var elm$json$Json$Decode$succeed = _Json_succeed;
 var author$project$Api$decodeProjectInfo = A5(
@@ -6540,10 +6553,7 @@ var author$project$Api$decodeProjectInfo = A5(
 		'members',
 		A2(
 			elm$json$Json$Decode$map,
-			elm$core$List$sortBy(
-				function ($) {
-					return $.name;
-				}),
+			author$project$Utils$sortByLowerCaseName,
 			elm$json$Json$Decode$list(author$project$Api$decodeMember))),
 	elm$json$Json$Decode$succeed(_List_Nil));
 var author$project$Types$ProjectFetched = function (a) {
@@ -6634,11 +6644,7 @@ var elm$core$List$append = F2(
 	});
 var author$project$Main$setEditedProjectMember = F2(
 	function (member, project) {
-		var members = A2(
-			elm$core$List$sortBy,
-			function ($) {
-				return $.name;
-			},
+		var members = author$project$Utils$sortByLowerCaseName(
 			A2(
 				elm$core$List$append,
 				_List_fromArray(
@@ -6670,11 +6676,7 @@ var author$project$Main$setMemberToProject = F2(
 		return _Utils_update(
 			project,
 			{
-				members: A2(
-					elm$core$List$sortBy,
-					function ($) {
-						return $.name;
-					},
+				members: author$project$Utils$sortByLowerCaseName(
 					_Utils_ap(
 						project.members,
 						_List_fromArray(
@@ -7113,7 +7115,7 @@ var author$project$Main$update = F2(
 				} else {
 					return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
 				}
-			default:
+			case 'DeactivateMember':
 				var member_id = msg.a;
 				var _n21 = model.project;
 				if (_n21.$ === 'Just') {
@@ -7124,6 +7126,13 @@ var author$project$Main$update = F2(
 				} else {
 					return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
 				}
+			default:
+				var bill = msg.a;
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{selectedBill: bill}),
+					elm$core$Platform$Cmd$none);
 		}
 	});
 var author$project$Types$AddNewBill = {$: 'AddNewBill'};
@@ -7216,6 +7225,9 @@ var author$project$Types$Each = function (a) {
 	return {$: 'Each', a: a};
 };
 var author$project$Types$Edit = {$: 'Edit'};
+var author$project$Types$SelectBill = function (a) {
+	return {$: 'SelectBill', a: a};
+};
 var elm$core$List$map = F2(
 	function (f, xs) {
 		return A3(
@@ -7236,6 +7248,29 @@ var elm$core$List$sum = function (numbers) {
 var elm$html$Html$td = _VirtualDom_node('td');
 var elm$html$Html$tr = _VirtualDom_node('tr');
 var elm$html$Html$Attributes$title = elm$html$Html$Attributes$stringProperty('title');
+var elm$virtual_dom$VirtualDom$Normal = function (a) {
+	return {$: 'Normal', a: a};
+};
+var elm$virtual_dom$VirtualDom$on = _VirtualDom_on;
+var elm$html$Html$Events$on = F2(
+	function (event, decoder) {
+		return A2(
+			elm$virtual_dom$VirtualDom$on,
+			event,
+			elm$virtual_dom$VirtualDom$Normal(decoder));
+	});
+var elm$html$Html$Events$onMouseEnter = function (msg) {
+	return A2(
+		elm$html$Html$Events$on,
+		'mouseenter',
+		elm$json$Json$Decode$succeed(msg));
+};
+var elm$html$Html$Events$onMouseLeave = function (msg) {
+	return A2(
+		elm$html$Html$Events$on,
+		'mouseleave',
+		elm$json$Json$Decode$succeed(msg));
+};
 var elm$core$Basics$not = _Basics_not;
 var elm$core$Basics$negate = function (n) {
 	return -n;
@@ -7533,7 +7568,14 @@ var author$project$BillBoard$billInfoView = F3(
 					members))).name;
 		return A2(
 			elm$html$Html$tr,
-			_List_Nil,
+			_List_fromArray(
+				[
+					elm$html$Html$Events$onMouseEnter(
+					author$project$Types$SelectBill(
+						elm$core$Maybe$Just(bill))),
+					elm$html$Html$Events$onMouseLeave(
+					author$project$Types$SelectBill(elm$core$Maybe$Nothing))
+				]),
 			_List_fromArray(
 				[
 					A2(
@@ -7571,12 +7613,7 @@ var author$project$BillBoard$billInfoView = F3(
 									function ($) {
 										return $.name;
 									},
-									A2(
-										elm$core$List$sortBy,
-										function ($) {
-											return $.name;
-										},
-										bill.owers))))
+									author$project$Utils$sortByLowerCaseName(bill.owers))))
 						])),
 					A2(
 					elm$html$Html$td,
@@ -8040,17 +8077,6 @@ var elm$html$Html$Attributes$boolProperty = F2(
 var elm$html$Html$Attributes$required = elm$html$Html$Attributes$boolProperty('required');
 var elm$html$Html$Attributes$type_ = elm$html$Html$Attributes$stringProperty('type');
 var elm$html$Html$Attributes$value = elm$html$Html$Attributes$stringProperty('value');
-var elm$virtual_dom$VirtualDom$Normal = function (a) {
-	return {$: 'Normal', a: a};
-};
-var elm$virtual_dom$VirtualDom$on = _VirtualDom_on;
-var elm$html$Html$Events$on = F2(
-	function (event, decoder) {
-		return A2(
-			elm$virtual_dom$VirtualDom$on,
-			event,
-			elm$virtual_dom$VirtualDom$Normal(decoder));
-	});
 var elm$html$Html$Events$onClick = function (msg) {
 	return A2(
 		elm$html$Html$Events$on,
@@ -9367,16 +9393,40 @@ var elm$html$Html$Attributes$action = function (uri) {
 		'action',
 		_VirtualDom_noJavaScriptUri(uri));
 };
-var author$project$SideBar$memberInfo = F3(
-	function (t, bills, member) {
+var author$project$SideBar$memberInfo = F4(
+	function (t, bills, selectedBill, member) {
+		var payerClassName = function () {
+			if (selectedBill.$ === 'Nothing') {
+				return '';
+			} else {
+				var bill = selectedBill.a;
+				return _Utils_eq(bill.payer, member.id) ? 'payer_line' : '';
+			}
+		}();
+		var owerClassName = function () {
+			if (selectedBill.$ === 'Nothing') {
+				return '';
+			} else {
+				var bill = selectedBill.a;
+				var isOwer = elm$core$List$length(
+					A2(
+						elm$core$List$filter,
+						function (x) {
+							return _Utils_eq(x.id, member.id);
+						},
+						bill.owers)) > 0;
+				return isOwer ? 'ower_line' : '';
+			}
+		}();
 		var memberBalance = A2(author$project$SideBar$getMemberBalance, member, bills);
 		var sign = (memberBalance > 0) ? '+' : '';
-		var className = (memberBalance < 0) ? 'negative' : 'positive';
-		return ((!member.activated) && ((_Utils_cmp(memberBalance, -1.0e-2) > 0) && (memberBalance < 1.0e-2))) ? A2(elm$html$Html$span, _List_Nil, _List_Nil) : (member.activated ? A2(
+		var balanceClassName = (_Utils_cmp(memberBalance, -5.0e-3) < 1) ? 'negative' : ((memberBalance >= 5.0e-3) ? 'positive' : '');
+		return ((!member.activated) && ((_Utils_cmp(memberBalance, -5.0e-3) > 0) && (memberBalance < 5.0e-3))) ? A2(elm$html$Html$span, _List_Nil, _List_Nil) : (member.activated ? A2(
 			elm$html$Html$tr,
 			_List_fromArray(
 				[
-					elm$html$Html$Attributes$id('bal-member-1')
+					elm$html$Html$Attributes$id('bal-member-1'),
+					elm$html$Html$Attributes$class(payerClassName + (' ' + owerClassName))
 				]),
 			_List_fromArray(
 				[
@@ -9455,7 +9505,7 @@ var author$project$SideBar$memberInfo = F3(
 					elm$html$Html$td,
 					_List_fromArray(
 						[
-							elm$html$Html$Attributes$class('balance-value ' + className)
+							elm$html$Html$Attributes$class('balance-value ' + balanceClassName)
 						]),
 					_List_fromArray(
 						[
@@ -9469,7 +9519,8 @@ var author$project$SideBar$memberInfo = F3(
 			_List_fromArray(
 				[
 					elm$html$Html$Attributes$id('bal-member-1'),
-					elm$html$Html$Attributes$action('reactivate')
+					elm$html$Html$Attributes$action('reactivate'),
+					elm$html$Html$Attributes$class(payerClassName + (' ' + owerClassName))
 				]),
 			_List_fromArray(
 				[
@@ -9525,7 +9576,7 @@ var author$project$SideBar$memberInfo = F3(
 					elm$html$Html$td,
 					_List_fromArray(
 						[
-							elm$html$Html$Attributes$class('balance-value ' + className)
+							elm$html$Html$Attributes$class('balance-value ' + balanceClassName)
 						]),
 					_List_fromArray(
 						[
@@ -9541,8 +9592,8 @@ var author$project$Types$AddMember = {$: 'AddMember'};
 var author$project$Types$TypeUserName = {$: 'TypeUserName'};
 var elm$html$Html$aside = _VirtualDom_node('aside');
 var elm$html$Html$Attributes$placeholder = elm$html$Html$Attributes$stringProperty('placeholder');
-var author$project$SideBar$sideBarView = F4(
-	function (t, memberField, members, bills) {
+var author$project$SideBar$sideBarView = F5(
+	function (t, memberField, members, bills, selectedBill) {
 		return A2(
 			elm$html$Html$div,
 			_List_fromArray(
@@ -9635,7 +9686,7 @@ var author$project$SideBar$sideBarView = F4(
 										]),
 									A2(
 										elm$core$List$map,
-										A2(author$project$SideBar$memberInfo, t, bills),
+										A3(author$project$SideBar$memberInfo, t, bills, selectedBill),
 										members))
 								]))
 						]))
@@ -9665,7 +9716,7 @@ var author$project$Main$view = function (model) {
 						]),
 					_List_fromArray(
 						[
-							A4(author$project$SideBar$sideBarView, t, model.fields.newMember, project.members, project.bills),
+							A5(author$project$SideBar$sideBarView, t, model.fields.newMember, project.members, project.bills, model.selectedBill),
 							A3(author$project$BillBoard$billBoardView, t, project.members, project.bills)
 						])),
 					A2(
