@@ -75,6 +75,8 @@ type Msg
     | EditModal ModalType
     | DeactivateMember Int
     | SelectBill (Maybe Bill)
+    | RemoveBill Bill
+    | BillDeleted Int (Result Http.Error String)
 
 
 type ModalType
@@ -91,7 +93,8 @@ type alias Member =
 
 
 type alias Bill =
-    { date : String
+    { id : Int
+    , date : String
     , amount : Float
     , label : String
     , payer : Int

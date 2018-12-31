@@ -87,6 +87,12 @@ billInfoView t members bill =
             ]
         , td [ class "bill-actions" ]
             [ a [ class "edit", href "#", title <| t Edit ] [ text <| t Edit ]
-            , a [ class "delete", href "#", title <| t Delete ] [ text <| t Delete ]
+            , a
+                [ class "delete"
+                , href "#"
+                , title <| t Delete
+                , onClick <| RemoveBill bill
+                ]
+                [ text <| t Delete ]
             ]
         ]

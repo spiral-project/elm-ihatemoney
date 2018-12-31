@@ -1,6 +1,7 @@
 module Api exposing
     ( addMemberToProject
     , createProject
+    , deleteProjectBill
     , deleteProjectMember
     , editProjectMember
     , fetchProjectBills
@@ -106,7 +107,8 @@ fetchProjectInfo auth projectID =
 
 decodeProjectBill : Decode.Decoder Bill
 decodeProjectBill =
-    Decode.map5 Bill
+    Decode.map6 Bill
+        (Decode.field "id" Decode.int)
         (Decode.field "date" Decode.string)
         (Decode.field "amount" Decode.float)
         (Decode.field "what" Decode.string)
@@ -212,4 +214,26 @@ reactivateProjectMember auth member_id name =
         , timeout = Nothing
         , tracker = Nothing
         , body = Http.jsonBody <| Encode.object [ ( "name", Encode.string name ), ( "activated", Encode.bool True ) ]
+        }
+
+
+deleteProjectBill : Authentication -> Int -> Cmd Msg
+deleteProjectBill auth bill_id =
+    let
+        projectID =
+            case auth of
+                Basic user _ ->
+                    user
+
+                Unauthenticated ->
+                    ""
+    in
+    Http.request
+        { method = "DELETE"
+        , url = iHateMoneyUrl ++ "/projects/" ++ projectID ++ "/bills/" ++ String.fromInt bill_id
+        , headers = [ headersForAuth auth ]
+        , expect = Http.expectJson (BillDeleted bill_id) Decode.string
+        , timeout = Nothing
+        , tracker = Nothing
+        , body = Http.emptyBody
         }

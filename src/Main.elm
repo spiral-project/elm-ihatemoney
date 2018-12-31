@@ -4,6 +4,7 @@ import Api
     exposing
         ( addMemberToProject
         , createProject
+        , deleteProjectBill
         , deleteProjectMember
         , editProjectMember
         , fetchProjectBills
@@ -137,6 +138,15 @@ setDeletedProjectMember member_id project =
                         |> sortByLowerCaseName
             in
             { project | members = members }
+
+
+setDeletedProjectBill : Int -> Project -> Project
+setDeletedProjectBill bill_id project =
+    let
+        bills =
+            List.filter (\b -> b.id /= bill_id) project.bills
+    in
+    { project | bills = bills }
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -489,6 +499,39 @@ update msg model =
 
         SelectBill bill ->
             ( { model | selectedBill = bill }, Cmd.none )
+
+        RemoveBill bill ->
+            case model.project of
+                Just project ->
+                    ( model
+                    , deleteProjectBill model.auth bill.id
+                    )
+
+                Nothing ->
+                    ( model, Cmd.none )
+
+        BillDeleted bill_id (Ok _) ->
+            case model.project of
+                Just project ->
+                    let
+                        newProject =
+                            setDeletedProjectBill bill_id project
+                    in
+                    ( { model
+                        | project = Just newProject
+                      }
+                    , Cmd.none
+                    )
+
+                Nothing ->
+                    ( model, Cmd.none )
+
+        BillDeleted bill_id (Err err) ->
+            let
+                _ =
+                    Debug.log ("Error while removing the bill " ++ String.fromInt bill_id) err
+            in
+            ( model, Cmd.none )
 
 
 subscriptions : Model -> Sub Msg
