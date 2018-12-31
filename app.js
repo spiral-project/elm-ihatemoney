@@ -6611,6 +6611,14 @@ var author$project$Api$reactivateProjectMember = F3(
 			});
 	});
 var elm$core$Basics$neq = _Utils_notEqual;
+var elm$core$List$append = F2(
+	function (xs, ys) {
+		if (!ys.b) {
+			return xs;
+		} else {
+			return A3(elm$core$List$foldr, elm$core$List$cons, ys, xs);
+		}
+	});
 var elm$core$List$filter = F2(
 	function (isGood, list) {
 		return A3(
@@ -6622,24 +6630,45 @@ var elm$core$List$filter = F2(
 			_List_Nil,
 			list);
 	});
+var elm$core$List$head = function (list) {
+	if (list.b) {
+		var x = list.a;
+		var xs = list.b;
+		return elm$core$Maybe$Just(x);
+	} else {
+		return elm$core$Maybe$Nothing;
+	}
+};
 var author$project$Main$setDeletedProjectMember = F2(
 	function (member_id, project) {
-		var members = A2(
-			elm$core$List$filter,
-			function (m) {
-				return !_Utils_eq(m.id, member_id);
-			},
-			project.members);
-		return _Utils_update(
-			project,
-			{members: members});
-	});
-var elm$core$List$append = F2(
-	function (xs, ys) {
-		if (!ys.b) {
-			return xs;
+		var selectedMember = elm$core$List$head(
+			A2(
+				elm$core$List$filter,
+				function (m) {
+					return _Utils_eq(m.id, member_id);
+				},
+				project.members));
+		if (selectedMember.$ === 'Nothing') {
+			return project;
 		} else {
-			return A3(elm$core$List$foldr, elm$core$List$cons, ys, xs);
+			var member = selectedMember.a;
+			var newMember = _Utils_update(
+				member,
+				{activated: false});
+			var members = author$project$Utils$sortByLowerCaseName(
+				A2(
+					elm$core$List$append,
+					_List_fromArray(
+						[newMember]),
+					A2(
+						elm$core$List$filter,
+						function (m) {
+							return !_Utils_eq(m.id, member.id);
+						},
+						project.members)));
+			return _Utils_update(
+				project,
+				{members: members});
 		}
 	});
 var author$project$Main$setEditedProjectMember = F2(
@@ -6726,15 +6755,6 @@ var author$project$Types$Basic = F2(
 		return {$: 'Basic', a: a, b: b};
 	});
 var elm$core$Debug$log = _Debug_log;
-var elm$core$List$head = function (list) {
-	if (list.b) {
-		var x = list.a;
-		var xs = list.b;
-		return elm$core$Maybe$Just(x);
-	} else {
-		return elm$core$Maybe$Nothing;
-	}
-};
 var elm$core$String$toInt = _String_toInt;
 var author$project$Main$update = F2(
 	function (msg, model) {
