@@ -7,8 +7,8 @@ import Round exposing (round)
 import Types exposing (..)
 
 
-sideBarView : Localizer -> String -> List Member -> List Bill -> Html Msg
-sideBarView t memberField members bills =
+sideBarView : Localizer -> String -> List Member -> List Bill -> Maybe Bill -> Html Msg
+sideBarView t memberField members bills selectedBill =
     div [ class "row", style "height" "100%" ]
         [ aside [ id "sidebar", class "sidebar col-xs-12 col-md-3 ", style "height" "100%" ]
             [ Html.form [ id "add-member-form", onSubmit AddMember, class "form-inline" ]
@@ -28,7 +28,7 @@ sideBarView t memberField members bills =
                     ]
                 ]
             , div [ id "table_overflow" ]
-                [ List.map (memberInfo t bills) members
+                [ List.map (memberInfo t bills selectedBill) members
                     |> table [ class "balance table" ]
                 ]
             ]
@@ -62,13 +62,13 @@ getMemberBalance member bills =
     totalPaid - totalOwed
 
 
-memberInfo : Localizer -> List Bill -> Member -> Html Msg
-memberInfo t bills member =
+memberInfo : Localizer -> List Bill -> Maybe Bill -> Member -> Html Msg
+memberInfo t bills selectedBill member =
     let
         memberBalance =
             getMemberBalance member bills
 
-        className =
+        balanceClassName =
             if memberBalance <= -0.005 then
                 "negative"
 
@@ -77,6 +77,34 @@ memberInfo t bills member =
 
             else
                 ""
+
+        payerClassName =
+            case selectedBill of
+                Nothing ->
+                    ""
+
+                Just bill ->
+                    if bill.payer == member.id then
+                        "payer_line"
+
+                    else
+                        ""
+
+        owerClassName =
+            case selectedBill of
+                Nothing ->
+                    ""
+
+                Just bill ->
+                    let
+                        isOwer =
+                            (List.filter (\x -> x.id == member.id) bill.owers |> List.length) > 0
+                    in
+                    if isOwer then
+                        "ower_line"
+
+                    else
+                        ""
 
         sign =
             if memberBalance > 0 then
@@ -90,7 +118,7 @@ memberInfo t bills member =
         span [] []
 
     else if member.activated then
-        tr [ id "bal-member-1" ]
+        tr [ id "bal-member-1", class (payerClassName ++ " " ++ owerClassName) ]
             [ td
                 [ class "balance-name" ]
                 [ text member.name
@@ -100,7 +128,7 @@ memberInfo t bills member =
                 [ div [ class "action delete" ] [ button [ type_ "button", onClick <| DeactivateMember member.id ] [ text <| t Deactivate ] ]
                 , div [ class "action edit" ] [ button [ type_ "button", onClick <| EditModal (MemberModal member.id) ] [ text <| t Edit ] ]
                 ]
-            , td [ class <| "balance-value " ++ className ]
+            , td [ class <| "balance-value " ++ balanceClassName ]
                 [ round 2 memberBalance
                     |> (++) sign
                     |> text
@@ -108,7 +136,7 @@ memberInfo t bills member =
             ]
 
     else
-        tr [ id "bal-member-1", action "reactivate" ]
+        tr [ id "bal-member-1", action "reactivate", class (payerClassName ++ " " ++ owerClassName) ]
             [ td
                 [ class "balance-name" ]
                 [ text member.name
@@ -119,7 +147,7 @@ memberInfo t bills member =
                     [ button [ type_ "button", onClick <| ReactivateMember member.id member.name ] [ text <| t Reactivate ]
                     ]
                 ]
-            , td [ class <| "balance-value " ++ className ]
+            , td [ class <| "balance-value " ++ balanceClassName ]
                 [ round 2 memberBalance
                     |> (++) sign
                     |> text

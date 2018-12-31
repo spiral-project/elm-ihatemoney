@@ -44,6 +44,7 @@ init flags =
             , newProjectError = Nothing
             }
       , modal = Hidden
+      , selectedBill = Nothing
       }
     , Cmd.none
     )
@@ -472,6 +473,9 @@ update msg model =
                 Nothing ->
                     ( model, Cmd.none )
 
+        SelectBill bill ->
+            ( { model | selectedBill = bill }, Cmd.none )
+
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
@@ -492,7 +496,7 @@ view model =
                 , handleModal t model project
                 , div
                     [ class "container-fluid" ]
-                    [ sideBarView t model.fields.newMember project.members project.bills
+                    [ sideBarView t model.fields.newMember project.members project.bills model.selectedBill
                     , billBoardView t project.members project.bills
                     ]
                 , div [ class "messages" ] []

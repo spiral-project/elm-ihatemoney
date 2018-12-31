@@ -60,7 +60,7 @@ billInfoView t members bill =
                 |> Maybe.withDefault (Member 0 "Unknown" 1 False)
                 |> .name
     in
-    tr []
+    tr [ onMouseEnter <| SelectBill (Just bill), onMouseLeave <| SelectBill Nothing ]
         [ td [] [ text bill.date ]
         , td [] [ text payerName ]
         , td [] [ text bill.label ]

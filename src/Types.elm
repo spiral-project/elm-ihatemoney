@@ -21,6 +21,7 @@ type alias Model =
     , project : Maybe Project
     , fields : Fields
     , modal : ModalType
+    , selectedBill : Maybe Bill
     }
 
 
@@ -73,6 +74,7 @@ type Msg
     | MemberDeleted Int (Result Http.Error String)
     | EditModal ModalType
     | DeactivateMember Int
+    | SelectBill (Maybe Bill)
 
 
 type ModalType
