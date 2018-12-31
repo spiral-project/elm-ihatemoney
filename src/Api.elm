@@ -14,6 +14,7 @@ import Json.Decode as Decode
 import Json.Encode as Encode
 import Slug
 import Types exposing (..)
+import Utils exposing (sortByLowerCaseName)
 
 
 iHateMoneyUrl =
@@ -77,7 +78,7 @@ decodeProjectInfo =
     Decode.map4 Project
         (Decode.field "name" Decode.string)
         (Decode.field "contact_email" Decode.string)
-        (Decode.field "members" <| Decode.map (List.sortBy .name) (Decode.list decodeMember))
+        (Decode.field "members" <| Decode.map sortByLowerCaseName (Decode.list decodeMember))
         (Decode.succeed [])
 
 

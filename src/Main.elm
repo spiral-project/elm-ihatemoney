@@ -25,6 +25,7 @@ import Round exposing (round)
 import SideBar exposing (sideBarView)
 import Slug
 import Types exposing (..)
+import Utils exposing (sortByLowerCaseName)
 
 
 init : () -> ( Model, Cmd Msg )
@@ -100,7 +101,7 @@ setLoginPassword value fields =
 
 setMemberToProject : Member -> Project -> Project
 setMemberToProject member project =
-    { project | members = List.sortBy .name (project.members ++ [ member ]) }
+    { project | members = sortByLowerCaseName (project.members ++ [ member ]) }
 
 
 setEditedProjectMember : Member -> Project -> Project
@@ -109,7 +110,7 @@ setEditedProjectMember member project =
         members =
             List.filter (\m -> m.id /= member.id) project.members
                 |> List.append [ member ]
-                |> List.sortBy .name
+                |> sortByLowerCaseName
     in
     { project | members = members }
 

@@ -5,6 +5,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Round exposing (round)
 import Types exposing (..)
+import Utils exposing (sortByLowerCaseName)
 
 
 billBoardView : Localizer -> List Member -> List Bill -> Html Msg
@@ -64,7 +65,7 @@ billInfoView t members bill =
         , td [] [ text payerName ]
         , td [] [ text bill.label ]
         , td []
-            [ List.sortBy .name bill.owers
+            [ sortByLowerCaseName bill.owers
                 |> List.map .name
                 |> String.join ", "
                 |> text
