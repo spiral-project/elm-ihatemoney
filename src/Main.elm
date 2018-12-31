@@ -119,10 +119,24 @@ setEditedProjectMember member project =
 setDeletedProjectMember : Int -> Project -> Project
 setDeletedProjectMember member_id project =
     let
-        members =
-            List.filter (\m -> m.id /= member_id) project.members
+        selectedMember =
+            List.filter (\m -> m.id == member_id) project.members |> List.head
     in
-    { project | members = members }
+    case selectedMember of
+        Nothing ->
+            project
+
+        Just member ->
+            let
+                newMember =
+                    { member | activated = False }
+
+                members =
+                    List.filter (\m -> m.id /= member.id) project.members
+                        |> List.append [ newMember ]
+                        |> sortByLowerCaseName
+            in
+            { project | members = members }
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
