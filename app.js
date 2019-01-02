@@ -1644,43 +1644,6 @@ var _Json_encodeNull = _Json_wrap(null);
 
 
 
-var _Bitwise_and = F2(function(a, b)
-{
-	return a & b;
-});
-
-var _Bitwise_or = F2(function(a, b)
-{
-	return a | b;
-});
-
-var _Bitwise_xor = F2(function(a, b)
-{
-	return a ^ b;
-});
-
-function _Bitwise_complement(a)
-{
-	return ~a;
-};
-
-var _Bitwise_shiftLeftBy = F2(function(offset, a)
-{
-	return a << offset;
-});
-
-var _Bitwise_shiftRightBy = F2(function(offset, a)
-{
-	return a >> offset;
-});
-
-var _Bitwise_shiftRightZfBy = F2(function(offset, a)
-{
-	return a >>> offset;
-});
-
-
-
 // TASKS
 
 function _Scheduler_succeed(value)
@@ -2348,6 +2311,43 @@ function _Platform_mergeExportsDebug(moduleName, obj, exports)
 			: (obj[name] = exports[name]);
 	}
 }
+
+
+
+var _Bitwise_and = F2(function(a, b)
+{
+	return a & b;
+});
+
+var _Bitwise_or = F2(function(a, b)
+{
+	return a | b;
+});
+
+var _Bitwise_xor = F2(function(a, b)
+{
+	return a ^ b;
+});
+
+function _Bitwise_complement(a)
+{
+	return ~a;
+};
+
+var _Bitwise_shiftLeftBy = F2(function(offset, a)
+{
+	return a << offset;
+});
+
+var _Bitwise_shiftRightBy = F2(function(offset, a)
+{
+	return a >> offset;
+});
+
+var _Bitwise_shiftRightZfBy = F2(function(offset, a)
+{
+	return a >>> offset;
+});
 
 
 
@@ -4623,15 +4623,19 @@ function _Browser_load(url)
 		}
 	}));
 }
-var author$project$Types$Member = F4(
-	function (id, name, weight, activated) {
-		return {activated: activated, id: id, name: name, weight: weight};
-	});
-var elm$core$Array$branchFactor = 32;
-var elm$core$Array$Array_elm_builtin = F4(
-	function (a, b, c, d) {
-		return {$: 'Array_elm_builtin', a: a, b: b, c: c, d: d};
-	});
+var author$project$Types$EN = {$: 'EN'};
+var author$project$Types$Hidden = {$: 'Hidden'};
+var author$project$Types$Unauthenticated = {$: 'Unauthenticated'};
+var elm$core$Maybe$Nothing = {$: 'Nothing'};
+var elm$core$Basics$False = {$: 'False'};
+var elm$core$Basics$True = {$: 'True'};
+var elm$core$Result$isOk = function (result) {
+	if (result.$ === 'Ok') {
+		return true;
+	} else {
+		return false;
+	}
+};
 var elm$core$Basics$EQ = {$: 'EQ'};
 var elm$core$Basics$GT = {$: 'GT'};
 var elm$core$Basics$LT = {$: 'LT'};
@@ -4712,6 +4716,11 @@ var elm$core$Array$foldr = F3(
 var elm$core$Array$toList = function (array) {
 	return A3(elm$core$Array$foldr, elm$core$List$cons, _List_Nil, array);
 };
+var elm$core$Array$branchFactor = 32;
+var elm$core$Array$Array_elm_builtin = F4(
+	function (a, b, c, d) {
+		return {$: 'Array_elm_builtin', a: a, b: b, c: c, d: d};
+	});
 var elm$core$Basics$ceiling = _Basics_ceiling;
 var elm$core$Basics$fdiv = _Basics_fdiv;
 var elm$core$Basics$logBase = F2(
@@ -4836,7 +4845,6 @@ var elm$core$Array$builderToArray = F2(
 				builder.tail);
 		}
 	});
-var elm$core$Basics$False = {$: 'False'};
 var elm$core$Basics$idiv = _Basics_idiv;
 var elm$core$Basics$lt = _Utils_lt;
 var elm$core$Elm$JsArray$initialize = _JsArray_initialize;
@@ -4882,20 +4890,11 @@ var elm$core$Array$initialize = F2(
 var elm$core$Maybe$Just = function (a) {
 	return {$: 'Just', a: a};
 };
-var elm$core$Maybe$Nothing = {$: 'Nothing'};
 var elm$core$Result$Err = function (a) {
 	return {$: 'Err', a: a};
 };
 var elm$core$Result$Ok = function (a) {
 	return {$: 'Ok', a: a};
-};
-var elm$core$Basics$True = {$: 'True'};
-var elm$core$Result$isOk = function (result) {
-	if (result.$ === 'Ok') {
-		return true;
-	} else {
-		return false;
-	}
 };
 var elm$json$Json$Decode$Failure = F2(
 	function (a, b) {
@@ -5102,52 +5101,146 @@ var elm$json$Json$Decode$errorToStringHelp = F2(
 			}
 		}
 	});
-var elm$json$Json$Decode$bool = _Json_decodeBool;
-var elm$json$Json$Decode$field = _Json_decodeField;
-var elm$json$Json$Decode$int = _Json_decodeInt;
-var elm$json$Json$Decode$map4 = _Json_map4;
-var elm$json$Json$Decode$string = _Json_decodeString;
-var author$project$Api$decodeMember = A5(
-	elm$json$Json$Decode$map4,
-	author$project$Types$Member,
-	A2(elm$json$Json$Decode$field, 'id', elm$json$Json$Decode$int),
-	A2(elm$json$Json$Decode$field, 'name', elm$json$Json$Decode$string),
-	A2(elm$json$Json$Decode$field, 'weight', elm$json$Json$Decode$int),
-	A2(elm$json$Json$Decode$field, 'activated', elm$json$Json$Decode$bool));
-var author$project$Types$Project = F4(
-	function (name, contact_email, members, bills) {
-		return {bills: bills, contact_email: contact_email, members: members, name: name};
+var elm$core$Platform$Cmd$batch = _Platform_batch;
+var elm$core$Platform$Cmd$none = elm$core$Platform$Cmd$batch(_List_Nil);
+var author$project$Main$init = function (flags) {
+	return _Utils_Tuple2(
+		{
+			auth: author$project$Types$Unauthenticated,
+			fields: {loginPassword: '', loginProjectID: '', newMember: '', newMemberWeight: '', newProjectEmail: '', newProjectError: elm$core$Maybe$Nothing, newProjectName: '', newProjectPassword: ''},
+			locale: author$project$Types$EN,
+			modal: author$project$Types$Hidden,
+			project: elm$core$Maybe$Nothing,
+			selectedBill: elm$core$Maybe$Nothing
+		},
+		elm$core$Platform$Cmd$none);
+};
+var elm$core$Platform$Sub$batch = _Platform_batch;
+var elm$core$Platform$Sub$none = elm$core$Platform$Sub$batch(_List_Nil);
+var author$project$Main$subscriptions = function (model) {
+	return elm$core$Platform$Sub$none;
+};
+var elm$core$List$foldrHelper = F4(
+	function (fn, acc, ctr, ls) {
+		if (!ls.b) {
+			return acc;
+		} else {
+			var a = ls.a;
+			var r1 = ls.b;
+			if (!r1.b) {
+				return A2(fn, a, acc);
+			} else {
+				var b = r1.a;
+				var r2 = r1.b;
+				if (!r2.b) {
+					return A2(
+						fn,
+						a,
+						A2(fn, b, acc));
+				} else {
+					var c = r2.a;
+					var r3 = r2.b;
+					if (!r3.b) {
+						return A2(
+							fn,
+							a,
+							A2(
+								fn,
+								b,
+								A2(fn, c, acc)));
+					} else {
+						var d = r3.a;
+						var r4 = r3.b;
+						var res = (ctr > 500) ? A3(
+							elm$core$List$foldl,
+							fn,
+							acc,
+							elm$core$List$reverse(r4)) : A4(elm$core$List$foldrHelper, fn, acc, ctr + 1, r4);
+						return A2(
+							fn,
+							a,
+							A2(
+								fn,
+								b,
+								A2(
+									fn,
+									c,
+									A2(fn, d, res))));
+					}
+				}
+			}
+		}
 	});
-var elm$core$Basics$composeL = F3(
-	function (g, f, x) {
-		return g(
-			f(x));
+var elm$core$List$foldr = F3(
+	function (fn, acc, ls) {
+		return A4(elm$core$List$foldrHelper, fn, acc, 0, ls);
 	});
-var elm$core$List$sortBy = _List_sortBy;
-var elm$core$String$toLower = _String_toLower;
-var author$project$Utils$sortByLowerCaseName = elm$core$List$sortBy(
-	A2(
-		elm$core$Basics$composeL,
-		elm$core$String$toLower,
+var elm$core$List$map = F2(
+	function (f, xs) {
+		return A3(
+			elm$core$List$foldr,
+			F2(
+				function (x, acc) {
+					return A2(
+						elm$core$List$cons,
+						f(x),
+						acc);
+				}),
+			_List_Nil,
+			xs);
+	});
+var elm$json$Json$Encode$float = _Json_wrap;
+var elm$json$Json$Encode$int = _Json_wrap;
+var elm$json$Json$Encode$list = F2(
+	function (func, entries) {
+		return _Json_wrap(
+			A3(
+				elm$core$List$foldl,
+				_Json_addEntry(func),
+				_Json_emptyArray(_Utils_Tuple0),
+				entries));
+	});
+var elm$json$Json$Encode$object = function (pairs) {
+	return _Json_wrap(
+		A3(
+			elm$core$List$foldl,
+			F2(
+				function (_n0, obj) {
+					var k = _n0.a;
+					var v = _n0.b;
+					return A3(_Json_addField, k, v, obj);
+				}),
+			_Json_emptyObject(_Utils_Tuple0),
+			pairs));
+};
+var elm$json$Json$Encode$string = _Json_wrap;
+var author$project$Api$encodeBill = function (bill) {
+	var payed_for = A2(
+		elm$core$List$map,
 		function ($) {
-			return $.name;
-		}));
-var elm$json$Json$Decode$list = _Json_decodeList;
-var elm$json$Json$Decode$map = _Json_map1;
-var elm$json$Json$Decode$succeed = _Json_succeed;
-var author$project$Api$decodeProjectInfo = A5(
-	elm$json$Json$Decode$map4,
-	author$project$Types$Project,
-	A2(elm$json$Json$Decode$field, 'name', elm$json$Json$Decode$string),
-	A2(elm$json$Json$Decode$field, 'contact_email', elm$json$Json$Decode$string),
-	A2(
-		elm$json$Json$Decode$field,
-		'members',
-		A2(
-			elm$json$Json$Decode$map,
-			author$project$Utils$sortByLowerCaseName,
-			elm$json$Json$Decode$list(author$project$Api$decodeMember))),
-	elm$json$Json$Decode$succeed(_List_Nil));
+			return $.id;
+		},
+		bill.owers);
+	return elm$json$Json$Encode$object(
+		_List_fromArray(
+			[
+				_Utils_Tuple2(
+				'date',
+				elm$json$Json$Encode$string(bill.date)),
+				_Utils_Tuple2(
+				'what',
+				elm$json$Json$Encode$string(bill.label)),
+				_Utils_Tuple2(
+				'amount',
+				elm$json$Json$Encode$float(bill.amount)),
+				_Utils_Tuple2(
+				'payer',
+				elm$json$Json$Encode$int(bill.payer)),
+				_Utils_Tuple2(
+				'payed_for',
+				A2(elm$json$Json$Encode$list, elm$json$Json$Encode$int, payed_for))
+			]));
+};
 var elm$core$String$foldl = _String_foldl;
 var elm$core$Basics$ge = _Utils_ge;
 var elm$core$Bitwise$and = _Bitwise_and;
@@ -5375,8 +5468,28 @@ var author$project$Api$headersForAuth = function (auth) {
 	}
 };
 var author$project$Api$iHateMoneyUrl = 'https://ihatemoney.org/api';
-var author$project$Types$ProjectFetched = function (a) {
-	return {$: 'ProjectFetched', a: a};
+var author$project$Types$BillUpdate = F2(
+	function (a, b) {
+		return {$: 'BillUpdate', a: a, b: b};
+	});
+var elm$core$Result$mapError = F2(
+	function (f, result) {
+		if (result.$ === 'Ok') {
+			var v = result.a;
+			return elm$core$Result$Ok(v);
+		} else {
+			var e = result.a;
+			return elm$core$Result$Err(
+				f(e));
+		}
+	});
+var elm$core$Basics$composeR = F3(
+	function (f, g, x) {
+		return g(
+			f(x));
+	});
+var elm$core$Basics$identity = function (x) {
+	return x;
 };
 var elm$core$Dict$RBEmpty_elm_builtin = {$: 'RBEmpty_elm_builtin'};
 var elm$core$Dict$empty = elm$core$Dict$RBEmpty_elm_builtin;
@@ -5932,26 +6045,6 @@ var elm$http$Http$Sending = function (a) {
 	return {$: 'Sending', a: a};
 };
 var elm$http$Http$Timeout_ = {$: 'Timeout_'};
-var elm$http$Http$emptyBody = _Http_emptyBody;
-var elm$core$Result$mapError = F2(
-	function (f, result) {
-		if (result.$ === 'Ok') {
-			var v = result.a;
-			return elm$core$Result$Ok(v);
-		} else {
-			var e = result.a;
-			return elm$core$Result$Err(
-				f(e));
-		}
-	});
-var elm$core$Basics$composeR = F3(
-	function (f, g, x) {
-		return g(
-			f(x));
-	});
-var elm$core$Basics$identity = function (x) {
-	return x;
-};
 var elm$http$Http$expectStringResponse = F2(
 	function (toMsg, toResult) {
 		return A3(
@@ -6008,6 +6101,12 @@ var elm$http$Http$expectJson = F2(
 						A2(elm$json$Json$Decode$decodeString, decoder, string));
 				}));
 	});
+var elm$http$Http$jsonBody = function (value) {
+	return A2(
+		_Http_pair,
+		'application/json',
+		A2(elm$json$Json$Encode$encode, 0, value));
+};
 var elm$http$Http$Request = function (a) {
 	return {$: 'Request', a: a};
 };
@@ -6090,61 +6189,6 @@ var elm$http$Http$onEffects = F4(
 					A2(elm$http$Http$State, reqs, subs));
 			},
 			A3(elm$http$Http$updateReqs, router, cmds, state.reqs));
-	});
-var elm$core$List$foldrHelper = F4(
-	function (fn, acc, ctr, ls) {
-		if (!ls.b) {
-			return acc;
-		} else {
-			var a = ls.a;
-			var r1 = ls.b;
-			if (!r1.b) {
-				return A2(fn, a, acc);
-			} else {
-				var b = r1.a;
-				var r2 = r1.b;
-				if (!r2.b) {
-					return A2(
-						fn,
-						a,
-						A2(fn, b, acc));
-				} else {
-					var c = r2.a;
-					var r3 = r2.b;
-					if (!r3.b) {
-						return A2(
-							fn,
-							a,
-							A2(
-								fn,
-								b,
-								A2(fn, c, acc)));
-					} else {
-						var d = r3.a;
-						var r4 = r3.b;
-						var res = (ctr > 500) ? A3(
-							elm$core$List$foldl,
-							fn,
-							acc,
-							elm$core$List$reverse(r4)) : A4(elm$core$List$foldrHelper, fn, acc, ctr + 1, r4);
-						return A2(
-							fn,
-							a,
-							A2(
-								fn,
-								b,
-								A2(
-									fn,
-									c,
-									A2(fn, d, res))));
-					}
-				}
-			}
-		}
-	});
-var elm$core$List$foldr = F3(
-	function (fn, acc, ls) {
-		return A4(elm$core$List$foldrHelper, fn, acc, 0, ls);
 	});
 var elm$core$List$maybeCons = F3(
 	function (f, mx, xs) {
@@ -6255,119 +6299,7 @@ var elm$http$Http$request = function (r) {
 		elm$http$Http$Request(
 			{allowCookiesFromOtherDomains: false, body: r.body, expect: r.expect, headers: r.headers, method: r.method, timeout: r.timeout, tracker: r.tracker, url: r.url}));
 };
-var author$project$Api$fetchProjectInfo = F2(
-	function (auth, projectID) {
-		return elm$http$Http$request(
-			{
-				body: elm$http$Http$emptyBody,
-				expect: A2(elm$http$Http$expectJson, author$project$Types$ProjectFetched, author$project$Api$decodeProjectInfo),
-				headers: _List_fromArray(
-					[
-						author$project$Api$headersForAuth(auth)
-					]),
-				method: 'GET',
-				timeout: elm$core$Maybe$Nothing,
-				tracker: elm$core$Maybe$Nothing,
-				url: author$project$Api$iHateMoneyUrl + ('/projects/' + projectID)
-			});
-	});
-var author$project$Types$EN = {$: 'EN'};
-var author$project$Types$Hidden = {$: 'Hidden'};
-var author$project$Types$Unauthenticated = {$: 'Unauthenticated'};
-var author$project$Main$init = function (flags) {
-	var auth = author$project$Types$Unauthenticated;
-	return _Utils_Tuple2(
-		{
-			auth: auth,
-			fields: {loginPassword: '', loginProjectID: '', newMember: '', newMemberWeight: '', newProjectEmail: '', newProjectError: elm$core$Maybe$Nothing, newProjectName: '', newProjectPassword: ''},
-			locale: author$project$Types$EN,
-			modal: author$project$Types$Hidden,
-			project: elm$core$Maybe$Nothing,
-			selectedBill: elm$core$Maybe$Nothing
-		},
-		A2(author$project$Api$fetchProjectInfo, auth, 'demo'));
-};
-var elm$core$Platform$Sub$batch = _Platform_batch;
-var elm$core$Platform$Sub$none = elm$core$Platform$Sub$batch(_List_Nil);
-var author$project$Main$subscriptions = function (model) {
-	return elm$core$Platform$Sub$none;
-};
-var elm$core$List$map = F2(
-	function (f, xs) {
-		return A3(
-			elm$core$List$foldr,
-			F2(
-				function (x, acc) {
-					return A2(
-						elm$core$List$cons,
-						f(x),
-						acc);
-				}),
-			_List_Nil,
-			xs);
-	});
-var elm$json$Json$Encode$float = _Json_wrap;
-var elm$json$Json$Encode$int = _Json_wrap;
-var elm$json$Json$Encode$list = F2(
-	function (func, entries) {
-		return _Json_wrap(
-			A3(
-				elm$core$List$foldl,
-				_Json_addEntry(func),
-				_Json_emptyArray(_Utils_Tuple0),
-				entries));
-	});
-var elm$json$Json$Encode$object = function (pairs) {
-	return _Json_wrap(
-		A3(
-			elm$core$List$foldl,
-			F2(
-				function (_n0, obj) {
-					var k = _n0.a;
-					var v = _n0.b;
-					return A3(_Json_addField, k, v, obj);
-				}),
-			_Json_emptyObject(_Utils_Tuple0),
-			pairs));
-};
-var elm$json$Json$Encode$string = _Json_wrap;
-var author$project$Api$encodeBill = function (bill) {
-	var payed_for = A2(
-		elm$core$List$map,
-		function ($) {
-			return $.id;
-		},
-		bill.owers);
-	return elm$json$Json$Encode$object(
-		_List_fromArray(
-			[
-				_Utils_Tuple2(
-				'date',
-				elm$json$Json$Encode$string(bill.date)),
-				_Utils_Tuple2(
-				'what',
-				elm$json$Json$Encode$string(bill.label)),
-				_Utils_Tuple2(
-				'amount',
-				elm$json$Json$Encode$float(bill.amount)),
-				_Utils_Tuple2(
-				'payer',
-				elm$json$Json$Encode$int(bill.payer)),
-				_Utils_Tuple2(
-				'payed_for',
-				A2(elm$json$Json$Encode$list, elm$json$Json$Encode$int, payed_for))
-			]));
-};
-var author$project$Types$BillUpdate = F2(
-	function (a, b) {
-		return {$: 'BillUpdate', a: a, b: b};
-	});
-var elm$http$Http$jsonBody = function (value) {
-	return A2(
-		_Http_pair,
-		'application/json',
-		A2(elm$json$Json$Encode$encode, 0, value));
-};
+var elm$json$Json$Decode$int = _Json_decodeInt;
 var author$project$Api$addBillToProject = F2(
 	function (auth, bill) {
 		var projectID = function () {
@@ -6434,6 +6366,7 @@ var hecrj$elm_slug$Slug$Slug = function (a) {
 	return {$: 'Slug', a: a};
 };
 var elm$core$String$map = _String_map;
+var elm$core$String$toLower = _String_toLower;
 var elm$core$String$words = _String_words;
 var elm$regex$Regex$Match = F4(
 	function (match, index, number, submatches) {
@@ -6536,6 +6469,7 @@ var author$project$Api$encodeProject = F3(
 var author$project$Types$ProjectCreated = function (a) {
 	return {$: 'ProjectCreated', a: a};
 };
+var elm$json$Json$Decode$string = _Json_decodeString;
 var author$project$Api$createProject = F3(
 	function (projectName, projectCode, projectEmail) {
 		return elm$http$Http$request(
@@ -6554,6 +6488,7 @@ var author$project$Types$BillDeleted = F2(
 	function (a, b) {
 		return {$: 'BillDeleted', a: a, b: b};
 	});
+var elm$http$Http$emptyBody = _Http_emptyBody;
 var author$project$Api$deleteProjectBill = F2(
 	function (auth, bill_id) {
 		var projectID = function () {
@@ -6640,6 +6575,20 @@ var author$project$Api$editProjectBill = F2(
 				url: author$project$Api$iHateMoneyUrl + ('/projects/' + (projectID + ('/bills/' + elm$core$String$fromInt(bill.id))))
 			});
 	});
+var author$project$Types$Member = F4(
+	function (id, name, weight, activated) {
+		return {activated: activated, id: id, name: name, weight: weight};
+	});
+var elm$json$Json$Decode$bool = _Json_decodeBool;
+var elm$json$Json$Decode$field = _Json_decodeField;
+var elm$json$Json$Decode$map4 = _Json_map4;
+var author$project$Api$decodeMember = A5(
+	elm$json$Json$Decode$map4,
+	author$project$Types$Member,
+	A2(elm$json$Json$Decode$field, 'id', elm$json$Json$Decode$int),
+	A2(elm$json$Json$Decode$field, 'name', elm$json$Json$Decode$string),
+	A2(elm$json$Json$Decode$field, 'weight', elm$json$Json$Decode$int),
+	A2(elm$json$Json$Decode$field, 'activated', elm$json$Json$Decode$bool));
 var author$project$Types$MemberEdited = function (a) {
 	return {$: 'MemberEdited', a: a};
 };
@@ -6686,6 +6635,7 @@ var author$project$Types$Bill = F6(
 		return {amount: amount, date: date, id: id, label: label, owers: owers, payer: payer};
 	});
 var elm$json$Json$Decode$float = _Json_decodeFloat;
+var elm$json$Json$Decode$list = _Json_decodeList;
 var elm$json$Json$Decode$map6 = _Json_map6;
 var author$project$Api$decodeProjectBill = A7(
 	elm$json$Json$Decode$map6,
@@ -6702,15 +6652,73 @@ var author$project$Api$decodeProjectBill = A7(
 var author$project$Types$BillsFetched = function (a) {
 	return {$: 'BillsFetched', a: a};
 };
-var author$project$Api$fetchProjectBills = F2(
+var author$project$Api$fetchProjectBills = function (auth) {
+	var projectID = function () {
+		if (auth.$ === 'Basic') {
+			var user = auth.a;
+			return user;
+		} else {
+			return '';
+		}
+	}();
+	return elm$http$Http$request(
+		{
+			body: elm$http$Http$emptyBody,
+			expect: A2(
+				elm$http$Http$expectJson,
+				author$project$Types$BillsFetched,
+				elm$json$Json$Decode$list(author$project$Api$decodeProjectBill)),
+			headers: _List_fromArray(
+				[
+					author$project$Api$headersForAuth(auth)
+				]),
+			method: 'GET',
+			timeout: elm$core$Maybe$Nothing,
+			tracker: elm$core$Maybe$Nothing,
+			url: author$project$Api$iHateMoneyUrl + ('/projects/' + (projectID + '/bills'))
+		});
+};
+var author$project$Types$Project = F4(
+	function (name, contact_email, members, bills) {
+		return {bills: bills, contact_email: contact_email, members: members, name: name};
+	});
+var elm$core$Basics$composeL = F3(
+	function (g, f, x) {
+		return g(
+			f(x));
+	});
+var elm$core$List$sortBy = _List_sortBy;
+var author$project$Utils$sortByLowerCaseName = elm$core$List$sortBy(
+	A2(
+		elm$core$Basics$composeL,
+		elm$core$String$toLower,
+		function ($) {
+			return $.name;
+		}));
+var elm$json$Json$Decode$map = _Json_map1;
+var elm$json$Json$Decode$succeed = _Json_succeed;
+var author$project$Api$decodeProjectInfo = A5(
+	elm$json$Json$Decode$map4,
+	author$project$Types$Project,
+	A2(elm$json$Json$Decode$field, 'name', elm$json$Json$Decode$string),
+	A2(elm$json$Json$Decode$field, 'contact_email', elm$json$Json$Decode$string),
+	A2(
+		elm$json$Json$Decode$field,
+		'members',
+		A2(
+			elm$json$Json$Decode$map,
+			author$project$Utils$sortByLowerCaseName,
+			elm$json$Json$Decode$list(author$project$Api$decodeMember))),
+	elm$json$Json$Decode$succeed(_List_Nil));
+var author$project$Types$ProjectFetched = function (a) {
+	return {$: 'ProjectFetched', a: a};
+};
+var author$project$Api$fetchProjectInfo = F2(
 	function (auth, projectID) {
 		return elm$http$Http$request(
 			{
 				body: elm$http$Http$emptyBody,
-				expect: A2(
-					elm$http$Http$expectJson,
-					author$project$Types$BillsFetched,
-					elm$json$Json$Decode$list(author$project$Api$decodeProjectBill)),
+				expect: A2(elm$http$Http$expectJson, author$project$Types$ProjectFetched, author$project$Api$decodeProjectInfo),
 				headers: _List_fromArray(
 					[
 						author$project$Api$headersForAuth(auth)
@@ -6718,7 +6726,7 @@ var author$project$Api$fetchProjectBills = F2(
 				method: 'GET',
 				timeout: elm$core$Maybe$Nothing,
 				tracker: elm$core$Maybe$Nothing,
-				url: author$project$Api$iHateMoneyUrl + ('/projects/' + (projectID + '/bills'))
+				url: author$project$Api$iHateMoneyUrl + ('/projects/' + projectID)
 			});
 	});
 var author$project$Api$reactivateProjectMember = F2(
@@ -6888,8 +6896,6 @@ var author$project$Types$Basic = F2(
 	});
 var author$project$Types$emptyBill = A6(author$project$Types$Bill, 0, '', 0.0, '', 0, _List_Nil);
 var elm$core$Debug$log = _Debug_log;
-var elm$core$Platform$Cmd$batch = _Platform_batch;
-var elm$core$Platform$Cmd$none = elm$core$Platform$Cmd$batch(_List_Nil);
 var elm$core$String$toFloat = _String_toFloat;
 var elm$core$String$toInt = _String_toInt;
 var author$project$Main$update = F2(
@@ -7020,7 +7026,7 @@ var author$project$Main$update = F2(
 									modal: author$project$Types$Hidden,
 									project: elm$core$Maybe$Just(newProject)
 								}),
-							A2(author$project$Api$fetchProjectBills, model.auth, project.name));
+							author$project$Api$fetchProjectBills(model.auth));
 					} else {
 						return _Utils_Tuple2(
 							_Utils_update(
@@ -7190,26 +7196,16 @@ var author$project$Main$update = F2(
 			case 'ProjectFetched':
 				if (msg.a.$ === 'Ok') {
 					var project = msg.a.a;
-					var projectId = function () {
-						var _n16 = model.auth;
-						if (_n16.$ === 'Basic') {
-							var user = _n16.a;
-							var pass = _n16.b;
-							return user;
-						} else {
-							return '';
-						}
-					}();
 					return _Utils_Tuple2(
 						_Utils_update(
 							model,
 							{
 								project: elm$core$Maybe$Just(project)
 							}),
-						A2(author$project$Api$fetchProjectBills, model.auth, projectId));
+						author$project$Api$fetchProjectBills(model.auth));
 				} else {
 					var err = msg.a.a;
-					var _n17 = A2(elm$core$Debug$log, 'Error while loading the project', err);
+					var _n16 = A2(elm$core$Debug$log, 'Error while loading the project', err);
 					return _Utils_Tuple2(
 						_Utils_update(
 							model,
@@ -7219,9 +7215,9 @@ var author$project$Main$update = F2(
 			case 'BillsFetched':
 				if (msg.a.$ === 'Ok') {
 					var bills = msg.a.a;
-					var _n18 = model.project;
-					if (_n18.$ === 'Just') {
-						var project = _n18.a;
+					var _n17 = model.project;
+					if (_n17.$ === 'Just') {
+						var project = _n17.a;
 						var newProject = _Utils_update(
 							project,
 							{bills: bills});
@@ -7237,7 +7233,7 @@ var author$project$Main$update = F2(
 					}
 				} else {
 					var err = msg.a.a;
-					var _n19 = A2(elm$core$Debug$log, 'Error while loading the project bills', err);
+					var _n18 = A2(elm$core$Debug$log, 'Error while loading the project bills', err);
 					return _Utils_Tuple2(
 						_Utils_update(
 							model,
@@ -7253,9 +7249,9 @@ var author$project$Main$update = F2(
 					elm$core$Platform$Cmd$none);
 			case 'EditModal':
 				var modal_type = msg.a;
-				var _n20 = model.project;
-				if (_n20.$ === 'Just') {
-					var project = _n20.a;
+				var _n19 = model.project;
+				if (_n19.$ === 'Just') {
+					var project = _n19.a;
 					switch (modal_type.$) {
 						case 'MemberModal':
 							var member_id = modal_type.a;
@@ -7320,9 +7316,9 @@ var author$project$Main$update = F2(
 				}
 			case 'DeactivateMember':
 				var member_id = msg.a;
-				var _n24 = model.project;
-				if (_n24.$ === 'Just') {
-					var project = _n24.a;
+				var _n23 = model.project;
+				if (_n23.$ === 'Just') {
+					var project = _n23.a;
 					return _Utils_Tuple2(
 						model,
 						A2(author$project$Api$deleteProjectMember, model.auth, member_id));
@@ -7331,8 +7327,8 @@ var author$project$Main$update = F2(
 				}
 			case 'SelectBill':
 				var bill = msg.a;
-				var _n25 = model.modal;
-				if (_n25.$ === 'Hidden') {
+				var _n24 = model.modal;
+				if (_n24.$ === 'Hidden') {
 					return _Utils_Tuple2(
 						_Utils_update(
 							model,
@@ -7343,9 +7339,9 @@ var author$project$Main$update = F2(
 				}
 			case 'RemoveBill':
 				var bill = msg.a;
-				var _n26 = model.project;
-				if (_n26.$ === 'Just') {
-					var project = _n26.a;
+				var _n25 = model.project;
+				if (_n25.$ === 'Just') {
+					var project = _n25.a;
 					return _Utils_Tuple2(
 						model,
 						A2(author$project$Api$deleteProjectBill, model.auth, bill.id));
@@ -7356,9 +7352,9 @@ var author$project$Main$update = F2(
 				if (msg.b.$ === 'Ok') {
 					var bill = msg.a;
 					var id = msg.b.a;
-					var _n27 = model.project;
-					if (_n27.$ === 'Just') {
-						var project = _n27.a;
+					var _n26 = model.project;
+					if (_n26.$ === 'Just') {
+						var project = _n26.a;
 						var newBill = _Utils_update(
 							bill,
 							{id: id});
@@ -7397,15 +7393,15 @@ var author$project$Main$update = F2(
 				} else {
 					var bill = msg.a;
 					var err = msg.b.a;
-					var _n28 = A2(elm$core$Debug$log, 'Error while adding the bill', err);
+					var _n27 = A2(elm$core$Debug$log, 'Error while adding the bill', err);
 					return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
 				}
 			case 'BillDeleted':
 				if (msg.b.$ === 'Ok') {
 					var bill_id = msg.a;
-					var _n29 = model.project;
-					if (_n29.$ === 'Just') {
-						var project = _n29.a;
+					var _n28 = model.project;
+					if (_n28.$ === 'Just') {
+						var project = _n28.a;
 						var newProject = A2(author$project$Main$setDeletedProjectBill, bill_id, project);
 						return _Utils_Tuple2(
 							_Utils_update(
@@ -7420,7 +7416,7 @@ var author$project$Main$update = F2(
 				} else {
 					var bill_id = msg.a;
 					var err = msg.b.a;
-					var _n30 = A2(
+					var _n29 = A2(
 						elm$core$Debug$log,
 						'Error while removing the bill ' + elm$core$String$fromInt(bill_id),
 						err);
