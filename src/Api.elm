@@ -151,8 +151,8 @@ addMemberToProject auth name =
         }
 
 
-editProjectMember : Authentication -> Int -> String -> Int -> Cmd Msg
-editProjectMember auth member_id name weight =
+editProjectMember : Authentication -> Member -> Cmd Msg
+editProjectMember auth member =
     let
         projectID =
             case auth of
@@ -164,12 +164,12 @@ editProjectMember auth member_id name weight =
     in
     Http.request
         { method = "PUT"
-        , url = iHateMoneyUrl ++ "/projects/" ++ projectID ++ "/members/" ++ String.fromInt member_id
+        , url = iHateMoneyUrl ++ "/projects/" ++ projectID ++ "/members/" ++ String.fromInt member.id
         , headers = [ headersForAuth auth ]
         , expect = Http.expectJson MemberEdited decodeMember
         , timeout = Nothing
         , tracker = Nothing
-        , body = Http.jsonBody <| Encode.object [ ( "name", Encode.string name ), ( "weight", Encode.int weight ) ]
+        , body = Http.jsonBody <| Encode.object [ ( "name", Encode.string member.name ), ( "weight", Encode.int member.weight ), ( "activated", Encode.bool member.activated ) ]
         }
 
 
@@ -195,26 +195,9 @@ deleteProjectMember auth member_id =
         }
 
 
-reactivateProjectMember : Authentication -> Int -> String -> Cmd Msg
-reactivateProjectMember auth member_id name =
-    let
-        projectID =
-            case auth of
-                Basic user _ ->
-                    user
-
-                Unauthenticated ->
-                    ""
-    in
-    Http.request
-        { method = "PUT"
-        , url = iHateMoneyUrl ++ "/projects/" ++ projectID ++ "/members/" ++ String.fromInt member_id
-        , headers = [ headersForAuth auth ]
-        , expect = Http.expectJson MemberEdited decodeMember
-        , timeout = Nothing
-        , tracker = Nothing
-        , body = Http.jsonBody <| Encode.object [ ( "name", Encode.string name ), ( "activated", Encode.bool True ) ]
-        }
+reactivateProjectMember : Authentication -> Member -> Cmd Msg
+reactivateProjectMember auth member =
+    editProjectMember auth { member | activated = True }
 
 
 deleteProjectBill : Authentication -> Int -> Cmd Msg

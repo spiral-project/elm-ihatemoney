@@ -55,7 +55,7 @@ type Msg
     | NewMemberWeight String
     | AddMember
     | TriggerEditMember Int
-    | ReactivateMember Int String
+    | ReactivateMember Member
     | DemoLogin
     | LoginProjectID String
     | LoginPassword String

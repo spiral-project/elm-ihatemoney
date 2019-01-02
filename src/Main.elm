@@ -178,17 +178,22 @@ update msg model =
             case model.project of
                 Just project ->
                     ( model
-                    , editProjectMember model.auth member_id model.fields.newMember (Maybe.withDefault 1 <| String.toInt model.fields.newMemberWeight)
+                    , editProjectMember model.auth
+                        { id = member_id
+                        , name = model.fields.newMember
+                        , weight = Maybe.withDefault 1 <| String.toInt model.fields.newMemberWeight
+                        , activated = True
+                        }
                     )
 
                 Nothing ->
                     ( model, Cmd.none )
 
-        ReactivateMember member_id name ->
+        ReactivateMember member ->
             case model.project of
                 Just project ->
                     ( model
-                    , reactivateProjectMember model.auth member_id name
+                    , reactivateProjectMember model.auth member
                     )
 
                 Nothing ->
@@ -239,7 +244,7 @@ update msg model =
                         , fields = fields
                         , modal = Hidden
                       }
-                    , Cmd.none
+                    , fetchProjectBills model.auth project.name
                     )
 
                 Nothing ->
@@ -482,7 +487,13 @@ update msg model =
                                         |> setNewMemberName ""
                                         |> setNewMemberWeight ""
                             in
-                            ( { model | modal = modal_type, fields = fields }, Cmd.none )
+                            ( { model
+                                | modal = modal_type
+                                , fields = fields
+                                , selectedBill = Nothing
+                              }
+                            , Cmd.none
+                            )
 
                 Nothing ->
                     ( model, Cmd.none )

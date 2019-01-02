@@ -122,7 +122,7 @@ memberInfo t bills selectedBill member =
             [ td
                 [ class "balance-name" ]
                 [ text member.name
-                , span [ class "light extra-info" ] [ text "(x1)" ]
+                , span [ class "light" ] [ text <| " (x" ++ String.fromInt member.weight ++ ")" ]
                 ]
             , td []
                 [ div [ class "action delete" ] [ button [ type_ "button", onClick <| DeactivateMember member.id ] [ text <| t Deactivate ] ]
@@ -140,11 +140,11 @@ memberInfo t bills selectedBill member =
             [ td
                 [ class "balance-name" ]
                 [ text member.name
-                , span [ class "light extra-info" ] [ text "(x1)" ]
+                , span [ class "light" ] [ text <| " (x" ++ String.fromInt member.weight ++ ")" ]
                 ]
             , td []
                 [ div [ class "action reactivate" ]
-                    [ button [ type_ "button", onClick <| ReactivateMember member.id member.name ] [ text <| t Reactivate ]
+                    [ button [ type_ "button", onClick <| ReactivateMember member ] [ text <| t Reactivate ]
                     ]
                 ]
             , td [ class <| "balance-value " ++ balanceClassName ]
