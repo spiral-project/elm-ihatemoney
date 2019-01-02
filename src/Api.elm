@@ -1,8 +1,10 @@
 module Api exposing
-    ( addMemberToProject
+    ( addBillToProject
+    , addMemberToProject
     , createProject
     , deleteProjectBill
     , deleteProjectMember
+    , editProjectBill
     , editProjectMember
     , fetchProjectBills
     , fetchProjectInfo
@@ -220,3 +222,62 @@ deleteProjectBill auth bill_id =
         , tracker = Nothing
         , body = Http.emptyBody
         }
+
+
+addBillToProject : Authentication -> Bill -> Cmd Msg
+addBillToProject auth bill =
+    let
+        projectID =
+            case auth of
+                Basic user _ ->
+                    user
+
+                Unauthenticated ->
+                    ""
+    in
+    Http.request
+        { method = "POST"
+        , url = iHateMoneyUrl ++ "/projects/" ++ projectID ++ "/bills"
+        , headers = [ headersForAuth auth ]
+        , expect = Http.expectJson (BillUpdate bill) Decode.int
+        , timeout = Nothing
+        , tracker = Nothing
+        , body = Http.jsonBody <| encodeBill bill
+        }
+
+
+editProjectBill : Authentication -> Bill -> Cmd Msg
+editProjectBill auth bill =
+    let
+        projectID =
+            case auth of
+                Basic user _ ->
+                    user
+
+                Unauthenticated ->
+                    ""
+    in
+    Http.request
+        { method = "PUT"
+        , url = iHateMoneyUrl ++ "/projects/" ++ projectID ++ "/bills/" ++ String.fromInt bill.id
+        , headers = [ headersForAuth auth ]
+        , expect = Http.expectJson (BillUpdate bill) Decode.int
+        , timeout = Nothing
+        , tracker = Nothing
+        , body = Http.jsonBody <| encodeBill bill
+        }
+
+
+encodeBill : Bill -> Encode.Value
+encodeBill bill =
+    let
+        payed_for =
+            List.map .id bill.owers
+    in
+    Encode.object
+        [ ( "date", Encode.string bill.date )
+        , ( "what", Encode.string bill.label )
+        , ( "amount", Encode.float bill.amount )
+        , ( "payer", Encode.int bill.payer )
+        , ( "payed_for", Encode.list Encode.int payed_for )
+        ]

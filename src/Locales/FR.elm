@@ -64,6 +64,9 @@ getString id =
         AddNewBill ->
             "Nouvelle facture"
 
+        EditBill ->
+            "Éditer la facture"
+
         When ->
             "Quand ?"
 
@@ -150,3 +153,24 @@ getString id =
 
         Cancel ->
             "Annuler"
+
+        Date ->
+            "Date"
+
+        What ->
+            "Quoi ?"
+
+        Payer ->
+            "Payer"
+
+        Amount ->
+            "Montant"
+
+        Owers ->
+            "Pour qui ?"
+
+        SelectAll ->
+            "Tout cocher"
+
+        SelectNone ->
+            "Tout décocher"

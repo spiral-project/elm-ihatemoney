@@ -2,10 +2,12 @@ module Main exposing (main)
 
 import Api
     exposing
-        ( addMemberToProject
+        ( addBillToProject
+        , addMemberToProject
         , createProject
         , deleteProjectBill
         , deleteProjectMember
+        , editProjectBill
         , editProjectMember
         , fetchProjectBills
         , fetchProjectInfo
@@ -31,8 +33,12 @@ import Utils exposing (sortByLowerCaseName)
 
 init : () -> ( Model, Cmd Msg )
 init flags =
-    ( { auth = Unauthenticated
-      , locale = EN
+    let
+        auth =
+            Basic "demo" "demo"
+    in
+    ( { auth = auth
+      , locale = FR
       , project = Nothing
       , fields =
             { newMember = ""
@@ -44,10 +50,10 @@ init flags =
             , newProjectEmail = ""
             , newProjectError = Nothing
             }
-      , modal = Hidden
-      , selectedBill = Nothing
+      , modal = BillModal Nothing
+      , selectedBill = Just emptyBill
       }
-    , Cmd.none
+    , fetchProjectInfo auth "demo"
     )
 
 
@@ -170,6 +176,26 @@ update msg model =
             case model.project of
                 Just project ->
                     ( model, addMemberToProject model.auth model.fields.newMember )
+
+                Nothing ->
+                    ( model, Cmd.none )
+
+        TriggerAddBill bill ->
+            case model.project of
+                Just project ->
+                    ( model
+                    , addBillToProject model.auth bill
+                    )
+
+                Nothing ->
+                    ( model, Cmd.none )
+
+        TriggerEditBill bill ->
+            case model.project of
+                Just project ->
+                    ( model
+                    , editProjectBill model.auth bill
+                    )
 
                 Nothing ->
                     ( model, Cmd.none )
@@ -480,6 +506,26 @@ update msg model =
                                 Nothing ->
                                     ( model, Cmd.none )
 
+                        BillModal maybeBill ->
+                            case maybeBill of
+                                Nothing ->
+                                    -- Add a new bill
+                                    ( { model
+                                        | modal = modal_type
+                                        , selectedBill = Just emptyBill
+                                      }
+                                    , Cmd.none
+                                    )
+
+                                Just bill ->
+                                    -- Edit bill
+                                    ( { model
+                                        | modal = modal_type
+                                        , selectedBill = Just bill
+                                      }
+                                    , Cmd.none
+                                    )
+
                         Hidden ->
                             let
                                 fields =
@@ -509,7 +555,12 @@ update msg model =
                     ( model, Cmd.none )
 
         SelectBill bill ->
-            ( { model | selectedBill = bill }, Cmd.none )
+            case model.modal of
+                Hidden ->
+                    ( { model | selectedBill = bill }, Cmd.none )
+
+                _ ->
+                    ( model, Cmd.none )
 
         RemoveBill bill ->
             case model.project of
@@ -520,6 +571,40 @@ update msg model =
 
                 Nothing ->
                     ( model, Cmd.none )
+
+        BillUpdate bill (Ok id) ->
+            case model.project of
+                Just project ->
+                    let
+                        newBill =
+                            { bill | id = id }
+
+                        newProject =
+                            { project
+                                | bills =
+                                    List.filter (\b -> b.id /= bill.id) project.bills
+                                        |> List.append [ newBill ]
+                                        |> List.sortBy .date
+                                        |> List.reverse
+                            }
+                    in
+                    ( { model
+                        | project = Just newProject
+                        , selectedBill = Nothing
+                        , modal = Hidden
+                      }
+                    , Cmd.none
+                    )
+
+                Nothing ->
+                    ( model, Cmd.none )
+
+        BillUpdate bill (Err err) ->
+            let
+                _ =
+                    Debug.log "Error while adding the bill" err
+            in
+            ( model, Cmd.none )
 
         BillDeleted bill_id (Ok _) ->
             case model.project of
@@ -543,6 +628,49 @@ update msg model =
                     Debug.log ("Error while removing the bill " ++ String.fromInt bill_id) err
             in
             ( model, Cmd.none )
+
+        NewBillDate bill date ->
+            ( { model | selectedBill = Just { bill | date = date } }, Cmd.none )
+
+        NewBillLabel bill label ->
+            ( { model | selectedBill = Just { bill | label = label } }, Cmd.none )
+
+        NewBillPayer bill payer ->
+            ( { model | selectedBill = Just { bill | payer = payer } }, Cmd.none )
+
+        NewBillAmount bill amount ->
+            ( { model
+                | selectedBill =
+                    Just
+                        { bill
+                            | amount =
+                                Maybe.withDefault 0.0 <|
+                                    String.toFloat amount
+                        }
+              }
+            , Cmd.none
+            )
+
+        NewBillToggleOwer bill ower ->
+            let
+                isOwer =
+                    (List.filter (\o -> o.id == ower.id) bill.owers |> List.length) == 1
+            in
+            if isOwer then
+                ( { model | selectedBill = Just { bill | owers = List.filter (\o -> o.id /= ower.id) bill.owers } }
+                , Cmd.none
+                )
+
+            else
+                ( { model | selectedBill = Just { bill | owers = List.append bill.owers [ ower ] } }
+                , Cmd.none
+                )
+
+        NewBillToggleAllOwers bill members ->
+            ( { model | selectedBill = Just { bill | owers = members } }, Cmd.none )
+
+        NewBillToggleNoneOwers bill ->
+            ( { model | selectedBill = Just { bill | owers = [] } }, Cmd.none )
 
 
 subscriptions : Model -> Sub Msg

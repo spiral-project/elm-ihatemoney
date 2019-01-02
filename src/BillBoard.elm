@@ -28,6 +28,7 @@ billBoardHeader t =
             , class "btn btn-primary"
             , attribute "data-toggle" "modal"
             , attribute "data-target" "#bill-form"
+            , onClick <| EditModal <| BillModal Nothing
             ]
             [ text <| t AddNewBill ]
         ]
@@ -86,7 +87,13 @@ billInfoView t members bill =
               amount ++ t (Each amountEach) |> text
             ]
         , td [ class "bill-actions" ]
-            [ a [ class "edit", href "#", title <| t Edit ] [ text <| t Edit ]
+            [ a
+                [ class "edit"
+                , href "#"
+                , title <| t Edit
+                , onClick <| EditModal <| BillModal <| Just bill
+                ]
+                [ text <| t Edit ]
             , a
                 [ class "delete"
                 , href "#"

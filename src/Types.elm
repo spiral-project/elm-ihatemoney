@@ -10,6 +10,7 @@ module Types exposing
     , Model
     , Msg(..)
     , Project
+    , emptyBill
     )
 
 import Http
@@ -55,6 +56,9 @@ type Msg
     | NewMemberWeight String
     | AddMember
     | TriggerEditMember Int
+    | TriggerAddBill Bill
+    | TriggerEditBill Bill
+    | BillUpdate Bill (Result Http.Error Int)
     | ReactivateMember Member
     | DemoLogin
     | LoginProjectID String
@@ -77,10 +81,18 @@ type Msg
     | SelectBill (Maybe Bill)
     | RemoveBill Bill
     | BillDeleted Int (Result Http.Error String)
+    | NewBillDate Bill String
+    | NewBillLabel Bill String
+    | NewBillPayer Bill Int
+    | NewBillAmount Bill String
+    | NewBillToggleOwer Bill Member
+    | NewBillToggleAllOwers Bill (List Member)
+    | NewBillToggleNoneOwers Bill
 
 
 type ModalType
     = MemberModal Int
+    | BillModal (Maybe Bill)
     | Hidden
 
 
@@ -100,6 +112,11 @@ type alias Bill =
     , payer : Int
     , owers : List Member
     }
+
+
+emptyBill : Bill
+emptyBill =
+    Bill 0 "" 0.0 "" 0 []
 
 
 type Locale
@@ -157,3 +174,11 @@ type LocaleIdentifier
     | Name
     | Weight
     | Cancel
+    | EditBill
+    | Date
+    | What
+    | Payer
+    | Amount
+    | Owers
+    | SelectAll
+    | SelectNone

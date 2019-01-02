@@ -64,6 +64,9 @@ getString id =
         AddNewBill ->
             "Add a new bill"
 
+        EditBill ->
+            "Edit a bill"
+
         When ->
             "When?"
 
@@ -150,3 +153,24 @@ getString id =
 
         Cancel ->
             "Cancel"
+
+        Date ->
+            "Date"
+
+        What ->
+            "What?"
+
+        Payer ->
+            "Payer"
+
+        Amount ->
+            "Amount paid"
+
+        Owers ->
+            "For who?"
+
+        SelectAll ->
+            "Select all"
+
+        SelectNone ->
+            "Select none"
