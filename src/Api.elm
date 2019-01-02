@@ -118,8 +118,17 @@ decodeProjectBill =
         (Decode.field "owers" (Decode.list decodeMember))
 
 
-fetchProjectBills : Authentication -> String -> Cmd Msg
-fetchProjectBills auth projectID =
+fetchProjectBills : Authentication -> Cmd Msg
+fetchProjectBills auth =
+    let
+        projectID =
+            case auth of
+                Basic user _ ->
+                    user
+
+                Unauthenticated ->
+                    ""
+    in
     Http.request
         { method = "GET"
         , url = iHateMoneyUrl ++ "/projects/" ++ projectID ++ "/bills"

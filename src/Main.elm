@@ -33,12 +33,8 @@ import Utils exposing (sortByLowerCaseName)
 
 init : () -> ( Model, Cmd Msg )
 init flags =
-    let
-        auth =
-            Basic "demo" "demo"
-    in
-    ( { auth = auth
-      , locale = FR
+    ( { auth = Unauthenticated
+      , locale = EN
       , project = Nothing
       , fields =
             { newMember = ""
@@ -50,10 +46,10 @@ init flags =
             , newProjectEmail = ""
             , newProjectError = Nothing
             }
-      , modal = BillModal Nothing
-      , selectedBill = Just emptyBill
+      , modal = Hidden
+      , selectedBill = Nothing
       }
-    , fetchProjectInfo auth "demo"
+    , Cmd.none
     )
 
 
@@ -270,7 +266,7 @@ update msg model =
                         , fields = fields
                         , modal = Hidden
                       }
-                    , fetchProjectBills model.auth project.name
+                    , fetchProjectBills model.auth
                     )
 
                 Nothing ->
@@ -434,20 +430,7 @@ update msg model =
             ( { model | auth = Unauthenticated }, Cmd.none )
 
         ProjectFetched (Ok project) ->
-            let
-                projectId =
-                    case model.auth of
-                        Basic user pass ->
-                            user
-
-                        Unauthenticated ->
-                            ""
-            in
-            ( { model
-                | project = Just project
-              }
-            , fetchProjectBills model.auth projectId
-            )
+            ( { model | project = Just project }, fetchProjectBills model.auth )
 
         ProjectFetched (Err err) ->
             let
