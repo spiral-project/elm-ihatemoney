@@ -567,7 +567,7 @@ update msg model =
                                 | bills =
                                     List.filter (\b -> b.id /= bill.id) project.bills
                                         |> List.append [ newBill ]
-                                        |> List.sortBy .date
+                                        |> List.sortBy (\b -> b.date ++ String.fromInt b.id)
                                         |> List.reverse
                             }
                     in
