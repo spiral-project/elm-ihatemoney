@@ -7364,8 +7364,10 @@ var author$project$Main$update = F2(
 								bills: elm$core$List$reverse(
 									A2(
 										elm$core$List$sortBy,
-										function ($) {
-											return $.date;
+										function (b) {
+											return _Utils_ap(
+												b.date,
+												elm$core$String$fromInt(b.id));
 										},
 										A2(
 											elm$core$List$append,
