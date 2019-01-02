@@ -6271,29 +6271,19 @@ var author$project$Api$fetchProjectInfo = F2(
 				url: author$project$Api$iHateMoneyUrl + ('/projects/' + projectID)
 			});
 	});
-var author$project$Types$Basic = F2(
-	function (a, b) {
-		return {$: 'Basic', a: a, b: b};
-	});
-var author$project$Types$BillModal = function (a) {
-	return {$: 'BillModal', a: a};
-};
-var author$project$Types$FR = {$: 'FR'};
-var author$project$Types$Bill = F6(
-	function (id, date, amount, label, payer, owers) {
-		return {amount: amount, date: date, id: id, label: label, owers: owers, payer: payer};
-	});
-var author$project$Types$emptyBill = A6(author$project$Types$Bill, 0, '', 0.0, '', 0, _List_Nil);
+var author$project$Types$EN = {$: 'EN'};
+var author$project$Types$Hidden = {$: 'Hidden'};
+var author$project$Types$Unauthenticated = {$: 'Unauthenticated'};
 var author$project$Main$init = function (flags) {
-	var auth = A2(author$project$Types$Basic, 'demo', 'demo');
+	var auth = author$project$Types$Unauthenticated;
 	return _Utils_Tuple2(
 		{
 			auth: auth,
 			fields: {loginPassword: '', loginProjectID: '', newMember: '', newMemberWeight: '', newProjectEmail: '', newProjectError: elm$core$Maybe$Nothing, newProjectName: '', newProjectPassword: ''},
-			locale: author$project$Types$FR,
-			modal: author$project$Types$BillModal(elm$core$Maybe$Nothing),
+			locale: author$project$Types$EN,
+			modal: author$project$Types$Hidden,
 			project: elm$core$Maybe$Nothing,
-			selectedBill: elm$core$Maybe$Just(author$project$Types$emptyBill)
+			selectedBill: elm$core$Maybe$Nothing
 		},
 		A2(author$project$Api$fetchProjectInfo, auth, 'demo'));
 };
@@ -6691,6 +6681,10 @@ var author$project$Api$editProjectMember = F2(
 				url: author$project$Api$iHateMoneyUrl + ('/projects/' + (projectID + ('/members/' + elm$core$String$fromInt(member.id))))
 			});
 	});
+var author$project$Types$Bill = F6(
+	function (id, date, amount, label, payer, owers) {
+		return {amount: amount, date: date, id: id, label: label, owers: owers, payer: payer};
+	});
 var elm$json$Json$Decode$float = _Json_decodeFloat;
 var elm$json$Json$Decode$map6 = _Json_map6;
 var author$project$Api$decodeProjectBill = A7(
@@ -6888,8 +6882,11 @@ var author$project$Main$setNewProjectPassword = F2(
 			fields,
 			{newProjectPassword: value});
 	});
-var author$project$Types$Hidden = {$: 'Hidden'};
-var author$project$Types$Unauthenticated = {$: 'Unauthenticated'};
+var author$project$Types$Basic = F2(
+	function (a, b) {
+		return {$: 'Basic', a: a, b: b};
+	});
+var author$project$Types$emptyBill = A6(author$project$Types$Bill, 0, '', 0.0, '', 0, _List_Nil);
 var elm$core$Debug$log = _Debug_log;
 var elm$core$Platform$Cmd$batch = _Platform_batch;
 var elm$core$Platform$Cmd$none = elm$core$Platform$Cmd$batch(_List_Nil);
@@ -7556,6 +7553,9 @@ var author$project$Main$update = F2(
 		}
 	});
 var author$project$Types$AddNewBill = {$: 'AddNewBill'};
+var author$project$Types$BillModal = function (a) {
+	return {$: 'BillModal', a: a};
+};
 var author$project$Types$EditModal = function (a) {
 	return {$: 'EditModal', a: a};
 };
@@ -9705,7 +9705,7 @@ var author$project$Types$Bills = {$: 'Bills'};
 var author$project$Types$ChangeLocale = function (a) {
 	return {$: 'ChangeLocale', a: a};
 };
-var author$project$Types$EN = {$: 'EN'};
+var author$project$Types$FR = {$: 'FR'};
 var author$project$Types$Logout = {$: 'Logout'};
 var author$project$Types$LogoutUser = {$: 'LogoutUser'};
 var author$project$Types$Options = {$: 'Options'};
