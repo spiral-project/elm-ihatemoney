@@ -7211,7 +7211,7 @@ var author$project$Main$update = F2(
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
-						{auth: author$project$Types$Unauthenticated}),
+						{auth: author$project$Types$Unauthenticated, modal: author$project$Types$Hidden, project: elm$core$Maybe$Nothing, selectedBill: elm$core$Maybe$Nothing}),
 					elm$core$Platform$Cmd$none);
 			case 'ProjectFetched':
 				if (msg.a.$ === 'Ok') {
