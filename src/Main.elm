@@ -179,8 +179,19 @@ update msg model =
         TriggerAddBill bill ->
             case model.project of
                 Just project ->
+                    let
+                        payer =
+                            if bill.payer == 0 then
+                                List.filter (\m -> m.activated) project.members
+                                    |> List.map .id
+                                    |> List.head
+                                    |> Maybe.withDefault 0
+
+                            else
+                                bill.payer
+                    in
                     ( model
-                    , addBillToProject model.auth bill
+                    , addBillToProject model.auth { bill | payer = payer }
                     )
 
                 Nothing ->
