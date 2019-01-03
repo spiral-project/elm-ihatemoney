@@ -6932,9 +6932,29 @@ var author$project$Main$update = F2(
 				var _n2 = model.project;
 				if (_n2.$ === 'Just') {
 					var project = _n2.a;
+					var payer = (!bill.payer) ? A2(
+						elm$core$Maybe$withDefault,
+						0,
+						elm$core$List$head(
+							A2(
+								elm$core$List$map,
+								function ($) {
+									return $.id;
+								},
+								A2(
+									elm$core$List$filter,
+									function (m) {
+										return m.activated;
+									},
+									project.members)))) : bill.payer;
 					return _Utils_Tuple2(
 						model,
-						A2(author$project$Api$addBillToProject, model.auth, bill));
+						A2(
+							author$project$Api$addBillToProject,
+							model.auth,
+							_Utils_update(
+								bill,
+								{payer: payer})));
 				} else {
 					return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
 				}
