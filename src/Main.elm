@@ -438,7 +438,14 @@ update msg model =
             )
 
         LogoutUser ->
-            ( { model | auth = Unauthenticated }, Cmd.none )
+            ( { model
+                | auth = Unauthenticated
+                , project = Nothing
+                , modal = Hidden
+                , selectedBill = Nothing
+              }
+            , Cmd.none
+            )
 
         ProjectFetched (Ok project) ->
             ( { model | project = Just project }, fetchProjectBills model.auth )
