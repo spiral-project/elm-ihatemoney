@@ -43,6 +43,7 @@ type alias Fields =
     , newProjectPassword : String
     , newProjectEmail : String
     , newProjectError : Maybe String
+    , currentAmount : String
     }
 
 

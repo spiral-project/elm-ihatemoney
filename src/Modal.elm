@@ -131,7 +131,8 @@ handleModal t model project =
                             , step "0.01"
                             , Html.Attributes.min "0.00"
                             , type_ "number"
-                            , value <| round 2 bill.amount
+                            , lang "en"
+                            , value model.fields.currentAmount
                             , onInput <| NewBillAmount bill
                             ]
                             []

@@ -45,6 +45,7 @@ init flags =
             , newProjectPassword = ""
             , newProjectEmail = ""
             , newProjectError = Nothing
+            , currentAmount = ""
             }
       , modal = Hidden
       , selectedBill = Nothing
@@ -61,46 +62,6 @@ main =
         , update = update
         , subscriptions = subscriptions
         }
-
-
-setNewMemberName : String -> Fields -> Fields
-setNewMemberName newMember fields =
-    { fields | newMember = newMember }
-
-
-setNewMemberWeight : String -> Fields -> Fields
-setNewMemberWeight newWeight fields =
-    { fields | newMemberWeight = newWeight }
-
-
-setNewProjectName : String -> Fields -> Fields
-setNewProjectName value fields =
-    { fields | newProjectName = value, newProjectError = Nothing }
-
-
-setNewProjectPassword : String -> Fields -> Fields
-setNewProjectPassword value fields =
-    { fields | newProjectPassword = value }
-
-
-setNewProjectEmail : String -> Fields -> Fields
-setNewProjectEmail value fields =
-    { fields | newProjectEmail = value }
-
-
-setNewProjectError : String -> Fields -> Fields
-setNewProjectError value fields =
-    { fields | newProjectError = Just value }
-
-
-setLoginProjectID : String -> Fields -> Fields
-setLoginProjectID value fields =
-    { fields | loginProjectID = value }
-
-
-setLoginPassword : String -> Fields -> Fields
-setLoginPassword value fields =
-    { fields | loginPassword = value }
 
 
 setMemberToProject : Member -> Project -> Project
@@ -152,21 +113,13 @@ setDeletedProjectBill bill_id project =
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
-update msg model =
+update msg ({ fields } as model) =
     case msg of
         NewMemberName value ->
-            let
-                fields =
-                    setNewMemberName value model.fields
-            in
-            ( { model | fields = fields }, Cmd.none )
+            ( { model | fields = { fields | newMember = value } }, Cmd.none )
 
         NewMemberWeight value ->
-            let
-                fields =
-                    setNewMemberWeight value model.fields
-            in
-            ( { model | fields = fields }, Cmd.none )
+            ( { model | fields = { fields | newMemberWeight = value } }, Cmd.none )
 
         AddMember ->
             case model.project of
@@ -236,9 +189,6 @@ update msg model =
             case model.project of
                 Just project ->
                     let
-                        fields =
-                            setNewMemberName "" model.fields
-
                         member =
                             Member id model.fields.newMember 1 True
 
@@ -247,7 +197,7 @@ update msg model =
                     in
                     ( { model
                         | project = Just newProject
-                        , fields = fields
+                        , fields = { fields | newMember = "" }
                       }
                     , Cmd.none
                     )
@@ -266,15 +216,12 @@ update msg model =
             case model.project of
                 Just project ->
                     let
-                        fields =
-                            model.fields |> setNewMemberName "" |> setNewMemberWeight ""
-
                         newProject =
                             setEditedProjectMember member project
                     in
                     ( { model
                         | project = Just newProject
-                        , fields = fields
+                        , fields = { fields | newMember = "", newMemberWeight = "" }
                         , modal = Hidden
                       }
                     , fetchProjectBills model.auth
@@ -314,25 +261,21 @@ update msg model =
             ( model, Cmd.none )
 
         NewProjectName value ->
-            let
-                fields =
-                    setNewProjectName value model.fields
-            in
-            ( { model | fields = fields }, Cmd.none )
+            ( { model
+                | fields =
+                    { fields
+                        | newProjectName = value
+                        , newProjectError = Nothing
+                    }
+              }
+            , Cmd.none
+            )
 
         NewProjectPassword value ->
-            let
-                fields =
-                    setNewProjectPassword value model.fields
-            in
-            ( { model | fields = fields }, Cmd.none )
+            ( { model | fields = { fields | newProjectPassword = value } }, Cmd.none )
 
         NewProjectEmail value ->
-            let
-                fields =
-                    setNewProjectEmail value model.fields
-            in
-            ( { model | fields = fields }, Cmd.none )
+            ( { model | fields = { fields | newProjectEmail = value } }, Cmd.none )
 
         CreateProject ->
             let
@@ -350,24 +293,28 @@ update msg model =
             in
             case slug of
                 Just _ ->
-                    let
-                        fields =
-                            model.fields |> setNewProjectName "" |> setNewProjectPassword "" |> setNewProjectEmail ""
-                    in
-                    ( { model | fields = fields, auth = Basic projectID password }
+                    ( { model
+                        | fields =
+                            { fields
+                                | newProjectName = ""
+                                , newProjectError = Nothing
+                                , newProjectPassword = ""
+                                , newProjectEmail = ""
+                            }
+                        , auth = Basic projectID password
+                      }
                     , createProject projectID password email
                     )
 
                 Nothing ->
-                    let
-                        _ =
-                            Debug.log "Invalid ProjectName" projectID
-
-                        fields =
-                            model.fields
-                                |> setNewProjectError ("Invalid project name: " ++ projectID)
-                    in
-                    ( { model | fields = fields }, Cmd.none )
+                    ( { model
+                        | fields =
+                            { fields
+                                | newProjectError = Just <| "Invalid project name: " ++ projectID
+                            }
+                      }
+                    , Cmd.none
+                    )
 
         ProjectCreated (Ok projectID) ->
             let
@@ -394,18 +341,10 @@ update msg model =
             ( model, Cmd.none )
 
         LoginProjectID value ->
-            let
-                fields =
-                    setLoginProjectID value model.fields
-            in
-            ( { model | fields = fields }, Cmd.none )
+            ( { model | fields = { fields | loginProjectID = value } }, Cmd.none )
 
         LoginPassword value ->
-            let
-                fields =
-                    setLoginPassword value model.fields
-            in
-            ( { model | fields = fields }, Cmd.none )
+            ( { model | fields = { fields | loginPassword = value } }, Cmd.none )
 
         Login ->
             let
@@ -415,25 +354,33 @@ update msg model =
                 password =
                     model.fields.loginPassword
 
-                fields =
-                    model.fields |> setLoginProjectID "" |> setLoginPassword ""
-
                 auth =
                     Basic projectID password
             in
-            ( { model | fields = fields, auth = auth }
+            ( { model
+                | fields =
+                    { fields
+                        | loginProjectID = ""
+                        , loginPassword = ""
+                    }
+                , auth = auth
+              }
             , fetchProjectInfo auth projectID
             )
 
         DemoLogin ->
             let
-                fields =
-                    model.fields |> setLoginProjectID "" |> setLoginPassword ""
-
                 auth =
                     Basic "demo" "demo"
             in
-            ( { model | fields = fields, auth = auth }
+            ( { model
+                | fields =
+                    { fields
+                        | loginProjectID = ""
+                        , loginPassword = ""
+                    }
+                , auth = auth
+              }
             , fetchProjectInfo auth "demo"
             )
 
@@ -497,9 +444,10 @@ update msg model =
                                     ( { model
                                         | modal = modal_type
                                         , fields =
-                                            model.fields
-                                                |> setNewMemberName member.name
-                                                |> setNewMemberWeight (String.fromInt member.weight)
+                                            { fields
+                                                | newMember = member.name
+                                                , newMemberWeight = String.fromInt member.weight
+                                            }
                                       }
                                     , Cmd.none
                                     )
@@ -523,20 +471,15 @@ update msg model =
                                     ( { model
                                         | modal = modal_type
                                         , selectedBill = Just bill
+                                        , fields = { fields | currentAmount = String.fromFloat bill.amount }
                                       }
                                     , Cmd.none
                                     )
 
                         Hidden ->
-                            let
-                                fields =
-                                    model.fields
-                                        |> setNewMemberName ""
-                                        |> setNewMemberWeight ""
-                            in
                             ( { model
                                 | modal = modal_type
-                                , fields = fields
+                                , fields = { fields | newMember = "", newMemberWeight = "" }
                                 , selectedBill = Nothing
                               }
                             , Cmd.none
@@ -641,7 +584,8 @@ update msg model =
 
         NewBillAmount bill amount ->
             ( { model
-                | selectedBill =
+                | fields = { fields | currentAmount = amount }
+                , selectedBill =
                     Just
                         { bill
                             | amount =
