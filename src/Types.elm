@@ -9,6 +9,7 @@ module Types exposing
     , ModalType(..)
     , Model
     , Msg(..)
+    , Page(..)
     , Project
     , emptyBill
     )
@@ -18,6 +19,7 @@ import Http
 
 type alias Model =
     { auth : Authentication
+    , page : Page
     , locale : Locale
     , project : Maybe Project
     , fields : Fields
@@ -45,6 +47,11 @@ type alias Fields =
     , newProjectError : Maybe String
     , currentAmount : String
     }
+
+
+type Page
+    = BillsPage
+    | SettlePage
 
 
 type Authentication
@@ -89,6 +96,7 @@ type Msg
     | NewBillToggleOwer Bill Member
     | NewBillToggleAllOwers Bill (List Member)
     | NewBillToggleNoneOwers Bill
+    | SelectPage Page
 
 
 type ModalType
@@ -149,6 +157,7 @@ type LocaleIdentifier
     | YouCanContribute
     | AddNewBill
     | When
+    | WhoShouldPay
     | WhoPaid
     | ForWhat
     | ForWhom

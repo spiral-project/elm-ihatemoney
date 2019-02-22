@@ -70,6 +70,9 @@ getString id =
         When ->
             "When?"
 
+        WhoShouldPay ->
+            "Who pays?"
+
         WhoPaid ->
             "Who paid?"
 

@@ -5,6 +5,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Round exposing (round)
 import Types exposing (..)
+import Utils exposing (getMemberBalance)
 
 
 sideBarView : Localizer -> String -> List Member -> List Bill -> Maybe Bill -> Html Msg
@@ -35,38 +36,11 @@ sideBarView t memberField members bills selectedBill =
         ]
 
 
-getMemberBalance : Member -> List Bill -> Float
-getMemberBalance member bills =
-    let
-        totalPaid =
-            List.filter (\bill -> bill.payer == member.id) bills
-                |> List.map .amount
-                |> List.sum
-
-        -- Return the sum of the shares
-        billsShares =
-            List.filter (\bill -> List.any (\ower -> ower.id == member.id) bill.owers) bills
-                |> List.map
-                    (\bill ->
-                        bill.amount
-                            / (List.map .weight bill.owers
-                                |> List.sum
-                                |> toFloat
-                              )
-                    )
-                |> List.sum
-
-        totalOwed =
-            billsShares * toFloat member.weight
-    in
-    totalPaid - totalOwed
-
-
 memberInfo : Localizer -> List Bill -> Maybe Bill -> Member -> Html Msg
 memberInfo t bills selectedBill member =
     let
         memberBalance =
-            getMemberBalance member bills
+            getMemberBalance bills member
 
         balanceClassName =
             if memberBalance <= -0.005 then

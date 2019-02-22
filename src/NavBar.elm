@@ -10,8 +10,8 @@ import Types exposing (..)
 -- navBarView with the connected menu
 
 
-navBarView : Localizer -> Project -> Locale -> Html Msg
-navBarView t project selectedLocale =
+navBarView : Localizer -> Project -> Locale -> Page -> Html Msg
+navBarView t project selectedLocale activePage =
     div [ class "container" ]
         [ nav
             [ class "navbar navbar-toggleable-sm fixed-top navbar-inverse bg-inverse" ]
@@ -37,14 +37,22 @@ navBarView t project selectedLocale =
                             [ strong [ class "navbar-nav" ] [ text project.name ] ]
                         ]
                     ]
-                , ul
+                , let
+                    active expected =
+                        if activePage == expected then
+                            "active"
+
+                        else
+                            ""
+                  in
+                  ul
                     [ class "navbar-nav ml-auto mr-auto" ]
                     [ li
-                        [ class "nav-item active" ]
-                        [ a [ class "nav-link", href "#" ] [ text <| t Bills ] ]
+                        [ class <| "nav-item " ++ active BillsPage ]
+                        [ a [ class "nav-link", href "#", onClick <| SelectPage BillsPage ] [ text <| t Bills ] ]
                     , li
-                        [ class "nav-item" ]
-                        [ a [ class "nav-link", href "#" ] [ text <| t Settle ] ]
+                        [ class <| "nav-item " ++ active SettlePage ]
+                        [ a [ class "nav-link", href "#", onClick <| SelectPage SettlePage ] [ text <| t Settle ] ]
                     , li
                         [ class "nav-item" ]
                         [ a [ class "nav-link", href "#" ] [ text <| t Statistics ] ]

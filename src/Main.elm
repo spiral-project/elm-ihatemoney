@@ -25,6 +25,7 @@ import Login exposing (loginView)
 import Modal exposing (handleModal)
 import NavBar exposing (navBarView, simpleNavBarView)
 import Round exposing (round)
+import Settle exposing (settleView)
 import SideBar exposing (sideBarView)
 import Slug
 import Types exposing (..)
@@ -34,6 +35,7 @@ import Utils exposing (sortByLowerCaseName)
 init : () -> ( Model, Cmd Msg )
 init flags =
     ( { auth = Unauthenticated
+      , page = BillsPage
       , locale = EN
       , project = Nothing
       , fields =
@@ -617,6 +619,9 @@ update msg ({ fields } as model) =
         NewBillToggleNoneOwers bill ->
             ( { model | selectedBill = Just { bill | owers = [] } }, Cmd.none )
 
+        SelectPage page ->
+            ( { model | page = page }, Cmd.none )
+
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
@@ -633,12 +638,17 @@ view model =
         ( Basic user password, Just project ) ->
             { title = t <| AppTitle (Just project.name)
             , body =
-                [ navBarView t project model.locale
+                [ navBarView t project model.locale model.page
                 , handleModal t model project
                 , div
                     [ class "container-fluid" ]
                     [ sideBarView t model.fields.newMember project.members project.bills model.selectedBill
-                    , billBoardView t project.members project.bills
+                    , case model.page of
+                        BillsPage ->
+                            billBoardView t project.members project.bills
+
+                        SettlePage ->
+                            settleView t project.members project.bills
                     ]
                 , div [ class "messages" ] []
                 , footerView t
