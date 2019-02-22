@@ -3,13 +3,14 @@
   "version": "1.0.0",
   "description": "I Hate Money UI",
   "scripts": {
-    "build": "npm run cleanup && npm run copy-assets && elm make src/Main.elm --output=build/app.js",
+    "build": "npm run cleanup && npm run copy-assets && elm make src/Main.elm --output=build/app.js && npm run optimize",
     "copy-assets": "rimraf build && mkdir build && cp -r public/* build",
     "cleanup": "rimraf elm-stuff/",
     "debug": "elm-live src/Main.elm --port=3000 --dir=public/ -- --output=public/app.js --debug",
     "deploy": "npm run build && gh-pages --dist build/",
     "live": "elm-live src/Main.elm --port=3000 --dir=public/ -- --output=public/app.js",
-    "test": "elm-test"
+    "test": "elm-test",
+    "optimize": "uglifyjs build/app.js -c $npm_package_uglify_params | uglifyjs -m --output=build/app.js"
   },
   "repository": {
     "type": "git",
@@ -22,11 +23,13 @@
   "author": "spiral-project",
   "license": "ISC",
   "devDependencies": {
-    "elm": "^0.19.0",
+    "elm": "^0.19.0-bugfix6",
+    "elm-analyse": "0.16.1",
     "elm-format": "^0.8.1",
     "elm-live": "^3.0.6",
-    "elm-test": "^0.19.0",
-    "gh-pages": "^2.0.0",
-    "rimraf": "^2.6.2"
+    "elm-test": "^0.19.0-rev4",
+    "gh-pages": "^2.0.1",
+    "rimraf": "^2.6.2",
+    "uglify-js": "^3.4.9"
   }
 }
