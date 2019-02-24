@@ -41,7 +41,7 @@ headersForAuth auth =
             Http.header "Authorization" ""
 
         Basic username password ->
-            Http.header "Authorization" ("Basic " ++ alwaysEncode (username ++ ":" ++ password))
+            Http.header "Authorization" ("Basic " ++ alwaysEncode (String.toLower username ++ ":" ++ password))
 
 
 encodeProject : String -> String -> String -> Encode.Value
