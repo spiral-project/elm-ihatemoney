@@ -90,7 +90,7 @@ loginView t selectedLocale fields =
                                     , required True
                                     , type_ "text"
                                     , onInput NewProjectName
-                                    , value fields.newProjectName
+                                    , value fields.projectName
                                     ]
                                     []
                                 ]
@@ -105,7 +105,7 @@ loginView t selectedLocale fields =
                                     , required True
                                     , type_ "password"
                                     , onInput NewProjectPassword
-                                    , value fields.newProjectPassword
+                                    , value fields.projectPassword
                                     ]
                                     []
                                 ]
@@ -120,13 +120,13 @@ loginView t selectedLocale fields =
                                     , required True
                                     , type_ "text"
                                     , onInput NewProjectEmail
-                                    , value fields.newProjectEmail
+                                    , value fields.projectEmail
                                     ]
                                     []
                                 ]
                             ]
                         ]
-                    , case fields.newProjectError of
+                    , case fields.projectError of
                         Just err ->
                             div [ class "errors" ] [ text err ]
 

@@ -142,6 +142,53 @@ handleModal t model project =
                 ]
                 |> modalView (t modalTitle) (toCapital <| t submitButton) (t Cancel) submitEvent
 
+        ProjectOptions ->
+            fieldset []
+                [ div [ class "form-group row" ]
+                    [ label [ class "col-3", for "name" ] [ text <| t ProjectName ]
+                    , div [ class "controls col-9" ]
+                        [ input
+                            [ class "form-control"
+                            , id "name"
+                            , type_ "text"
+                            , required True
+                            , value model.fields.projectName
+                            , onInput NewProjectName
+                            ]
+                            []
+                        ]
+                    ]
+                , div [ class "form-group row" ]
+                    [ label [ class "col-3", for "weight" ] [ text <| t PrivateCode ]
+                    , div [ class "controls col-9" ]
+                        [ input
+                            [ class "form-control"
+                            , id "password"
+                            , type_ "password"
+                            , required True
+                            , onInput NewProjectPassword
+                            , value model.fields.projectPassword
+                            ]
+                            []
+                        ]
+                    ]
+                , div [ class "form-group row" ]
+                    [ label [ class "col-3", for "weight" ] [ text <| t Email ]
+                    , div [ class "controls col-9" ]
+                        [ input
+                            [ class "form-control"
+                            , id "contact_email"
+                            , type_ "text"
+                            , required True
+                            , onInput NewProjectEmail
+                            , value model.fields.projectEmail
+                            ]
+                            []
+                        ]
+                    ]
+                ]
+                |> modalView (t Edit) (toCapital <| t Edit) (t Cancel) TriggerEditProject
+
         Hidden ->
             div [] []
 

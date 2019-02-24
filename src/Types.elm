@@ -41,10 +41,10 @@ type alias Fields =
     , newMemberWeight : String
     , loginProjectID : String
     , loginPassword : String
-    , newProjectName : String
-    , newProjectPassword : String
-    , newProjectEmail : String
-    , newProjectError : Maybe String
+    , projectName : String
+    , projectPassword : String
+    , projectEmail : String
+    , projectError : Maybe String
     , currentAmount : String
     }
 
@@ -73,12 +73,14 @@ type Msg
     | LoginPassword String
     | Login
     | LogoutUser
+    | LogoutUserAndCreate
     | NewProjectName String
     | NewProjectPassword String
     | NewProjectEmail String
     | CreateProject
     | ChangeLocale Locale
     | ProjectCreated (Result Http.Error String)
+    | ProjectEdited (Result Http.Error String)
     | ProjectFetched (Result Http.Error Project)
     | BillsFetched (Result Http.Error (List Bill))
     | MemberAdded (Result Http.Error Int)
@@ -97,11 +99,14 @@ type Msg
     | NewBillToggleAllOwers Bill (List Member)
     | NewBillToggleNoneOwers Bill
     | SelectPage Page
+    | TriggerEditProject
+    | NoOp
 
 
 type ModalType
     = MemberModal Int
     | BillModal (Maybe Bill)
+    | ProjectOptions
     | Hidden
 
 

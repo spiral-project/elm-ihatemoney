@@ -7,6 +7,7 @@ import Api
         , createProject
         , deleteProjectBill
         , deleteProjectMember
+        , editProject
         , editProjectBill
         , editProjectMember
         , fetchProjectBills
@@ -15,6 +16,7 @@ import Api
         )
 import BillBoard exposing (billBoardView)
 import Browser exposing (Document)
+import Browser.Dom as Dom
 import Footer exposing (footerView)
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -28,6 +30,7 @@ import Round exposing (round)
 import Settle exposing (settleView)
 import SideBar exposing (sideBarView)
 import Slug
+import Task
 import Types exposing (..)
 import Utils exposing (sortByLowerCaseName)
 
@@ -43,10 +46,10 @@ init flags =
             , newMemberWeight = ""
             , loginProjectID = ""
             , loginPassword = ""
-            , newProjectName = ""
-            , newProjectPassword = ""
-            , newProjectEmail = ""
-            , newProjectError = Nothing
+            , projectName = ""
+            , projectPassword = ""
+            , projectEmail = ""
+            , projectError = Nothing
             , currentAmount = ""
             }
       , modal = Hidden
@@ -177,6 +180,23 @@ update msg ({ fields } as model) =
                 Nothing ->
                     ( model, Cmd.none )
 
+        TriggerEditProject ->
+            case model.project of
+                Just project ->
+                    ( { model
+                        | fields =
+                            { fields
+                                | projectName = ""
+                                , projectPassword = ""
+                                , projectEmail = ""
+                            }
+                      }
+                    , editProject model.auth fields.projectName fields.projectPassword fields.projectEmail
+                    )
+
+                Nothing ->
+                    ( model, Cmd.none )
+
         ReactivateMember member ->
             case model.project of
                 Just project ->
@@ -266,42 +286,42 @@ update msg ({ fields } as model) =
             ( { model
                 | fields =
                     { fields
-                        | newProjectName = value
-                        , newProjectError = Nothing
+                        | projectName = value
+                        , projectError = Nothing
                     }
               }
             , Cmd.none
             )
 
         NewProjectPassword value ->
-            ( { model | fields = { fields | newProjectPassword = value } }, Cmd.none )
+            ( { model | fields = { fields | projectPassword = value } }, Cmd.none )
 
         NewProjectEmail value ->
-            ( { model | fields = { fields | newProjectEmail = value } }, Cmd.none )
+            ( { model | fields = { fields | projectEmail = value } }, Cmd.none )
 
         CreateProject ->
             let
                 projectID =
-                    model.fields.newProjectName
+                    model.fields.projectName
 
                 slug =
                     Slug.generate projectID
 
                 password =
-                    model.fields.newProjectPassword
+                    model.fields.projectPassword
 
                 email =
-                    model.fields.newProjectEmail
+                    model.fields.projectEmail
             in
             case slug of
                 Just _ ->
                     ( { model
                         | fields =
                             { fields
-                                | newProjectName = ""
-                                , newProjectError = Nothing
-                                , newProjectPassword = ""
-                                , newProjectEmail = ""
+                                | projectName = ""
+                                , projectError = Nothing
+                                , projectPassword = ""
+                                , projectEmail = ""
                             }
                         , auth = Basic projectID password
                       }
@@ -312,7 +332,7 @@ update msg ({ fields } as model) =
                     ( { model
                         | fields =
                             { fields
-                                | newProjectError = Just <| "Invalid project name: " ++ projectID
+                                | projectError = Just <| "Invalid project name: " ++ projectID
                             }
                       }
                     , Cmd.none
@@ -336,6 +356,27 @@ update msg ({ fields } as model) =
             )
 
         ProjectCreated (Err err) ->
+            let
+                _ =
+                    Debug.log "Error while creating the project" err
+            in
+            ( model, Cmd.none )
+
+        ProjectEdited (Ok _) ->
+            let
+                projectID =
+                    case model.auth of
+                        Basic user _ ->
+                            user
+
+                        Unauthenticated ->
+                            ""
+            in
+            ( { model | modal = Hidden }
+            , fetchProjectInfo model.auth projectID
+            )
+
+        ProjectEdited (Err err) ->
             let
                 _ =
                     Debug.log "Error while creating the project" err
@@ -393,7 +434,17 @@ update msg ({ fields } as model) =
                 , modal = Hidden
                 , selectedBill = Nothing
               }
-            , Cmd.none
+            , Task.attempt (\_ -> NoOp) (Dom.focus "id")
+            )
+
+        LogoutUserAndCreate ->
+            ( { model
+                | auth = Unauthenticated
+                , project = Nothing
+                , modal = Hidden
+                , selectedBill = Nothing
+              }
+            , Task.attempt (\_ -> NoOp) (Dom.focus "name")
             )
 
         ProjectFetched (Ok project) ->
@@ -477,6 +528,19 @@ update msg ({ fields } as model) =
                                       }
                                     , Cmd.none
                                     )
+
+                        ProjectOptions ->
+                            ( { model
+                                | modal = modal_type
+                                , fields =
+                                    { fields
+                                        | projectName = project.name
+                                        , projectPassword = ""
+                                        , projectEmail = project.contact_email
+                                    }
+                              }
+                            , Cmd.none
+                            )
 
                         Hidden ->
                             ( { model
@@ -621,6 +685,9 @@ update msg ({ fields } as model) =
 
         SelectPage page ->
             ( { model | page = page }, Cmd.none )
+
+        NoOp ->
+            ( model, Cmd.none )
 
 
 subscriptions : Model -> Sub Msg

@@ -4,6 +4,7 @@ module Api exposing
     , createProject
     , deleteProjectBill
     , deleteProjectMember
+    , editProject
     , editProjectBill
     , editProjectMember
     , fetchProjectBills
@@ -63,6 +64,15 @@ encodeProject projectName projectCode projectEmail =
         ]
 
 
+encodeProjectEdit : String -> String -> String -> Encode.Value
+encodeProjectEdit projectName projectCode projectEmail =
+    Encode.object
+        [ ( "name", Encode.string projectName )
+        , ( "password", Encode.string projectCode )
+        , ( "contact_email", Encode.string projectEmail )
+        ]
+
+
 createProject : String -> String -> String -> Cmd Msg
 createProject projectName projectCode projectEmail =
     Http.request
@@ -73,6 +83,28 @@ createProject projectName projectCode projectEmail =
         , timeout = Nothing
         , tracker = Nothing
         , body = Http.jsonBody <| encodeProject projectName projectCode projectEmail
+        }
+
+
+editProject : Authentication -> String -> String -> String -> Cmd Msg
+editProject auth projectName projectCode projectEmail =
+    let
+        projectID =
+            case auth of
+                Basic user _ ->
+                    user
+
+                Unauthenticated ->
+                    ""
+    in
+    Http.request
+        { method = "PUT"
+        , url = iHateMoneyUrl ++ "/projects/" ++ projectID
+        , headers = [ headersForAuth auth ]
+        , expect = Http.expectJson ProjectEdited Decode.string
+        , timeout = Nothing
+        , tracker = Nothing
+        , body = Http.jsonBody <| encodeProjectEdit projectName projectCode projectEmail
         }
 
 
