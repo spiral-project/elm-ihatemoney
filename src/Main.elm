@@ -351,7 +351,7 @@ update msg ({ fields } as model) =
         Login ->
             let
                 projectID =
-                    model.fields.loginProjectID
+                    String.toLower model.fields.loginProjectID
 
                 password =
                     model.fields.loginPassword

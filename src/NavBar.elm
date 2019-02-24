@@ -33,6 +33,7 @@ navBarView t project selectedLocale activePage =
                         [ a
                             [ class "nav-link"
                             , href "#"
+                            , onClick <| SelectPage BillsPage
                             ]
                             [ strong [ class "navbar-nav" ] [ text project.name ] ]
                         ]
