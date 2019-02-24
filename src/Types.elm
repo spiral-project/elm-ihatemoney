@@ -202,3 +202,5 @@ type LocaleIdentifier
     | Owers
     | SelectAll
     | SelectNone
+    | DownloadSettle
+    | DownloadBills

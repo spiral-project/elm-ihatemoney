@@ -35,13 +35,11 @@ settleInfoView t members bills =
         owers =
             List.filter (\( member, balance ) -> balance < 0.0) membersBalance
                 |> List.sortBy Tuple.second
-                |> Debug.log "owers"
 
         owes =
             List.filter (\( member, balance ) -> balance > 0.0) membersBalance
                 |> List.sortBy Tuple.second
                 |> List.reverse
-                |> Debug.log "owes"
 
         transactions =
             reduceBalance [] owers owes
@@ -64,40 +62,31 @@ reduceBalance results owers owes =
                             else
                                 abs ower_balance
 
-                        _ =
-                            Debug.log "amount" amount
-
                         newResult =
                             List.append [ ( ower, amount, owe ) ] results
 
                         newOwerBalance =
-                            (ower_balance + amount)
-                                |> Debug.log "newOwerBalance"
+                            ower_balance + amount
 
                         newOwers =
-                            (if newOwerBalance < 0 then
+                            if newOwerBalance < 0 then
                                 List.append [ ( ower, newOwerBalance ) ] remaining_owers
                                     |> List.sortBy Tuple.second
 
-                             else
+                            else
                                 remaining_owers
-                            )
-                                |> Debug.log "newOwers"
 
                         newOweBalance =
-                            (owe_balance - amount)
-                                |> Debug.log "newOweBalance"
+                            owe_balance - amount
 
                         newOwes =
-                            (if newOweBalance > 0 then
+                            if newOweBalance > 0 then
                                 List.append [ ( owe, newOweBalance ) ] remaining_owes
                                     |> List.sortBy Tuple.second
                                     |> List.reverse
 
-                             else
+                            else
                                 remaining_owes
-                            )
-                                |> Debug.log "newOwes"
                     in
                     reduceBalance newResult newOwers newOwes
 

@@ -1,5 +1,6 @@
 module NavBar exposing (navBarView, simpleNavBarView)
 
+import Data exposing (buildBillsDataUrl)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
@@ -76,13 +77,18 @@ navBarView t project selectedLocale activePage =
                             , attribute "aria-labelledby" "navbarDropdownMenuLink"
                             ]
                             [ li []
-                                [ a [ class "dropdown-item", href "#", onClick <| EditModal ProjectOptions ]
-                                    [ text <| t ProjectSettings ]
+                                [ a [ class "dropdown-item", href "#", onClick <| EditModal ProjectOptions ] [ text <| t ProjectSettings ]
                                 ]
                             , li [ class "dropdown-divider" ] []
                             , li []
-                                [ a [ class "dropdown-item", href "#", onClick LogoutUserAndCreate ]
-                                    [ text <| t StartNewProject ]
+                                [ a [ class "dropdown-item", href "#", onClick LogoutUserAndCreate ] [ text <| t StartNewProject ]
+                                ]
+                            , li [ class "dropdown-divider" ] []
+                            , li []
+                                [ a [ class "dropdown-item", href <| buildBillsDataUrl project, download <| project.name ++ "-bills.json" ] [ text <| t DownloadBills ]
+                                ]
+                            , li []
+                                [ a [ class "dropdown-item", href "#" ] [ text <| t DownloadSettle ]
                                 ]
                             , li [ class "dropdown-divider" ] []
                             , li []

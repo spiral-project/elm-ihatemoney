@@ -189,3 +189,9 @@ getString id =
 
         SelectNone ->
             "Tout décocher"
+
+        DownloadSettle ->
+            "Exporter les remboursements (JSON)"
+
+        DownloadBills ->
+            "Exporter les factures (JSON)"

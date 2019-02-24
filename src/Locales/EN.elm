@@ -189,3 +189,9 @@ getString id =
 
         SelectNone ->
             "Select none"
+
+        DownloadSettle ->
+            "Download settle results (JSON)"
+
+        DownloadBills ->
+            "Download bills (JSON)"
