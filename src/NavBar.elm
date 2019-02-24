@@ -1,9 +1,10 @@
 module NavBar exposing (navBarView, simpleNavBarView)
 
-import Data exposing (buildBillsDataUrl)
+import Data exposing (buildBillsDataUrl, buildSettleDataUrl)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
+import Settle exposing (buildTransactions)
 import Types exposing (..)
 
 
@@ -88,7 +89,12 @@ navBarView t project selectedLocale activePage =
                                 [ a [ class "dropdown-item", href <| buildBillsDataUrl project, download <| project.name ++ "-bills.json" ] [ text <| t DownloadBills ]
                                 ]
                             , li []
-                                [ a [ class "dropdown-item", href "#" ] [ text <| t DownloadSettle ]
+                                [ a
+                                    [ class "dropdown-item"
+                                    , href <| buildSettleDataUrl project <| buildTransactions project.members project.bills
+                                    , download <| project.name ++ "-settlement.json"
+                                    ]
+                                    [ text <| t DownloadSettle ]
                                 ]
                             , li [ class "dropdown-divider" ] []
                             , li []

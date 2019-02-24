@@ -1,7 +1,8 @@
-module Data exposing (buildBillsDataUrl)
+module Data exposing (buildBillsDataUrl, buildSettleDataUrl)
 
 import Base64
 import Json.Encode as Encode
+import Round exposing (round)
 import Types exposing (Bill, Member, Project)
 
 
@@ -40,6 +41,26 @@ buildBillsDataUrl : Project -> String
 buildBillsDataUrl project =
     Encode.object
         [ ( "bills", Encode.list (encodeBill project.members) project.bills )
+        , ( "name", Encode.string project.name )
+        ]
+        |> Encode.encode 2
+        |> Base64.encode
+        |> (++) "data:application/json;base64,"
+
+
+encodeSettle : ( Member, Float, Member ) -> Encode.Value
+encodeSettle ( ower, amount, owe ) =
+    Encode.object
+        [ ( "ower", Encode.string ower.name )
+        , ( "amount", Encode.string <| round 2 amount )
+        , ( "owe", Encode.string owe.name )
+        ]
+
+
+buildSettleDataUrl : Project -> List ( Member, Float, Member ) -> String
+buildSettleDataUrl project settle =
+    Encode.object
+        [ ( "settlement", Encode.list encodeSettle settle )
         , ( "name", Encode.string project.name )
         ]
         |> Encode.encode 2

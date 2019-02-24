@@ -1,4 +1,4 @@
-module Settle exposing (settleView)
+module Settle exposing (buildTransactions, settleView)
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -26,8 +26,8 @@ settleView t members bills =
         ]
 
 
-settleInfoView : Localizer -> List Member -> List Bill -> List (Html Msg)
-settleInfoView t members bills =
+buildTransactions : List Member -> List Bill -> List ( Member, Float, Member )
+buildTransactions members bills =
     let
         membersBalance =
             List.map (\member -> ( member, getMemberBalance bills member )) members
@@ -40,10 +40,16 @@ settleInfoView t members bills =
             List.filter (\( member, balance ) -> balance > 0.0) membersBalance
                 |> List.sortBy Tuple.second
                 |> List.reverse
+    in
+    reduceBalance [] owers owes
+        |> List.reverse
 
+
+settleInfoView : Localizer -> List Member -> List Bill -> List (Html Msg)
+settleInfoView t members bills =
+    let
         transactions =
-            reduceBalance [] owers owes
-                |> List.reverse
+            buildTransactions members bills
     in
     List.map showTransaction transactions
 
