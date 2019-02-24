@@ -30,6 +30,7 @@ import Round exposing (round)
 import Settle exposing (settleView)
 import SideBar exposing (sideBarView)
 import Slug
+import Statistic exposing (statisticView)
 import Task
 import Types exposing (..)
 import Utils exposing (sortByLowerCaseName)
@@ -716,6 +717,9 @@ view model =
 
                         SettlePage ->
                             settleView t project.members project.bills
+
+                        StatisticPage ->
+                            statisticView t project.members project.bills
                     ]
                 , div [ class "messages" ] []
                 , footerView t

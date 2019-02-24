@@ -52,6 +52,7 @@ type alias Fields =
 type Page
     = BillsPage
     | SettlePage
+    | StatisticPage
 
 
 type Authentication
@@ -163,6 +164,10 @@ type LocaleIdentifier
     | AddNewBill
     | When
     | WhoShouldPay
+    | Who
+    | Paid
+    | Spent
+    | Balance
     | WhoPaid
     | ForWhat
     | ForWhom

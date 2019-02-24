@@ -1,4 +1,4 @@
-module Utils exposing (getMemberBalance, sortByLowerCaseName)
+module Utils exposing (getMemberBalance, getMemberStats, sortByLowerCaseName)
 
 import Types exposing (..)
 
@@ -8,8 +8,8 @@ sortByLowerCaseName =
     List.sortBy (String.toLower << .name)
 
 
-getMemberBalance : List Bill -> Member -> Float
-getMemberBalance bills member =
+getMemberStats : List Bill -> Member -> ( Float, Float )
+getMemberStats bills member =
     let
         totalPaid =
             List.filter (\bill -> bill.payer == member.id) bills
@@ -31,5 +31,14 @@ getMemberBalance bills member =
 
         totalOwed =
             billsShares * toFloat member.weight
+    in
+    ( totalPaid, totalOwed )
+
+
+getMemberBalance : List Bill -> Member -> Float
+getMemberBalance bills member =
+    let
+        ( totalPaid, totalOwed ) =
+            getMemberStats bills member
     in
     totalPaid - totalOwed

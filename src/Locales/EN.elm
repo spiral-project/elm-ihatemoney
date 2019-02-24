@@ -85,6 +85,18 @@ getString id =
         HowMuch ->
             "How much?"
 
+        Who ->
+            "Who?"
+
+        Paid ->
+            "Paid"
+
+        Spent ->
+            "Spent"
+
+        Balance ->
+            "Balance"
+
         Actions ->
             "Actions"
 

@@ -55,8 +55,8 @@ navBarView t project selectedLocale activePage =
                         [ class <| "nav-item " ++ active SettlePage ]
                         [ a [ class "nav-link", href "#", onClick <| SelectPage SettlePage ] [ text <| t Settle ] ]
                     , li
-                        [ class "nav-item" ]
-                        [ a [ class "nav-link", href "#" ] [ text <| t Statistics ] ]
+                        [ class <| "nav-item " ++ active StatisticPage ]
+                        [ a [ class "nav-link", href "#", onClick <| SelectPage StatisticPage ] [ text <| t Statistics ] ]
                     ]
                 , ul
                     [ class "navbar-nav secondary-nav" ]
