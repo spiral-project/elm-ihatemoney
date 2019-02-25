@@ -149,7 +149,7 @@ update msg ({ fields } as model) =
                             else
                                 bill.payer
                     in
-                    ( model
+                    ( { model | fields = { fields | currentAmount = "" } }
                     , addBillToProject model.auth { bill | payer = payer }
                     )
 
@@ -159,7 +159,7 @@ update msg ({ fields } as model) =
         TriggerEditBill bill ->
             case model.project of
                 Just project ->
-                    ( model
+                    ( { model | fields = { fields | currentAmount = "" } }
                     , editProjectBill model.auth bill
                     )
 
