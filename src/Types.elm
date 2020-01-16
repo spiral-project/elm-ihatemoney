@@ -84,7 +84,7 @@ type Msg
     | ProjectCreated (Result Http.Error String)
     | ProjectEdited (Result Http.Error String)
     | ProjectFetched (Result Http.Error Project)
-    | BillsFetched (Result Http.Error (List Bill))
+    | BillsFetched Project (Result Http.Error (List Bill))
     | MemberAdded (Result Http.Error Int)
     | MemberEdited (Result Http.Error Member)
     | MemberDeleted Int (Result Http.Error String)
