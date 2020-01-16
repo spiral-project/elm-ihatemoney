@@ -353,7 +353,7 @@ update msg ({ fields } as model) =
                     Basic projectID password
             in
             ( { model | auth = auth }
-            , fetchProjectInfo auth projectID
+            , fetchProjectInfo auth
             )
 
         ProjectCreated (Err err) ->
@@ -374,7 +374,7 @@ update msg ({ fields } as model) =
                             ""
             in
             ( { model | modal = Hidden }
-            , fetchProjectInfo model.auth projectID
+            , fetchProjectInfo model.auth
             )
 
         ProjectEdited (Err err) ->
@@ -409,8 +409,11 @@ update msg ({ fields } as model) =
                     }
                 , auth = auth
               }
-            , fetchProjectInfo auth projectID
+            , fetchProjectInfo auth
             )
+
+        Refresh ->
+            ( model, fetchProjectInfo model.auth )
 
         DemoLogin ->
             let
@@ -425,7 +428,7 @@ update msg ({ fields } as model) =
                     }
                 , auth = auth
               }
-            , fetchProjectInfo auth "demo"
+            , fetchProjectInfo auth
             )
 
         LogoutUser ->

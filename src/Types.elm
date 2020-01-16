@@ -64,6 +64,7 @@ type Msg
     = NewMemberName String
     | NewMemberWeight String
     | AddMember
+    | Refresh
     | TriggerEditMember Int
     | TriggerAddBill Bill
     | TriggerEditBill Bill
