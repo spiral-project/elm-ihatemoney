@@ -3,7 +3,7 @@ module SideBar exposing (sideBarView)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import Round exposing (round)
+import Round
 import Types exposing (..)
 import Utils exposing (getMemberBalance)
 
@@ -103,7 +103,7 @@ memberInfo t bills selectedBill member =
                 , div [ class "action edit" ] [ button [ type_ "button", onClick <| EditModal (MemberModal member.id) ] [ text <| t Edit ] ]
                 ]
             , td [ class <| "balance-value " ++ balanceClassName ]
-                [ round 2 memberBalance
+                [ Round.round 2 memberBalance
                     |> (++) sign
                     |> text
                 ]
@@ -122,7 +122,7 @@ memberInfo t bills selectedBill member =
                     ]
                 ]
             , td [ class <| "balance-value " ++ balanceClassName ]
-                [ round 2 memberBalance
+                [ Round.round 2 memberBalance
                     |> (++) sign
                     |> text
                 ]

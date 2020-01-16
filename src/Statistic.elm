@@ -3,7 +3,7 @@ module Statistic exposing (statisticView)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import Round exposing (round)
+import Round
 import Types exposing (..)
 import Utils exposing (getMemberStats, sortByLowerCaseName)
 
@@ -38,7 +38,7 @@ showStats : ( Member, ( Float, Float ) ) -> Html Msg
 showStats ( ower, ( totalPaid, totalOwed ) ) =
     tr []
         [ td [] [ text ower.name ]
-        , td [] [ text <| round 2 totalPaid ]
-        , td [] [ text <| round 2 totalOwed ]
-        , td [] [ text <| round 2 (totalPaid - totalOwed) ]
+        , td [] [ text <| Round.round 2 totalPaid ]
+        , td [] [ text <| Round.round 2 totalOwed ]
+        , td [] [ text <| Round.round 2 (totalPaid - totalOwed) ]
         ]

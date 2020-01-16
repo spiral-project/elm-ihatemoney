@@ -2,7 +2,7 @@ module Data exposing (buildBillsDataUrl, buildSettleDataUrl)
 
 import Base64
 import Json.Encode as Encode
-import Round exposing (round)
+import Round
 import Types exposing (Bill, Member, Project)
 
 
@@ -52,7 +52,7 @@ encodeSettle : ( Member, Float, Member ) -> Encode.Value
 encodeSettle ( ower, amount, owe ) =
     Encode.object
         [ ( "ower", Encode.string ower.name )
-        , ( "amount", Encode.string <| round 2 amount )
+        , ( "amount", Encode.string <| Round.round 2 amount )
         , ( "owe", Encode.string owe.name )
         ]
 

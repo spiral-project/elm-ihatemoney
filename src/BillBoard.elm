@@ -3,7 +3,7 @@ module BillBoard exposing (billBoardView)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import Round exposing (round)
+import Round
 import Types exposing (..)
 import Utils exposing (sortByLowerCaseName)
 
@@ -74,7 +74,7 @@ billInfoView t members bill =
         , td []
             [ let
                 amount =
-                    round 2 bill.amount
+                    Round.round 2 bill.amount
 
                 numberOfShares =
                     List.map .weight bill.owers
@@ -82,7 +82,7 @@ billInfoView t members bill =
                         |> toFloat
 
                 amountEach =
-                    round 2 <| bill.amount / numberOfShares
+                    Round.round 2 <| bill.amount / numberOfShares
               in
               amount ++ t (Each amountEach) |> text
             ]

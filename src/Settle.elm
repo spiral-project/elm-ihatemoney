@@ -3,7 +3,7 @@ module Settle exposing (buildTransactions, settleView)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import Round exposing (round)
+import Round
 import Types exposing (..)
 import Utils exposing (getMemberBalance, sortByLowerCaseName)
 
@@ -107,6 +107,6 @@ showTransaction : ( Member, Float, Member ) -> Html Msg
 showTransaction ( ower, amount, owe ) =
     tr []
         [ td [] [ text ower.name ]
-        , td [] [ text <| round 2 amount ]
+        , td [] [ text <| Round.round 2 amount ]
         , td [] [ text owe.name ]
         ]
