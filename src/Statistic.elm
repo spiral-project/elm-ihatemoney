@@ -3,6 +3,7 @@ module Statistic exposing (statisticView)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
+import Ratio exposing (Rational)
 import Round
 import Types exposing (..)
 import Utils exposing (getMemberStats, sortByLowerCaseName)
@@ -34,11 +35,11 @@ statisticInfoView t members bills =
         |> List.map showStats
 
 
-showStats : ( Member, ( Float, Float ) ) -> Html Msg
+showStats : ( Member, ( Rational, Rational ) ) -> Html Msg
 showStats ( ower, ( totalPaid, totalOwed ) ) =
     tr []
         [ td [] [ text ower.name ]
-        , td [] [ text <| Round.round 2 totalPaid ]
-        , td [] [ text <| Round.round 2 totalOwed ]
-        , td [] [ text <| Round.round 2 (totalPaid - totalOwed) ]
+        , td [] [ text <| Round.round 2 <| Ratio.toFloat totalPaid ]
+        , td [] [ text <| Round.round 2 <| Ratio.toFloat totalOwed ]
+        , td [] [ text <| Round.round 2 <| Ratio.toFloat (Ratio.subtract totalPaid totalOwed) ]
         ]

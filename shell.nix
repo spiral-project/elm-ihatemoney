@@ -5,7 +5,7 @@ with pkgs;
 
 mkShell {
   name = "elm-env";
-  buildInputs = with elmPackages; [ elm elm-test ];
+  buildInputs = with elmPackages; [ elm elm-test elm-live ];
 }
 
 
