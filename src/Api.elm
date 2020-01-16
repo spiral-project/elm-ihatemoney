@@ -16,6 +16,7 @@ import Base64
 import Http
 import Json.Decode as Decode
 import Json.Encode as Encode
+import Ratio
 import Slug
 import Types exposing (..)
 import Utils exposing (sortByLowerCaseName)
@@ -150,7 +151,7 @@ decodeProjectBill =
         (Decode.field "owers" (Decode.list decodeMember))
 
 
-decodeAmount : Decode.Decoder Int
+decodeAmount : Decode.Decoder Ratio.Rational
 decodeAmount =
     Decode.float
         |> Decode.andThen
@@ -158,6 +159,7 @@ decodeAmount =
                 value
                     * 100
                     |> round
+                    |> Ratio.fromInt
                     |> Decode.succeed
             )
 
@@ -330,7 +332,7 @@ encodeBill bill =
     Encode.object
         [ ( "date", Encode.string bill.date )
         , ( "what", Encode.string bill.label )
-        , ( "amount", Encode.float bill.amount )
+        , ( "amount", Encode.float <| Ratio.toFloat bill.amount )
         , ( "payer", Encode.int bill.payer )
         , ( "payed_for", Encode.list Encode.int payed_for )
         ]
