@@ -144,10 +144,22 @@ decodeProjectBill =
     Decode.map6 Bill
         (Decode.field "id" Decode.int)
         (Decode.field "date" Decode.string)
-        (Decode.field "amount" Decode.float)
+        (Decode.field "amount" decodeAmount)
         (Decode.field "what" Decode.string)
         (Decode.field "payer_id" Decode.int)
         (Decode.field "owers" (Decode.list decodeMember))
+
+
+decodeAmount : Decode.Decoder Int
+decodeAmount =
+    Decode.float
+        |> Decode.andThen
+            (\value ->
+                value
+                    * 100
+                    |> round
+                    |> Decode.succeed
+            )
 
 
 fetchProjectBills : Authentication -> Cmd Msg

@@ -122,7 +122,7 @@ type alias Member =
 type alias Bill =
     { id : Int
     , date : String
-    , amount : Float
+    , amount : Int
     , label : String
     , payer : Int
     , owers : List Member
@@ -131,7 +131,7 @@ type alias Bill =
 
 emptyBill : Bill
 emptyBill =
-    Bill 0 "" 0.0 "" 0 []
+    Bill 0 "" 0 "" 0 []
 
 
 type Locale
