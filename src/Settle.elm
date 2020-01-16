@@ -3,6 +3,7 @@ module Settle exposing (buildTransactions, settleView)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
+import Ratio
 import Round
 import Types exposing (..)
 import Utils exposing (getMemberBalance, sortByLowerCaseName)
@@ -33,12 +34,12 @@ buildTransactions members bills =
             List.map (\member -> ( member, getMemberBalance bills member )) members
 
         owers =
-            List.filter (\( member, balance ) -> balance < 0.0) membersBalance
-                |> List.sortBy Tuple.second
+            List.filter (\( member, balance ) -> Ratio.lt balance (Ratio.fromInt 0)) membersBalance
+                |> List.sortBy (Tuple.second >> Ratio.toFloat)
 
         owes =
-            List.filter (\( member, balance ) -> balance > 0.0) membersBalance
-                |> List.sortBy Tuple.second
+            List.filter (\( member, balance ) -> Ratio.gt balance (Ratio.fromInt 0)) membersBalance
+                |> List.sortBy (Tuple.second >> Ratio.toFloat)
                 |> List.reverse
     in
     reduceBalance [] owers owes

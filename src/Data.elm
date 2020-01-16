@@ -2,6 +2,7 @@ module Data exposing (buildBillsDataUrl, buildSettleDataUrl)
 
 import Base64
 import Json.Encode as Encode
+import Ratio
 import Round
 import Types exposing (Bill, Member, Project)
 
@@ -31,7 +32,7 @@ encodeBill members bill =
     Encode.object
         [ ( "date", Encode.string bill.date )
         , ( "what", Encode.string bill.label )
-        , ( "amount", Encode.float bill.amount )
+        , ( "amount", Encode.float <| Ratio.toFloat bill.amount )
         , ( "payer", Encode.string payerName )
         , ( "payed_for", Encode.list Encode.string <| memberIds payed_for )
         ]

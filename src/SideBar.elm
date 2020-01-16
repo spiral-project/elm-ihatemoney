@@ -3,6 +3,7 @@ module SideBar exposing (sideBarView)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
+import Ratio
 import Round
 import Types exposing (..)
 import Utils exposing (getMemberBalance)
@@ -39,14 +40,15 @@ sideBarView t memberField members bills selectedBill =
 memberInfo : Localizer -> List Bill -> Maybe Bill -> Member -> Html Msg
 memberInfo t bills selectedBill member =
     let
+        zero = Ratio.fromInt 0
         memberBalance =
             getMemberBalance bills member
 
         balanceClassName =
-            if memberBalance <= -0.005 then
+            if Ratio.lt memberBalance zero then
                 "negative"
 
-            else if memberBalance >= 0.005 then
+            else if Ratio.gt memberBalance zero then
                 "positive"
 
             else
@@ -81,17 +83,19 @@ memberInfo t bills selectedBill member =
                         ""
 
         sign =
-            if memberBalance > 0 then
+            if Ratio.gt memberBalance zero then
                 "+"
 
             else
                 ""
     in
-    if not member.activated && memberBalance > -0.005 && memberBalance < 0.005 then
-        -- Deactivated member with no balance
-        span [] []
+    -- if not member.activated && memberBalance > -0.005 && memberBalance < 0.005 then
+    --     -- Deactivated member with no balance
+    --     span [] []
 
-    else if member.activated then
+    -- else if member.activated then
+
+    if member.activated then
         tr [ id "bal-member-1", class (payerClassName ++ " " ++ owerClassName) ]
             [ td
                 [ class "balance-name" ]
@@ -103,7 +107,7 @@ memberInfo t bills selectedBill member =
                 , div [ class "action edit" ] [ button [ type_ "button", onClick <| EditModal (MemberModal member.id) ] [ text <| t Edit ] ]
                 ]
             , td [ class <| "balance-value " ++ balanceClassName ]
-                [ Round.round 2 memberBalance
+                [ Round.round 2 (Ratio.toFloat memberBalance)
                     |> (++) sign
                     |> text
                 ]
@@ -122,7 +126,7 @@ memberInfo t bills selectedBill member =
                     ]
                 ]
             , td [ class <| "balance-value " ++ balanceClassName ]
-                [ Round.round 2 memberBalance
+                [ Round.round 2 (Ratio.toFloat memberBalance)
                     |> (++) sign
                     |> text
                 ]
