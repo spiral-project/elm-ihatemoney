@@ -6,7 +6,7 @@ import Html.Events exposing (..)
 import Ratio exposing (Rational)
 import Round
 import Types exposing (..)
-import Utils exposing (getMemberStats, sortByLowerCaseName)
+import Utils exposing (displayAmount, getMemberStats, sortByLowerCaseName)
 
 
 statisticView : Localizer -> List Member -> List Bill -> Html Msg
@@ -39,7 +39,7 @@ showStats : ( Member, ( Rational, Rational ) ) -> Html Msg
 showStats ( ower, ( totalPaid, totalOwed ) ) =
     tr []
         [ td [] [ text ower.name ]
-        , td [] [ text <| Round.round 2 <| Ratio.toFloat totalPaid ]
-        , td [] [ text <| Round.round 2 <| Ratio.toFloat totalOwed ]
-        , td [] [ text <| Round.round 2 <| Ratio.toFloat (Ratio.subtract totalPaid totalOwed) ]
+        , td [] [ text <| displayAmount totalPaid ]
+        , td [] [ text <| displayAmount totalOwed ]
+        , td [] [ text <| displayAmount (Ratio.subtract totalPaid totalOwed) ]
         ]

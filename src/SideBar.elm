@@ -4,9 +4,8 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Ratio
-import Round
 import Types exposing (..)
-import Utils exposing (getMemberBalance)
+import Utils exposing (displayAmount, getMemberBalance)
 
 
 sideBarView : Localizer -> String -> List Member -> List Bill -> Maybe Bill -> Html Msg
@@ -40,7 +39,9 @@ sideBarView t memberField members bills selectedBill =
 memberInfo : Localizer -> List Bill -> Maybe Bill -> Member -> Html Msg
 memberInfo t bills selectedBill member =
     let
-        zero = Ratio.fromInt 0
+        zero =
+            Ratio.fromInt 0
+
         memberBalance =
             getMemberBalance bills member
 
@@ -92,9 +93,7 @@ memberInfo t bills selectedBill member =
     -- if not member.activated && memberBalance > -0.005 && memberBalance < 0.005 then
     --     -- Deactivated member with no balance
     --     span [] []
-
     -- else if member.activated then
-
     if member.activated then
         tr [ id "bal-member-1", class (payerClassName ++ " " ++ owerClassName) ]
             [ td
@@ -107,7 +106,7 @@ memberInfo t bills selectedBill member =
                 , div [ class "action edit" ] [ button [ type_ "button", onClick <| EditModal (MemberModal member.id) ] [ text <| t Edit ] ]
                 ]
             , td [ class <| "balance-value " ++ balanceClassName ]
-                [ Round.round 2 (Ratio.toFloat memberBalance)
+                [ displayAmount memberBalance
                     |> (++) sign
                     |> text
                 ]
@@ -126,7 +125,7 @@ memberInfo t bills selectedBill member =
                     ]
                 ]
             , td [ class <| "balance-value " ++ balanceClassName ]
-                [ Round.round 2 (Ratio.toFloat memberBalance)
+                [ displayAmount memberBalance
                     |> (++) sign
                     |> text
                 ]

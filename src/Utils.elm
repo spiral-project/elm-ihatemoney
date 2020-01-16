@@ -1,6 +1,7 @@
-module Utils exposing (getMemberBalance, getMemberStats, sortByLowerCaseName)
+module Utils exposing (displayAmount, getMemberBalance, getMemberStats, sortByLowerCaseName)
 
 import Ratio exposing (Rational)
+import Round
 import Types exposing (..)
 
 
@@ -12,7 +13,9 @@ sortByLowerCaseName =
 getMemberStats : List Bill -> Member -> ( Rational, Rational )
 getMemberStats bills member =
     let
-        sum = List.foldl Ratio.add (Ratio.fromInt 0)
+        sum =
+            List.foldl Ratio.add (Ratio.fromInt 0)
+
         totalPaid =
             List.filter (\bill -> bill.payer == member.id) bills
                 |> List.map .amount
@@ -23,9 +26,9 @@ getMemberStats bills member =
             List.filter (\bill -> List.any (\ower -> ower.id == member.id) bill.owers) bills
                 |> List.map
                     (\bill ->
-                         Ratio.divide
-                           bill.amount
-                           (List.map .weight bill.owers |> List.sum |> Ratio.fromInt)
+                        Ratio.divide
+                            bill.amount
+                            (List.map .weight bill.owers |> List.sum |> Ratio.fromInt)
                     )
                 |> sum
 
@@ -42,3 +45,8 @@ getMemberBalance bills member =
             getMemberStats bills member
     in
     Ratio.subtract totalPaid totalOwed
+
+
+displayAmount : Rational -> String
+displayAmount amount =
+    Round.round 2 <| Ratio.toFloat amount / 100

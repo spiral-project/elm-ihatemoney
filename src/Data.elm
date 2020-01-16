@@ -3,8 +3,8 @@ module Data exposing (buildBillsDataUrl, buildSettleDataUrl)
 import Base64
 import Json.Encode as Encode
 import Ratio exposing (Rational)
-import Round
 import Types exposing (Bill, Member, Project)
+import Utils exposing (displayAmount)
 
 
 encodeMember : Member -> Encode.Value
@@ -53,7 +53,7 @@ encodeSettle : ( Member, Rational, Member ) -> Encode.Value
 encodeSettle ( ower, amount, owe ) =
     Encode.object
         [ ( "ower", Encode.string ower.name )
-        , ( "amount", Encode.string <| Round.round 2 <| Ratio.toFloat amount )
+        , ( "amount", Encode.string <| displayAmount amount )
         , ( "owe", Encode.string owe.name )
         ]
 

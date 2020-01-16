@@ -4,9 +4,8 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Ratio
-import Round
 import Types exposing (..)
-import Utils exposing (sortByLowerCaseName)
+import Utils exposing (displayAmount, sortByLowerCaseName)
 
 
 billBoardView : Localizer -> List Member -> List Bill -> Html Msg
@@ -75,14 +74,14 @@ billInfoView t members bill =
         , td []
             [ let
                 amount =
-                    Round.round 2 (Ratio.toFloat bill.amount)
+                    displayAmount bill.amount
 
                 numberOfShares =
                     List.map .weight bill.owers
                         |> List.sum
 
                 amountEach =
-                    Round.round 2 <| Ratio.toFloat <| Ratio.divide bill.amount (Ratio.fromInt numberOfShares)
+                    displayAmount <| Ratio.divide bill.amount (Ratio.fromInt numberOfShares)
               in
               amount ++ t (Each amountEach) |> text
             ]

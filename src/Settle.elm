@@ -4,9 +4,8 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Ratio exposing (Rational)
-import Round
 import Types exposing (..)
-import Utils exposing (getMemberBalance, sortByLowerCaseName)
+import Utils exposing (displayAmount, getMemberBalance, sortByLowerCaseName)
 
 
 settleView : Localizer -> List Member -> List Bill -> Html Msg
@@ -65,6 +64,7 @@ reduceBalance results owers owes =
                         amount =
                             if Ratio.gt (Ratio.abs ower_balance) (Ratio.abs owe_balance) then
                                 Ratio.abs owe_balance
+
                             else
                                 Ratio.abs ower_balance
 
@@ -107,6 +107,6 @@ showTransaction : ( Member, Rational, Member ) -> Html Msg
 showTransaction ( ower, amount, owe ) =
     tr []
         [ td [] [ text ower.name ]
-        , td [] [ text <| Round.round 2 <| Ratio.toFloat amount ]
+        , td [] [ text <| displayAmount amount ]
         , td [] [ text owe.name ]
         ]
