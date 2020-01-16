@@ -1,5 +1,6 @@
 module Ratio exposing
     ( Rational
+    , abs
     , over, fromInt
     , eq, ne, gt, lt, ge, le, max, min, compare
     , add, subtract, multiply, multiplyByInt
@@ -321,3 +322,6 @@ truncate =
 rel : (Int -> Int -> Bool) -> Rational -> Rational -> Bool
 rel relop a b =
     relop (numerator a * denominator b) (numerator b * denominator a)
+
+abs : Rational -> Rational
+abs x = if lt x (fromInt 0) then multiply x (fromInt (-1)) else x

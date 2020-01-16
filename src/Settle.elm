@@ -3,7 +3,7 @@ module Settle exposing (buildTransactions, settleView)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import Ratio
+import Ratio exposing (Rational)
 import Round
 import Types exposing (..)
 import Utils exposing (getMemberBalance, sortByLowerCaseName)
@@ -55,7 +55,7 @@ settleInfoView t members bills =
     List.map showTransaction transactions
 
 
-reduceBalance : List ( Member, Float, Member ) -> List ( Member, Float ) -> List ( Member, Float ) -> List ( Member, Float, Member )
+reduceBalance : List ( Member, Rational, Member ) -> List ( Member, Rational ) -> List ( Member, Rational ) -> List ( Member, Rational, Member )
 reduceBalance results owers owes =
     case owers of
         ( ower, ower_balance ) :: remaining_owers ->
@@ -63,17 +63,16 @@ reduceBalance results owers owes =
                 ( owe, owe_balance ) :: remaining_owes ->
                     let
                         amount =
-                            if abs ower_balance > abs owe_balance then
-                                abs owe_balance
-
+                            if Ratio.gt (Ratio.abs ower_balance) (Ratio.abs owe_balance) then
+                                Ratio.abs owe_balance
                             else
-                                abs ower_balance
+                                Ratio.abs ower_balance
 
                         newResult =
                             List.append [ ( ower, amount, owe ) ] results
 
                         newOwerBalance =
-                            ower_balance + amount
+                            Ratio.add ower_balance amount
 
                         newOwers =
                             if newOwerBalance < 0 then
@@ -104,7 +103,7 @@ reduceBalance results owers owes =
             results
 
 
-showTransaction : ( Member, Float, Member ) -> Html Msg
+showTransaction : ( Member, Rational, Member ) -> Html Msg
 showTransaction ( ower, amount, owe ) =
     tr []
         [ td [] [ text ower.name ]
