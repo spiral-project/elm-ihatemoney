@@ -27,7 +27,7 @@ settleView t members bills =
         ]
 
 
-buildTransactions : List Member -> List Bill -> List ( Member, Float, Member )
+buildTransactions : List Member -> List Bill -> List ( Member, Rational, Member )
 buildTransactions members bills =
     let
         membersBalance =
@@ -75,20 +75,20 @@ reduceBalance results owers owes =
                             Ratio.add ower_balance amount
 
                         newOwers =
-                            if newOwerBalance < 0 then
+                            if Ratio.lt newOwerBalance (Ratio.fromInt 0) then
                                 List.append [ ( ower, newOwerBalance ) ] remaining_owers
-                                    |> List.sortBy Tuple.second
+                                    |> List.sortBy (Tuple.second >> Ratio.toFloat)
 
                             else
                                 remaining_owers
 
                         newOweBalance =
-                            owe_balance - amount
+                            Ratio.subtract owe_balance amount
 
                         newOwes =
-                            if newOweBalance > 0 then
+                            if Ratio.gt newOweBalance (Ratio.fromInt 0) then
                                 List.append [ ( owe, newOweBalance ) ] remaining_owes
-                                    |> List.sortBy Tuple.second
+                                    |> List.sortBy (Tuple.second >> Ratio.toFloat)
                                     |> List.reverse
 
                             else
@@ -107,6 +107,6 @@ showTransaction : ( Member, Rational, Member ) -> Html Msg
 showTransaction ( ower, amount, owe ) =
     tr []
         [ td [] [ text ower.name ]
-        , td [] [ text <| Round.round 2 amount ]
+        , td [] [ text <| Round.round 2 <| Ratio.toFloat amount ]
         , td [] [ text owe.name ]
         ]
