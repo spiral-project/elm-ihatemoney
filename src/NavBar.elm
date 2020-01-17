@@ -126,6 +126,18 @@ navBarView t project selectedLocale activePage =
                         ]
                         [ a [ class "nav-link", href "#", onClick <| ChangeLocale EN ] [ text "en" ]
                         ]
+                    , li
+                        [ "nav-item"
+                            ++ (if selectedLocale == NL then
+                                    " active"
+
+                                else
+                                    ""
+                               )
+                            |> class
+                        ]
+                        [ a [ class "nav-link", href "#", onClick <| ChangeLocale NL ] [ text "nl" ]
+                        ]
                     ]
                 ]
             ]
@@ -178,6 +190,18 @@ simpleNavBarView t selectedLocale =
                             |> class
                         ]
                         [ a [ class "nav-link", href "#", onClick <| ChangeLocale EN ] [ text "en" ]
+                        ]
+                    , li
+                        [ "nav-item"
+                            ++ (if selectedLocale == NL then
+                                    " active"
+
+                                else
+                                    ""
+                               )
+                            |> class
+                        ]
+                        [ a [ class "nav-link", href "#", onClick <| ChangeLocale NL ] [ text "nl" ]
                         ]
                     ]
                 ]

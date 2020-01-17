@@ -1,4 +1,4 @@
-module Locales.EN exposing (getString)
+module Locales.NL exposing (getString)
 
 import Types exposing (LocaleIdentifier(..), Localizer)
 

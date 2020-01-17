@@ -2,6 +2,7 @@ module Locales exposing (getString)
 
 import Locales.EN
 import Locales.FR
+import Locales.NL
 import Types exposing (Locale(..), LocaleIdentifier(..))
 
 
@@ -13,3 +14,6 @@ getString locale id =
 
         FR ->
             Locales.FR.getString id
+
+        NL ->
+            Locales.NL.getString id

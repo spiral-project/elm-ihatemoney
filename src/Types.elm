@@ -139,6 +139,7 @@ emptyBill =
 type Locale
     = EN
     | FR
+    | NL
 
 
 type alias Localizer =
