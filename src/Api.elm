@@ -127,17 +127,22 @@ decodeMember =
         (Decode.field "activated" Decode.bool)
 
 
-fetchProjectInfo : Authentication -> String -> Cmd Msg
-fetchProjectInfo auth projectID =
-    Http.request
-        { method = "GET"
-        , url = iHateMoneyUrl ++ "/projects/" ++ projectID
-        , headers = [ headersForAuth auth ]
-        , expect = Http.expectJson ProjectFetched decodeProjectInfo
-        , timeout = Nothing
-        , tracker = Nothing
-        , body = Http.emptyBody
-        }
+fetchProjectInfo : Authentication -> Cmd Msg
+fetchProjectInfo auth =
+    case auth of
+        Basic projectID _ ->
+            Http.request
+                { method = "GET"
+                , url = iHateMoneyUrl ++ "/projects/" ++ projectID
+                , headers = [ headersForAuth auth ]
+                , expect = Http.expectJson ProjectFetched decodeProjectInfo
+                , timeout = Nothing
+                , tracker = Nothing
+                , body = Http.emptyBody
+                }
+
+        Unauthenticated ->
+            Cmd.none
 
 
 decodeProjectBill : Decode.Decoder Bill
@@ -164,8 +169,8 @@ decodeAmount =
             )
 
 
-fetchProjectBills : Authentication -> Cmd Msg
-fetchProjectBills auth =
+fetchProjectBills : Authentication -> Project -> Cmd Msg
+fetchProjectBills auth project =
     let
         projectID =
             case auth of
@@ -179,7 +184,7 @@ fetchProjectBills auth =
         { method = "GET"
         , url = iHateMoneyUrl ++ "/projects/" ++ projectID ++ "/bills"
         , headers = [ headersForAuth auth ]
-        , expect = Http.expectJson BillsFetched (Decode.list decodeProjectBill)
+        , expect = Http.expectJson (BillsFetched project) (Decode.list decodeProjectBill)
         , timeout = Nothing
         , tracker = Nothing
         , body = Http.emptyBody

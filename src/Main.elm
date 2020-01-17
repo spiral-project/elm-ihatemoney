@@ -248,7 +248,7 @@ update msg ({ fields } as model) =
                         , fields = { fields | newMember = "", newMemberWeight = "" }
                         , modal = Hidden
                       }
-                    , fetchProjectBills model.auth
+                    , fetchProjectBills model.auth newProject
                     )
 
                 Nothing ->
@@ -354,7 +354,7 @@ update msg ({ fields } as model) =
                     Basic projectID password
             in
             ( { model | auth = auth }
-            , fetchProjectInfo auth projectID
+            , fetchProjectInfo auth
             )
 
         ProjectCreated (Err err) ->
@@ -375,7 +375,7 @@ update msg ({ fields } as model) =
                             ""
             in
             ( { model | modal = Hidden }
-            , fetchProjectInfo model.auth projectID
+            , fetchProjectInfo model.auth
             )
 
         ProjectEdited (Err err) ->
@@ -410,8 +410,11 @@ update msg ({ fields } as model) =
                     }
                 , auth = auth
               }
-            , fetchProjectInfo auth projectID
+            , fetchProjectInfo auth
             )
+
+        Refresh ->
+            ( model, fetchProjectInfo model.auth )
 
         DemoLogin ->
             let
@@ -426,7 +429,7 @@ update msg ({ fields } as model) =
                     }
                 , auth = auth
               }
-            , fetchProjectInfo auth "demo"
+            , fetchProjectInfo auth
             )
 
         LogoutUser ->
@@ -450,7 +453,7 @@ update msg ({ fields } as model) =
             )
 
         ProjectFetched (Ok project) ->
-            ( { model | project = Just project }, fetchProjectBills model.auth )
+            ( model, fetchProjectBills model.auth project )
 
         ProjectFetched (Err err) ->
             let
@@ -459,23 +462,18 @@ update msg ({ fields } as model) =
             in
             ( { model | auth = Unauthenticated }, Cmd.none )
 
-        BillsFetched (Ok bills) ->
-            case model.project of
-                Just project ->
-                    let
-                        newProject =
-                            { project | bills = bills }
-                    in
-                    ( { model
-                        | project = Just newProject
-                      }
-                    , Cmd.none
-                    )
+        BillsFetched project (Ok bills) ->
+            let
+                newProject =
+                    { project | bills = bills }
+            in
+            ( { model
+                | project = Just newProject
+              }
+            , Cmd.none
+            )
 
-                Nothing ->
-                    ( model, Cmd.none )
-
-        BillsFetched (Err err) ->
+        BillsFetched _ (Err err) ->
             let
                 _ =
                     Debug.log "Error while loading the project bills" err

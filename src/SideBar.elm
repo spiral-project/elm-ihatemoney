@@ -25,9 +25,14 @@ sideBarView t memberField members bills selectedBill =
                         , onInput NewMemberName
                         ]
                         []
-                    , button [ class " input-group-addon btn" ] [ text <| t Add ]
+                    , button [ class "input-group-addon btn" ] [ text <| t Add ]
                     ]
                 ]
+            , button
+                [ class "btn btn-primary mb-3"
+                , onClick Refresh
+                ]
+                [ text "Refresh" ]
             , div [ id "table_overflow" ]
                 [ List.map (memberInfo t bills selectedBill) members
                     |> table [ class "balance table" ]
