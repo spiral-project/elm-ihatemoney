@@ -26,6 +26,7 @@ import Locales exposing (getString)
 import Login exposing (loginView)
 import Modal exposing (handleModal)
 import NavBar exposing (navBarView, simpleNavBarView)
+import Ratio
 import Round exposing (round)
 import Settle exposing (settleView)
 import SideBar exposing (sideBarView)
@@ -523,7 +524,7 @@ update msg ({ fields } as model) =
                                     ( { model
                                         | modal = modal_type
                                         , selectedBill = Just bill
-                                        , fields = { fields | currentAmount = String.fromFloat bill.amount }
+                                        , fields = { fields | currentAmount = String.fromFloat (Ratio.toFloat bill.amount) }
                                       }
                                     , Cmd.none
                                     )
@@ -654,8 +655,10 @@ update msg ({ fields } as model) =
                     Just
                         { bill
                             | amount =
-                                Maybe.withDefault 0.0 <|
-                                    String.toFloat amount
+                                    (\n -> Ratio.over n 100)
+                                    <| (\x -> Basics.round (x * 100))
+                                    <| Maybe.withDefault 0.0
+                                    <| String.toFloat amount
                         }
               }
             , Cmd.none
