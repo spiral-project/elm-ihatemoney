@@ -123,8 +123,14 @@ decodeMember =
     Decode.map4 Member
         (Decode.field "id" Decode.int)
         (Decode.field "name" Decode.string)
-        (Decode.field "weight" Decode.int)
+        (Decode.field "weight" decodeWeight)
         (Decode.field "activated" Decode.bool)
+
+
+decodeWeight : Decode.Decoder Int
+decodeWeight =
+    Decode.float
+        |> Decode.andThen (round >> Decode.succeed)
 
 
 fetchProjectInfo : Authentication -> Cmd Msg
