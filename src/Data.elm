@@ -2,8 +2,9 @@ module Data exposing (buildBillsDataUrl, buildSettleDataUrl)
 
 import Base64
 import Json.Encode as Encode
-import Round
+import Ratio exposing (Rational)
 import Types exposing (Bill, Member, Project)
+import Utils exposing (displayAmount)
 
 
 encodeMember : Member -> Encode.Value
@@ -31,7 +32,7 @@ encodeBill members bill =
     Encode.object
         [ ( "date", Encode.string bill.date )
         , ( "what", Encode.string bill.label )
-        , ( "amount", Encode.float bill.amount )
+        , ( "amount", Encode.float <| Ratio.toFloat bill.amount )
         , ( "payer", Encode.string payerName )
         , ( "payed_for", Encode.list Encode.string <| memberIds payed_for )
         ]
@@ -48,16 +49,16 @@ buildBillsDataUrl project =
         |> (++) "data:application/json;base64,"
 
 
-encodeSettle : ( Member, Float, Member ) -> Encode.Value
+encodeSettle : ( Member, Rational, Member ) -> Encode.Value
 encodeSettle ( ower, amount, owe ) =
     Encode.object
         [ ( "ower", Encode.string ower.name )
-        , ( "amount", Encode.string <| Round.round 2 amount )
+        , ( "amount", Encode.string <| displayAmount amount )
         , ( "owe", Encode.string owe.name )
         ]
 
 
-buildSettleDataUrl : Project -> List ( Member, Float, Member ) -> String
+buildSettleDataUrl : Project -> List ( Member, Rational, Member ) -> String
 buildSettleDataUrl project settle =
     Encode.object
         [ ( "settlement", Encode.list encodeSettle settle )
